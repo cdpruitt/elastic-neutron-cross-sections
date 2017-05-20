@@ -1,0 +1,8 @@
+lit116SnElasticXS_11.dat
+lit116SnElasticXS_24.dat
+lit118SnElasticXS_11.dat
+lit118SnElasticXS_24.dat
+lit120SnElasticXS_11.dat
+lit122SnElasticXS_11.dat
+lit124SnElasticXS_11.dat
+lit124SnElasticXS_24.dat
