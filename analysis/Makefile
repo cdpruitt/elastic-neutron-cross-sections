@@ -7,10 +7,13 @@ OBJECTS = $(SOURCES:.c=.o)
 
 LINKOPTION = $(shell root-config --libs)
 
-all: readLitData
+all: readLitData scaleCSDataFile
 
 readLitData: src/readLitData.cpp src/dataSet.cpp src/dataPoint.cpp
 	$(COMPILER) $(CFLAGS) -o readLitData src/readLitData.cpp src/dataSet.cpp src/dataPoint.cpp $(LINKOPTION)
+
+scaleCSDataFile: src/scaleCSDataFile.cpp src/dataSet.cpp src/dataPoint.cpp
+	$(COMPILER) $(CFLAGS) -o scaleCSDataFile src/scaleCSDataFile.cpp $(LINKOPTION)
 
 %.o : %.cpp $(HEADERS)
 	$(COMPILER) $(CFLAGS) $< -o $@
