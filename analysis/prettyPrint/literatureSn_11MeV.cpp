@@ -7,8 +7,6 @@ void literatureSn_11MeV()
         style = new TStyle("graphStyle","graphStyle");
     }
 
-    TCanvas* c = new TCanvas("c1","",1200,1200);
-
     style->SetOptStat(0);
     style->SetOptTitle(0);    
     style->SetPalette(1,0);
@@ -19,8 +17,6 @@ void literatureSn_11MeV()
     style->SetPadColor(10);
     style->SetHistLineWidth(3);
     style->SetHistLineColor(kBlue);
-    style->SetMarkerSize(0.9);
-    style->SetMarkerStyle(8);
     style->SetFuncWidth(3);
     style->SetFuncColor(kRed);
     style->SetLabelColor(kBlack,"xyz");
@@ -31,6 +27,8 @@ void literatureSn_11MeV()
 
     gROOT->SetStyle("graphStyle");
     gROOT->ForceStyle();
+
+    TCanvas* c = new TCanvas("c1","",1200,1200);
 
     // Pad dimensions and margins
     gPad->SetPad(0.005, 0.995, 0.995, 0.005);
@@ -50,37 +48,78 @@ void literatureSn_11MeV()
     string Sn122GraphName = "Sn122(n,n) [11 MeV]";
     string Sn124GraphName = "Sn124(n,n) [11 MeV]";
 
+    string ExpSn112GraphName = "ExpSn112(n,n) [11 MeV]";
+    string ExpSn124GraphName = "ExpSn124(n,n) [11 MeV]";
+
     TGraphErrors* Sn116Graph = (TGraphErrors*)litFile->Get(Sn116GraphName.c_str());
     TGraphErrors* Sn118Graph = (TGraphErrors*)litFile->Get(Sn118GraphName.c_str());
     TGraphErrors* Sn120Graph = (TGraphErrors*)litFile->Get(Sn120GraphName.c_str());
     TGraphErrors* Sn122Graph = (TGraphErrors*)litFile->Get(Sn122GraphName.c_str());
     TGraphErrors* Sn124Graph = (TGraphErrors*)litFile->Get(Sn124GraphName.c_str());
 
+    TGraphErrors* ExpSn112Graph = (TGraphErrors*)litFile->Get(ExpSn112GraphName.c_str());
+    TGraphErrors* ExpSn124Graph = (TGraphErrors*)litFile->Get(ExpSn124GraphName.c_str());
+
+    // create multigraph for holding all graphs
+    TMultiGraph *mg = new TMultiGraph();
+
+    mg->Add(Sn124Graph);
+    mg->Add(Sn120Graph);
+    mg->Add(Sn122Graph);
+    mg->Add(Sn118Graph);
+    mg->Add(Sn116Graph);
+    mg->Add(ExpSn124Graph);
+    mg->Add(ExpSn112Graph);
+
     // Set graph point and line characteristics
     Sn116Graph->SetLineColor(kRed-9);
     Sn116Graph->SetLineWidth(5);
     Sn116Graph->SetLineStyle(0);
     Sn116Graph->SetMarkerColor(kRed-9);
+    Sn116Graph->SetMarkerStyle(8);
+    Sn116Graph->SetMarkerSize(2);
 
     Sn118Graph->SetLineColor(kRed-5);
     Sn118Graph->SetLineWidth(5);
     Sn118Graph->SetLineStyle(0);
     Sn118Graph->SetMarkerColor(kRed-5);
+    Sn118Graph->SetMarkerStyle(8);
+    Sn118Graph->SetMarkerSize(2);
 
     Sn120Graph->SetLineColor(kRed);
     Sn120Graph->SetLineWidth(5);
     Sn120Graph->SetLineStyle(0);
     Sn120Graph->SetMarkerColor(kRed);
+    Sn120Graph->SetMarkerStyle(8);
+    Sn120Graph->SetMarkerSize(2);
 
     Sn122Graph->SetLineColor(kRed+2);
     Sn122Graph->SetLineWidth(5);
     Sn122Graph->SetLineStyle(0);
     Sn122Graph->SetMarkerColor(kRed+2);
+    Sn122Graph->SetMarkerStyle(8);
+    Sn122Graph->SetMarkerSize(2);
 
     Sn124Graph->SetLineColor(kRed+4);
     Sn124Graph->SetLineWidth(5);
     Sn124Graph->SetLineStyle(0);
     Sn124Graph->SetMarkerColor(kRed+4);
+    Sn124Graph->SetMarkerStyle(8);
+    Sn124Graph->SetMarkerSize(2);
+
+    ExpSn124Graph->SetLineColor(kBlue);
+    ExpSn124Graph->SetLineWidth(5);
+    ExpSn124Graph->SetLineStyle(0);
+    ExpSn124Graph->SetMarkerColor(kBlue);
+    ExpSn124Graph->SetMarkerStyle(33);
+    ExpSn124Graph->SetMarkerSize(4);
+
+    ExpSn112Graph->SetLineColor(kBlue-10);
+    ExpSn112Graph->SetLineWidth(5);
+    ExpSn112Graph->SetLineStyle(0);
+    ExpSn112Graph->SetMarkerColor(kBlue-10);
+    ExpSn112Graph->SetMarkerStyle(33);
+    ExpSn112Graph->SetMarkerSize(4);
 
     // X-axis parameters
     Sn116Graph->GetXaxis()->SetTitle("Angle (degrees, CM)");
@@ -110,16 +149,19 @@ void literatureSn_11MeV()
     Sn116Graph->GetYaxis()->SetNdivisions(10);
     Sn116Graph->GetYaxis()->SetTickLength(0.02);
 
-    Sn116Graph->Draw("");
-    Sn124Graph->Draw("same");
-    Sn122Graph->Draw("same");
-    Sn120Graph->Draw("same");
-    Sn118Graph->Draw("same");
-    Sn116Graph->Draw("same");
+    mg->Draw("ap");
+    //Sn116Graph->Draw("");
+    //Sn124Graph->Draw("same");
+    //Sn122Graph->Draw("same");
+    //Sn120Graph->Draw("same");
+    //Sn118Graph->Draw("same");
+    //Sn116Graph->Draw("same");
+
+    //ExpSn124Graph->Draw("same");
+    //ExpSn112Graph->Draw("same");
 
     gPad->SetLogy(1);
-    
-    //Sn116Graph->GetYaxis()->SetRangeUser(0,9);
+    Sn116Graph->GetYaxis()->SetRangeUser(0,9);
 
     //TLatex latex;
     //latex.SetNDC();
@@ -138,6 +180,10 @@ void literatureSn_11MeV()
     legend->AddEntry(Sn120Graph,"{}^{120}Sn","l");
     legend->AddEntry(Sn122Graph,"{}^{122}Sn","l");
     legend->AddEntry(Sn124Graph,"{}^{124}Sn","l");
+    legend->AddEntry(ExpSn112Graph,"Exp {}^{112}Sn","l");
+    legend->AddEntry(ExpSn124Graph,"Exp {}^{124}Sn","l");
 
     legend->Draw();
+
+    c1->Update();
 }
