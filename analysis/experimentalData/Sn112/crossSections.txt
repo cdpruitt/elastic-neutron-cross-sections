@@ -1,0 +1,7 @@
+Experimental data from 2017 measurement at TUNL
+Exp. Sn112
+Degrees     mB/sr     Error (mB/sr)
+32.5       324.157    0
+45       101.095    0
+50       153.102    0
+54       131.023    0

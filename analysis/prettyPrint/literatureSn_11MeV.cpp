@@ -39,7 +39,10 @@ void literatureSn_11MeV()
     gPad->SetTicky(2);
 
     string litFileName = "../literatureData/literatureData.root";
+    string expSn112FileName = "../experimentalData/Sn112/crossSections.root";
+    string expSn124FileName = "../experimentalData/Sn124/crossSections.root";
 
+    // read in literature graphs
     TFile* litFile = new TFile(litFileName.c_str(),"READ");
     
     string Sn116GraphName = "Sn116(n,n) [11 MeV]";
@@ -48,17 +51,21 @@ void literatureSn_11MeV()
     string Sn122GraphName = "Sn122(n,n) [11 MeV]";
     string Sn124GraphName = "Sn124(n,n) [11 MeV]";
 
-    string ExpSn112GraphName = "ExpSn112(n,n) [11 MeV]";
-    string ExpSn124GraphName = "ExpSn124(n,n) [11 MeV]";
-
     TGraphErrors* Sn116Graph = (TGraphErrors*)litFile->Get(Sn116GraphName.c_str());
     TGraphErrors* Sn118Graph = (TGraphErrors*)litFile->Get(Sn118GraphName.c_str());
     TGraphErrors* Sn120Graph = (TGraphErrors*)litFile->Get(Sn120GraphName.c_str());
     TGraphErrors* Sn122Graph = (TGraphErrors*)litFile->Get(Sn122GraphName.c_str());
     TGraphErrors* Sn124Graph = (TGraphErrors*)litFile->Get(Sn124GraphName.c_str());
 
-    TGraphErrors* ExpSn112Graph = (TGraphErrors*)litFile->Get(ExpSn112GraphName.c_str());
-    TGraphErrors* ExpSn124Graph = (TGraphErrors*)litFile->Get(ExpSn124GraphName.c_str());
+    // read in experimental graphs
+    TFile* expSn112File = new TFile(expSn112FileName.c_str(),"READ");
+    TFile* expSn124File = new TFile(expSn124FileName.c_str(),"READ");
+
+    string ExpSn112GraphName = "Exp. Sn112";
+    string ExpSn124GraphName = "Exp. Sn124";
+
+    TGraphErrors* ExpSn112Graph = (TGraphErrors*)expSn112File->Get(ExpSn112GraphName.c_str());
+    TGraphErrors* ExpSn124Graph = (TGraphErrors*)expSn124File->Get(ExpSn124GraphName.c_str());
 
     // create multigraph for holding all graphs
     TMultiGraph *mg = new TMultiGraph();

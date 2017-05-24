@@ -1,16 +1,16 @@
 SHELL = /bin/sh
 COMPILER= clang++ 
-CFLAGS= -lstdc++ -O2 -I$(shell root-config --incdir) -std=c++11 -ggdb
+CFLAGS= -lstdc++ -I$(shell root-config --incdir) -std=c++11 -ggdb
 SOURCES = src/dataPoint.cpp src/dataSet.cpp 
 HEADERS = $(shell echo include/*.h)
 OBJECTS = $(SOURCES:.c=.o)
 
 LINKOPTION = $(shell root-config --libs)
 
-all: readLitData scaleCSDataFile calculateCS
+all: readDataToGraph scaleCSDataFile calculateCS
 
-readLitData: src/readLitData.cpp src/dataSet.cpp src/dataPoint.cpp
-	$(COMPILER) $(CFLAGS) -o readLitData src/readLitData.cpp src/dataSet.cpp src/dataPoint.cpp $(LINKOPTION)
+readDataToGraph: src/readDataToGraph.cpp src/dataSet.cpp src/dataPoint.cpp
+	$(COMPILER) $(CFLAGS) -o readDataToGraph src/readDataToGraph.cpp src/dataSet.cpp src/dataPoint.cpp $(LINKOPTION)
 
 scaleCSDataFile: src/scaleCSDataFile.cpp src/dataSet.cpp src/dataPoint.cpp
 	$(COMPILER) $(CFLAGS) -o scaleCSDataFile src/scaleCSDataFile.cpp $(LINKOPTION)

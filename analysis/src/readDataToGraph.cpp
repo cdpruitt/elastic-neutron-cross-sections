@@ -2,7 +2,7 @@
 // and create ROOT graphs of the data
 
 // how to use:
-// ./readLitData path/to/literatureData name/of/outputFile
+// ./readDataToGraph path/to/data name/of/outputFile
 
 #include <iostream>
 #include <fstream>
