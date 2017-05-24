@@ -1,2 +1,0 @@
-Number of atoms
-2.697e22
