@@ -6,7 +6,7 @@
 #include <fstream>
 #include <string>
 
-#include "../include/scalerData.h"
+#include "../include/ScalerData.h"
 
 using namespace std;
 
@@ -24,69 +24,69 @@ ScalerData::ScalerData(string fileName)
 
     while(file >> dummy >> dummy2)
     {
-        if(dummy=="01")
+        if(dummy=="1")
         {
-            tenHzClock = stoi(dummy2);
+            tenHzClock = stoull(dummy2);
         }
 
-        else if(dummy=="02")
+        if(dummy=="2")
         {
-            BP0 = stoi(dummy2);
+            BP0 = stoull(dummy2);
         }
 
-        else if(dummy=="03")
+        else if(dummy=="3")
         {
-            BCI = stoi(dummy2);
+            BCI = stoull(dummy2);
         }
 
         else if(dummy=="10")
         {
-            Det4mCFD = stoi(dummy2);
+            Det4mCFD = stoull(dummy2);
         }
 
         else if(dummy=="11")
         {
-            Det6mCFD = stoi(dummy2);
+            Det6mCFD = stoull(dummy2);
         }
 
         else if(dummy=="12")
         {
-            Det0DegreeCFD = stoi(dummy2);
+            Det0DegreeCFD = stoull(dummy2);
         }
 
         else if(dummy=="13")
         {
-            Det0DegreeCFD_100 = stoi(dummy2);
+            Det0DegreeCFD_100 = stoull(dummy2);
         }
 
         else if(dummy=="14")
         {
-            DetCMonCFD = stoi(dummy2);
+            DetCMonCFD = stoull(dummy2);
         }
 
         else if(dummy=="15")
         {
-            DetCMonCFD_10 = stoi(dummy2);
+            DetCMonCFD_10 = stoull(dummy2);
         }
 
         else if(dummy=="22")
         {
-            VetoClock = stoi(dummy2);
+            VetoClock = stoull(dummy2);
         }
 
         else if(dummy=="23")
         {
-            sixtyHzClock = stoi(dummy2);
+            sixtyHzClock = stoull(dummy2);
         }
 
         else if(dummy=="25")
         {
-            triggers = stoi(dummy2);
+            triggers = stoull(dummy2);
         }
 
         else if(dummy=="27")
         {
-            liveTriggers = stoi(dummy2);
+            liveTriggers = stoull(dummy2);
         }
     }
 }

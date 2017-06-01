@@ -1,6 +1,9 @@
 #ifndef DATA_STRUCTURES_H
 #define DATA_STRUCTURES_H
 
+#include <string>
+#include <vector>
+
 struct ElasticCSDataPoint
 {
     ElasticCSDataPoint(double d, double ecs, double e) : degrees(d), elasticCS(ecs), error(e) {}

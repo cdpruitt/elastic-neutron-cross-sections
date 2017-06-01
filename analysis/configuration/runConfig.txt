@@ -68,4 +68,4 @@ Run No.     Target          4m det angle    6m det angle
 122         Sn124           80.0            32.67
 123         Sn124           80.0            32.67
 124         blank           80.0            32.67
-112         Sn112           80.0            32.67
+125         Sn112           80.0            32.67
