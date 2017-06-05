@@ -1,3 +1,0 @@
-Angle   DetectorCounts(4M)  DetectorCounts(6M)  0DegreeMonitor  CeilingMonitor
--------------------------------------------------------------------------------
-32.5    6590                4246                8453            12460

@@ -39,15 +39,6 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    ifstream f(outputFileName);
-    if(f.good())
-    {
-        // already made histos for this run; end histo production
-        cout << "Histogram file already found at " << outputFileName << ". Skipping..." << endl;
-        exit(0);
-    }
-
-    f.close();
     cout << "Creating histograms for " << inputFileName << endl;
 
     TFile outputFile(outputFileName.c_str(),"RECREATE");

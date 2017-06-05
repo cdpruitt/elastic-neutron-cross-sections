@@ -1,0 +1,5 @@
+Header for outputted tabular cross section data
+
+Experimental data from May 2017 measurement at TUNL
+Sn124(n,n) [11 MeV, 6M]
+Degrees     mB/sr       Error (mB/sr)

@@ -14,6 +14,9 @@
 #       | recent subrun
 #       | (e.g., ./analyze -r)
 #-------+-----------------------------------------------------------------------
+#    -h | for each run analyzed, recreate histograms from the raw root tree data
+#-------+-----------------------------------------------------------------------
+
 #
 ################################################################################
 
@@ -37,13 +40,13 @@ while getopts "rh" opt; do
             runlist=true
             ;;
         h)
-            removeHistos=true
+            recreateHistos=true
             ;;
         \?)
             # Flags unrecognized - exit script and give user help text
             printf "\nInvalid flag given.\n\nValid flags are:\n"
             printf "    -r (analyze runs listed in ..runsToSort.txt)\n"
-            printf "    -h (overwrite histos from previous analysis)\n"
+            printf "    -h (recreate histos from trees)\n"
 
             exit
             ;;
@@ -63,11 +66,6 @@ analyze ()
 
     # Send error messages to a text file
     2>&1 | tee > "$outputDirectoryName"/error.txt
-
-    if [[ $removeHistos = true ]]
-    then
-        rm "$outputDirectoryName"/histos.root
-    fi
 
     ./histos "$inputFileName" "$outputDirectoryName"/histos.root
 }
@@ -90,17 +88,19 @@ then
             mkdir "../analyzedData/runs/$runNumber"
         fi
 
-        printf "\n"
-        printf "\n************************************"
-        printf "\n     Reading data from $runNumber"
-        printf "\n************************************\n"
-
         # Check to see if all subruns should be analyzed, or just one
         # Sort all sub-runs in the specified run directory
         for f in "../rawData/runs/$runNumber/tree.root";
         do
-            outputDirectoryName="../analyzedData/runs/$runNumber"
-            analyze "$f" "$outputDirectoryName"
+            if [[ $recreateHistos = true ]]
+            then
+                printf "\n************************************"
+                printf "\n     Reading data from $runNumber"
+                printf "\n************************************\n"
+
+                outputDirectoryName="../analyzedData/runs/$runNumber"
+                analyze "$f" "$outputDirectoryName"
+            fi
         done
 
     done < runsToSort.txt

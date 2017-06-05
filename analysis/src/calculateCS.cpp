@@ -18,10 +18,13 @@
 using namespace std;
 
 const double REFERENCE_CS = 229.4;
-const double REFERENCE_ATOMS_IN_TARGET = 2.91e23;
-const double Sn112_ATOMS_IN_TARGET = 2.976e22;
+const double REFERENCE_NUMBER_OF_ATOMS = 2.91e23;
+const double Sn112_NUMBER_OF_ATOMS = 2.676e22;
+const double Sn124_NUMBER_OF_ATOMS = 2.697e22;
+double TARGET_NUMBER_OF_ATOMS;
 const double REFERENCE_4M_COUNTS = 6596; // integral gates are 1194->1260
 const double REFERENCE_6M_COUNTS = 4258; // integral gates are 780->885
+double REFERENCE_HISTO_COUNTS = 0;
 
 void readTargetDataFile(TargetData& targetData, string fileName)
 {
@@ -68,6 +71,7 @@ struct CSPrereqs
 
 struct CrossSection
 {
+    string target;
     double angle;
     double value;
     double error;
@@ -81,7 +85,7 @@ vector<RunConfig> getRunConfig(string detectorName)
     ifstream dataFile(targetOrderLocation.c_str());
     if(!dataFile.is_open())
     {
-        std::cout << "Failed to find target order data in " << targetOrderLocation << std::endl;
+        cerr << "Failed to find target order data in " << targetOrderLocation << std::endl;
         exit(1);
     }
 
@@ -138,7 +142,7 @@ vector<unsigned int> getIntegralBounds(string integralBoundsFileName)
     ifstream file(integralBoundsFileName.c_str());
     if(!file.is_open())
     {
-        std::cout << "Failed to find integral bounds data in " << integralBoundsFileName << std::endl;
+        cerr << "Failed to find integral bounds data in " << integralBoundsFileName << std::endl;
         exit(1);
     }
 
@@ -158,9 +162,88 @@ vector<unsigned int> getIntegralBounds(string integralBoundsFileName)
     return integralBounds;
 }
 
+void outputCrossSections(const vector<CrossSection>& crossSections,
+        string targetName, string detectorName)
+{
+    // read header material we should print at the start of output files
+    string headerFileName = "configuration/output/" + targetName + "/" + detectorName + ".txt";
+    ifstream headerFile(headerFileName);
+
+    string dummy;
+    getline(headerFile, dummy);
+    getline(headerFile, dummy);
+
+    vector<string> headerMaterial;
+
+    while(getline(headerFile,dummy))
+    {
+        headerMaterial.push_back(dummy);
+    }
+
+    string outputFileName = "experimentalData/" + targetName + "_11_" + detectorName + ".txt";
+    ofstream outputFile(outputFileName);
+
+    for(string headerLine : headerMaterial)
+    {
+        outputFile << headerLine << endl;
+    }
+
+    for(CrossSection cs : crossSections)
+    {
+        if(cs.target == targetName)
+        {
+            outputFile << setw(11) << left << cs.angle << " " <<
+                setw(11) << cs.value << " " <<
+                setw(11) << cs.error << endl;
+        }
+    }
+}
+
+// convert a lab angle (in degrees) to a center-of-mass angle (in degrees),
+// ranging from 0-180
+// (see "Classical Dynamics of Particles and Systems", 3rd Edition, by Marion
+// and Thornton, page 310)
+double labAngleToCMAngle(double labAngle, double massOfProjectile, double massOfTarget)
+{
+    double tanCMAngle = sin(labAngle*(M_PI/180))/(cos(labAngle*M_PI/180)-massOfProjectile/massOfTarget);
+    double cmAngle = (180/M_PI)*atan2(tanCMAngle, 1);
+
+    // translate output range from (-90,90) to (0,180)
+    if(cmAngle<0)
+    {
+        cmAngle += 180;
+    }
+
+    return cmAngle;
+}
+
+// calculate the Jacobean for the transformation from the lab frame to the center-of-mass frame
+// (see "Classical Dynamics of Particles and Systems", 3rd Edition, by Marion
+// and Thornton, page 326)
+double labToCMJacobean(double labAngle, double massOfProjectile, double massOfTarget)
+{
+    double labRadians = labAngle*(M_PI/180);
+    double massRatio = massOfProjectile/massOfTarget;
+
+    double numerator = sqrt(1-pow(massRatio*sin(labRadians),2));
+    double denominator = pow(massRatio*cos(labRadians) + numerator,2);
+
+    return numerator/denominator;
+}
+
 int main(int, char** argv)
 {
     string detectorName = argv[1];
+
+    if(detectorName=="4M")
+    {
+        REFERENCE_HISTO_COUNTS = REFERENCE_4M_COUNTS;
+    }
+
+    if(detectorName=="6M")
+    {
+        REFERENCE_HISTO_COUNTS = REFERENCE_6M_COUNTS;
+    }
 
     vector<RunConfig> allConfigs = getRunConfig(detectorName);
     vector<CSPrereqs> allCSPrereqs;
@@ -249,51 +332,88 @@ int main(int, char** argv)
     // for each angle, find target and blank and perform the cross section
     // calculation
     vector<CrossSection> crossSections;
+
+    double TARGET_MASS;
+    const double NEUTRON_MASS = 1.008665; // in unified atomic mass units
+
     for(int i=0; i<combinedCSPrereqs.size(); i++)
     {
-        if(combinedCSPrereqs[i].runConfig.targetName == "Sn112")
+        CrossSection cs;
+
+        if(combinedCSPrereqs[i].runConfig.targetName=="Sn112")
         {
-            CrossSection cs;
-            cs.angle = combinedCSPrereqs[i].runConfig.angle;
+           TARGET_NUMBER_OF_ATOMS = Sn112_NUMBER_OF_ATOMS; 
+           cs.target = "Sn112";
+           TARGET_MASS = 111.905; // in unified atomic mass units
+        }
 
-            for(int j=i+1; j<combinedCSPrereqs.size(); j++)
+        else if(combinedCSPrereqs[i].runConfig.targetName=="Sn124")
+        {
+            TARGET_NUMBER_OF_ATOMS = Sn124_NUMBER_OF_ATOMS; 
+            cs.target = "Sn124";
+            TARGET_MASS = 123.905; // in unified atomic mass units
+        }
+
+        // convert from lab angle to CM angle
+        double labAngle = combinedCSPrereqs[i].runConfig.angle;
+        cs.angle = labAngleToCMAngle(labAngle, NEUTRON_MASS, TARGET_MASS);
+        
+        for(int j=0; j<combinedCSPrereqs.size(); j++)
+        {
+            if(
+                    (combinedCSPrereqs[j].runConfig.angle==
+                     combinedCSPrereqs[i].runConfig.angle) &&
+                    (combinedCSPrereqs[j].runConfig.targetName == "blank"))
             {
+                // calculate CS
                 if(
-                        (combinedCSPrereqs[j].runConfig.angle==
-                         combinedCSPrereqs[i].runConfig.angle) &&
-                        (combinedCSPrereqs[j].runConfig.targetName == "blank"))
+                        (combinedCSPrereqs[i].histoCounts<=0) ||
+                        (combinedCSPrereqs[j].histoCounts<=0) ||
+                        (combinedCSPrereqs[i].BCICounts<=0) ||
+                        (combinedCSPrereqs[j].BCICounts<=0))
                 {
-                    // calculate CS
-                    if(
-                            (combinedCSPrereqs[i].histoCounts<=0) ||
-                            (combinedCSPrereqs[j].histoCounts<=0) ||
-                            (combinedCSPrereqs[i].BCICounts<=0) ||
-                            (combinedCSPrereqs[j].BCICounts<=0))
-                    {
-                        cout << "Error: tried to calculate CS for angle = " <<
-                            combinedCSPrereqs[i].runConfig.angle << ", but " <<
-                            " flux or histogram counts was not positive definite." << endl;
-                        break;
-                    }
-
-                    double difference =
-                        combinedCSPrereqs[i].histoCounts-
-                        combinedCSPrereqs[j].histoCounts*
-                        (combinedCSPrereqs[i].BCICounts/
-                         combinedCSPrereqs[j].BCICounts);
-
-                    cs.value = ((double)difference/reference.histoCounts)*
-                        ((double)reference.BCICounts/combinedCSPrereqs[i].BCICounts)*
-                        (REFERENCE_ATOMS_IN_TARGET/Sn112_ATOMS_IN_TARGET)*
-                        REFERENCE_CS;
-
-                    cs.error = 0;
+                    cerr << "Error: tried to calculate CS for angle = " <<
+                        combinedCSPrereqs[i].runConfig.angle << ", but " <<
+                        " flux or histogram counts was not positive definite." << endl;
+                    break;
                 }
+
+                double difference =
+                    combinedCSPrereqs[i].histoCounts-
+                    (double)combinedCSPrereqs[j].histoCounts*
+                    ((double)combinedCSPrereqs[i].BCICounts/
+                     combinedCSPrereqs[j].BCICounts);
+
+                // calculate differential cross section in lab frame
+                cs.value = ((double)difference/REFERENCE_HISTO_COUNTS)*
+                    ((double)reference.BCICounts/combinedCSPrereqs[i].BCICounts)*
+                    (REFERENCE_NUMBER_OF_ATOMS/TARGET_NUMBER_OF_ATOMS)*
+                    REFERENCE_CS;
+
+                // convert lab frame cross section to center-of-mass frame via
+                // Jacobean
+                cs.value *= labToCMJacobean(labAngle, NEUTRON_MASS, TARGET_MASS);
+
+                cs.error = 0;
+                
+                crossSections.push_back(cs);
+
+                break;
             }
 
-            cout << "angle = " << cs.angle << ", CS = " << cs.value << endl;
+            if(j+1==combinedCSPrereqs.size())
+            {
+                cerr << "Error: didn't find blank target run for angle " <<
+                    cs.angle << ", target " <<
+                    combinedCSPrereqs[i].runConfig.targetName <<
+                    "; cannot compute cross section." << endl;
+                break;
+            }
         }
     }
+
+    outputCrossSections(crossSections, "Sn112", detectorName);
+    outputCrossSections(crossSections, "Sn124", detectorName);
 
     return 0;
 }
