@@ -26,6 +26,8 @@ const double REFERENCE_4M_COUNTS = 6596; // integral gates are 1194->1260
 const double REFERENCE_6M_COUNTS = 4258; // integral gates are 780->885
 double REFERENCE_HISTO_COUNTS = 0;
 
+const unsigned int BCI_REFERENCE_VALUE = 500000;
+
 void readTargetDataFile(TargetData& targetData, string fileName)
 {
     ifstream file(fileName.c_str());
@@ -217,10 +219,10 @@ double labAngleToCMAngle(double labAngle, double massOfProjectile, double massOf
     return cmAngle;
 }
 
-// calculate the Jacobean for the transformation from the lab frame to the center-of-mass frame
+// calculate the Jacobian for the transformation from the lab frame to the center-of-mass frame
 // (see "Classical Dynamics of Particles and Systems", 3rd Edition, by Marion
 // and Thornton, page 326)
-double labToCMJacobean(double labAngle, double massOfProjectile, double massOfTarget)
+double labToCMJacobian(double labAngle, double massOfProjectile, double massOfTarget)
 {
     double labRadians = labAngle*(M_PI/180);
     double massRatio = massOfProjectile/massOfTarget;
@@ -268,7 +270,7 @@ int main(int, char** argv)
 
         // read histogram counts for each run
         string histoFileName = "../analyzedData/runs/" + to_string(rc.runNumber) + "/histos.root";
-        TFile histoFile(histoFileName.c_str());
+        TFile histoFile(histoFileName.c_str(),"UPDATE");
 
         string histoName = detectorName + "TDC";
         TH1I* histo = (TH1I*)histoFile.Get(histoName.c_str());
@@ -278,6 +280,12 @@ int main(int, char** argv)
         csPrereqs.histoCounts = histo->Integral(integralBounds[0]-lowBin,integralBounds[1]-lowBin);
 
         allCSPrereqs.push_back(csPrereqs);
+
+        // produce BCI-scaled histograms for this run
+        string scaledHistoName = histoName + "Scaled";
+        TH1I* scaledHisto = (TH1I*) histo->Clone(scaledHistoName.c_str());
+        scaledHisto->Scale((double)BCI_REFERENCE_VALUE/sd.BCI);
+        scaledHisto->Write();
     }
 
     // locate reference run
@@ -391,8 +399,8 @@ int main(int, char** argv)
                     REFERENCE_CS;
 
                 // convert lab frame cross section to center-of-mass frame via
-                // Jacobean
-                cs.value *= labToCMJacobean(labAngle, NEUTRON_MASS, TARGET_MASS);
+                // Jacobian
+                cs.value *= labToCMJacobian(labAngle, NEUTRON_MASS, TARGET_MASS);
 
                 cs.error = 0;
                 
