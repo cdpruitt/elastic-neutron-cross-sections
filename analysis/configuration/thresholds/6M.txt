@@ -1,0 +1,11 @@
+PSD Threshold
+1300           
+
+Pulse Height Threshold
+350
+
+TDC LowThreshold
+550   
+
+TDC HighThreshold
+600   

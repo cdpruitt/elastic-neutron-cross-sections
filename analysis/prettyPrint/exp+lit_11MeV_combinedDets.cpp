@@ -1,4 +1,3 @@
-void literatureSn_11MeV()
 {
     TStyle * style = (TStyle*)gROOT->FindObject("graphStyle");
 
@@ -39,8 +38,7 @@ void literatureSn_11MeV()
     gPad->SetTicky(2);
 
     string litFileName = "../literatureData/literatureData.root";
-    string expSn112FileName = "../experimentalData/Sn112/crossSections.root";
-    string expSn124FileName = "../experimentalData/Sn124/crossSections.root";
+    string expFileName = "../experimentalData/experimentalData.root";
 
     // read in literature graphs
     TFile* litFile = new TFile(litFileName.c_str(),"READ");
@@ -58,25 +56,24 @@ void literatureSn_11MeV()
     TGraphErrors* Sn124Graph = (TGraphErrors*)litFile->Get(Sn124GraphName.c_str());
 
     // read in experimental graphs
-    TFile* expSn112File = new TFile(expSn112FileName.c_str(),"READ");
-    TFile* expSn124File = new TFile(expSn124FileName.c_str(),"READ");
+    TFile* expFile = new TFile(expFileName.c_str(),"READ");
 
-    string ExpSn112GraphName = "Exp. Sn112";
-    string ExpSn124GraphName = "Exp. Sn124";
+    string expSn112_6MGraphName = "Sn112(n,n) [11 MeV, 6M]";
+    string expSn124_6MGraphName = "Sn124(n,n) [11 MeV, 6M]";
 
-    TGraphErrors* ExpSn112Graph = (TGraphErrors*)expSn112File->Get(ExpSn112GraphName.c_str());
-    TGraphErrors* ExpSn124Graph = (TGraphErrors*)expSn124File->Get(ExpSn124GraphName.c_str());
+    TGraphErrors* ExpSn112_6MGraph = (TGraphErrors*)expFile->Get(expSn112_6MGraphName.c_str());
+    TGraphErrors* ExpSn124_6MGraph = (TGraphErrors*)expFile->Get(expSn124_6MGraphName.c_str());
 
     // create multigraph for holding all graphs
     TMultiGraph *mg = new TMultiGraph();
 
     mg->Add(Sn124Graph);
-    mg->Add(Sn120Graph);
-    mg->Add(Sn122Graph);
-    mg->Add(Sn118Graph);
-    mg->Add(Sn116Graph);
-    mg->Add(ExpSn124Graph);
-    mg->Add(ExpSn112Graph);
+    //mg->Add(Sn120Graph);
+    //mg->Add(Sn122Graph);
+    //mg->Add(Sn118Graph);
+    //mg->Add(Sn116Graph);
+    mg->Add(ExpSn112_6MGraph);
+    mg->Add(ExpSn124_6MGraph);
 
     // Set graph point and line characteristics
     Sn116Graph->SetLineColor(kRed-9);
@@ -107,68 +104,59 @@ void literatureSn_11MeV()
     Sn122Graph->SetMarkerStyle(8);
     Sn122Graph->SetMarkerSize(2);
 
-    Sn124Graph->SetLineColor(kRed+4);
-    Sn124Graph->SetLineWidth(5);
-    Sn124Graph->SetLineStyle(0);
-    Sn124Graph->SetMarkerColor(kRed+4);
+    Sn124Graph->SetLineColor(kBlack);
+    Sn124Graph->SetLineWidth(1);
+    Sn124Graph->SetLineStyle(1);
+    Sn124Graph->SetMarkerColor(kBlack);
     Sn124Graph->SetMarkerStyle(8);
     Sn124Graph->SetMarkerSize(2);
 
-    ExpSn124Graph->SetLineColor(kBlue);
-    ExpSn124Graph->SetLineWidth(5);
-    ExpSn124Graph->SetLineStyle(0);
-    ExpSn124Graph->SetMarkerColor(kBlue);
-    ExpSn124Graph->SetMarkerStyle(33);
-    ExpSn124Graph->SetMarkerSize(4);
+    ExpSn112_6MGraph->SetLineColor(kRed-9);
+    ExpSn112_6MGraph->SetLineWidth(1);
+    ExpSn112_6MGraph->SetLineStyle(1);
+    ExpSn112_6MGraph->SetMarkerColor(kRed-9);
+    ExpSn112_6MGraph->SetMarkerStyle(29);
+    ExpSn112_6MGraph->SetMarkerSize(4);
 
-    ExpSn112Graph->SetLineColor(kBlue-10);
-    ExpSn112Graph->SetLineWidth(5);
-    ExpSn112Graph->SetLineStyle(0);
-    ExpSn112Graph->SetMarkerColor(kBlue-10);
-    ExpSn112Graph->SetMarkerStyle(33);
-    ExpSn112Graph->SetMarkerSize(4);
+    ExpSn124_6MGraph->SetLineColor(kRed+1);
+    ExpSn124_6MGraph->SetLineWidth(1);
+    ExpSn124_6MGraph->SetLineStyle(1);
+    ExpSn124_6MGraph->SetMarkerColor(kRed+1);
+    ExpSn124_6MGraph->SetMarkerStyle(29);
+    ExpSn124_6MGraph->SetMarkerSize(4);
+
+    mg->Draw("apl");
 
     // X-axis parameters
-    Sn116Graph->GetXaxis()->SetTitle("Angle (degrees, CM)");
-    Sn116Graph->GetXaxis()->SetTitleSize(0.05);
-    Sn116Graph->GetXaxis()->SetTitleFont(2);
-    Sn116Graph->GetXaxis()->SetTitleOffset(1.4);
-    Sn116Graph->GetXaxis()->CenterTitle();
+    mg->GetXaxis()->SetTitle("Angle (degrees, CM)");
+    mg->GetXaxis()->SetTitleSize(0.05);
+    mg->GetXaxis()->SetTitleFont(2);
+    mg->GetXaxis()->SetTitleOffset(1.4);
+    mg->GetXaxis()->CenterTitle();
 
-    Sn116Graph->GetXaxis()->SetLabelOffset(0.01);
-    Sn116Graph->GetXaxis()->SetLabelSize(0.05);
-    Sn116Graph->GetXaxis()->SetLabelFont(2);
+    mg->GetXaxis()->SetLabelOffset(0.01);
+    mg->GetXaxis()->SetLabelSize(0.05);
+    mg->GetXaxis()->SetLabelFont(2);
 
-    Sn116Graph->GetXaxis()->SetNdivisions(10);
-    Sn116Graph->GetXaxis()->SetTickLength(0.03);
+    mg->GetXaxis()->SetNdivisions(10);
+    mg->GetXaxis()->SetTickLength(0.03);
 
     // Y-axis parameters
-    Sn116Graph->GetYaxis()->SetTitle("#frac{d#sigma}{d#Omega} (mB/sr)");
-    Sn116Graph->GetYaxis()->SetTitleSize(0.06);
-    Sn116Graph->GetYaxis()->SetTitleFont(2);
-    Sn116Graph->GetYaxis()->SetTitleOffset(1.1);
-    Sn116Graph->GetYaxis()->CenterTitle();
+    mg->GetYaxis()->SetTitle("#frac{d#sigma}{d#Omega} (mb/sr)");
+    mg->GetYaxis()->SetTitleSize(0.06);
+    mg->GetYaxis()->SetTitleFont(2);
+    mg->GetYaxis()->SetTitleOffset(1.1);
+    mg->GetYaxis()->CenterTitle();
 
-    Sn116Graph->GetYaxis()->SetLabelOffset(0.01);
-    Sn116Graph->GetYaxis()->SetLabelSize(0.05);
+    mg->GetYaxis()->SetLabelOffset(0.01);
+    mg->GetYaxis()->SetLabelSize(0.05);
 
-    Sn116Graph->GetYaxis()->SetLabelFont(2);
-    Sn116Graph->GetYaxis()->SetNdivisions(10);
-    Sn116Graph->GetYaxis()->SetTickLength(0.02);
-
-    mg->Draw("ap");
-    //Sn116Graph->Draw("");
-    //Sn124Graph->Draw("same");
-    //Sn122Graph->Draw("same");
-    //Sn120Graph->Draw("same");
-    //Sn118Graph->Draw("same");
-    //Sn116Graph->Draw("same");
-
-    //ExpSn124Graph->Draw("same");
-    //ExpSn112Graph->Draw("same");
-
+    mg->GetYaxis()->SetLabelFont(2);
+    mg->GetYaxis()->SetNdivisions(10);
+    mg->GetYaxis()->SetTickLength(0.02);
+    
+    mg->GetYaxis()->SetRangeUser(1,10000);
     gPad->SetLogy(1);
-    Sn116Graph->GetYaxis()->SetRangeUser(0,9);
 
     //TLatex latex;
     //latex.SetNDC();
@@ -179,18 +167,18 @@ void literatureSn_11MeV()
     //latex.DrawLatex(0.32,0.4,"C");
 
     // Define legend format and contents
-    TLegend *legend = new TLegend(0.75,0.6,0.85,0.85);
+    TLegend *legend = new TLegend(0.7,0.65,0.95,0.9);
     //legend->SetHeader("data","C");
     legend->SetTextSize(0.03);
-    legend->AddEntry(Sn116Graph,"{}^{116}Sn","l");
-    legend->AddEntry(Sn118Graph,"{}^{118}Sn","l");
-    legend->AddEntry(Sn120Graph,"{}^{120}Sn","l");
-    legend->AddEntry(Sn122Graph,"{}^{122}Sn","l");
-    legend->AddEntry(Sn124Graph,"{}^{124}Sn","l");
-    legend->AddEntry(ExpSn112Graph,"Exp {}^{112}Sn","l");
-    legend->AddEntry(ExpSn124Graph,"Exp {}^{124}Sn","l");
+    //legend->AddEntry(Sn116Graph,"{}^{116}Sn","p");
+    //legend->AddEntry(Sn118Graph,"{}^{118}Sn","p");
+    //legend->AddEntry(Sn120Graph,"{}^{120}Sn","p");
+    //legend->AddEntry(Sn122Graph,"{}^{122}Sn","p");
+    legend->AddEntry(Sn124Graph,"Lit {}^{124}Sn, Rapaport","p");
+    legend->AddEntry(ExpSn112_6MGraph,"Exp {}^{112}Sn","p");
+    legend->AddEntry(ExpSn124_6MGraph,"Exp {}^{124}Sn","p");
 
     legend->Draw();
 
-    c1->Update();
+    c->Update();
 }

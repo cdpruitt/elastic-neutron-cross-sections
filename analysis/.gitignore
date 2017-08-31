@@ -1,4 +1,7 @@
 *
 !*.*
+!*/
+!Makefile
+plots/
 experimentalData/
-literatureData/
+runsToSort.txt
