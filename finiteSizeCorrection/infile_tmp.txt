@@ -1,0 +1,8 @@
+0.5 0.5 0 15 d2o 1
+
+
+
+guide:
+a b c nubar exptname runno
+
+if it's a d2o simulation, nubar is the beam energy (as long as it's very close to 6.1 MeV, other energies not implemented yet)
