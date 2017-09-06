@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/cole/PhDProgram/softwareAndUtilities/neutronElastic-geant
+CMAKE_SOURCE_DIR = /home/cole/PhDProgram/nuclearResearch/elastic-neutron-cross-sections/finiteSizeCorrection
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/cole/PhDProgram/softwareAndUtilities/neutronElastic-geant
+CMAKE_BINARY_DIR = /home/cole/PhDProgram/nuclearResearch/elastic-neutron-cross-sections/finiteSizeCorrection
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -124,9 +124,9 @@ install/local/fast: install/local
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/cole/PhDProgram/softwareAndUtilities/neutronElastic-geant/CMakeFiles /home/cole/PhDProgram/softwareAndUtilities/neutronElastic-geant/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cole/PhDProgram/nuclearResearch/elastic-neutron-cross-sections/finiteSizeCorrection/CMakeFiles /home/cole/PhDProgram/nuclearResearch/elastic-neutron-cross-sections/finiteSizeCorrection/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/cole/PhDProgram/softwareAndUtilities/neutronElastic-geant/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cole/PhDProgram/nuclearResearch/elastic-neutron-cross-sections/finiteSizeCorrection/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

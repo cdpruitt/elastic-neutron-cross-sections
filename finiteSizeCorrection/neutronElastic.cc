@@ -88,21 +88,10 @@ int main(int argc,char* argv[])
 #ifdef G4UI_USE
   G4UIExecutive * ui = new G4UIExecutive(argc,argv);
 #ifdef G4VIS_USE
-  //UImanager->ApplyCommand("/control/execute vis.mac");     
+  UImanager->ApplyCommand("/control/execute vis.mac");     
 #endif
 
-  if(argc>1)
-  {
-      G4cout << argv[1] << G4endl;
-      UImanager->ApplyCommand(Form("/control/execute %s",argv[1]));
-      UImanager->ApplyCommand("exit");
-  }
-
-  else
-  {
-      ui->SessionStart();
-  }
-
+  ui->SessionStart();
   delete ui;
 #endif
      

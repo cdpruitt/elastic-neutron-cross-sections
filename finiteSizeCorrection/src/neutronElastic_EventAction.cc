@@ -112,7 +112,10 @@ void neutronElastic_EventAction::EndOfEventAction(const G4Event* evt)
             }
 
             //use earliest hit time or biggest LO hit time here
-            for(int i = 0; i < (int)curHitTime.size(); i++) curHitTime[i] = earliestHitTime[i];
+            for(int i = 0; i < (int)curHitTime.size(); i++)
+            {
+                curHitTime[i] = earliestHitTime[i];
+            }
         }
     }
 }

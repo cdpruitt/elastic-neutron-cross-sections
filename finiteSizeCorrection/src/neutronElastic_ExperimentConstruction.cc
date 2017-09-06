@@ -75,8 +75,10 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
             targetMaterial,
             "targetLog");
 
+    G4RotationMatrix* targetRotation = new G4RotationMatrix();
+    targetRotation->rotateX(90*deg);
     G4PVPlacement* target = new G4PVPlacement(
-            new G4RotationMatrix(),
+            targetRotation,
             G4ThreeVector(0,0,0),
             targetLog,
             "target",
