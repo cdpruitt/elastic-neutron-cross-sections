@@ -27,6 +27,8 @@ using namespace std;
 const G4double DET_DISTANCE = 375*cm;
 const G4double DET_ANGLE = 30*deg;
 
+const G4double ORIGIN_OFFSET = 0*cm;
+
 class neutronElastic_ExperimentConstruction : public G4VUserDetectorConstruction
 {
     public:

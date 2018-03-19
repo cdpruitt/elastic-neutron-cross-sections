@@ -17,9 +17,9 @@
 #include "TH1F.h"
 #include "TProfile2D.h"
 
-const double BEAM_SPOT_DIAMETER = 0;   // in cm
-const double BEAM_START_UNCERTAINTY = 0; // in cm
-const double BEAM_START_POSITION = -2; // in cm
+const G4double BEAM_SPOT_DIAMETER = 0*cm;   // in cm
+const G4double BEAM_START_UNCERTAINTY = 0*cm; // in cm
+const G4double BEAM_START_POSITION = -25*cm; // in cm
 
 class neutronElastic_Primary : public G4VUserPrimaryGeneratorAction
 {

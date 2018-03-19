@@ -1,3 +1,4 @@
+#include "neutronElastic_ExperimentConstruction.hh"
 #include "neutronElastic_Primary.hh"
 #include <string>
 
@@ -24,6 +25,7 @@ neutronElastic_Primary::neutronElastic_Primary(G4String filename)
     gRandom = rand;
     angularDistribution = new TF1( //starting angular distribution
             "angularDistribution", // name of angular distribution
+            //"0",
             "[0]*TMath::Gaus(x,[1],[2])",
             -pi/2,
             pi/2
@@ -73,9 +75,9 @@ void neutronElastic_Primary::GeneratePrimaries(G4Event* anEvent)
 
     //pick initial z, assume uniformly distributed over the target
     double zz;
-    zz = BEAM_START_POSITION + BEAM_START_UNCERTAINTY*(rand->Rndm()-0.5);
+    zz = ORIGIN_OFFSET + BEAM_START_POSITION + BEAM_START_UNCERTAINTY*(rand->Rndm()-0.5);
 
-    particleGun->SetParticlePosition(G4ThreeVector(xx*cm,yy*cm,zz*cm));
+    particleGun->SetParticlePosition(G4ThreeVector(xx,yy,zz));
 
     // get angle
     double theta, phi, nen;

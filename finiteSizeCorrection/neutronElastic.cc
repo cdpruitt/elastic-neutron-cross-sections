@@ -17,6 +17,7 @@
 #include "neutronElastic_TrackingAction.hh"
 #include "G4UserSpecialCuts.hh"
 #include "G4NeutronTrackingCut.hh"
+#include "G4ScoringManager.hh"
 
 #include "G4SystemOfUnits.hh" // including this header is a new requirement for GEANT-defined units for GEANT 10.0+
 
@@ -49,6 +50,9 @@ int main(int argc,char* argv[])
   // create the experimental setup and register w/ run manager
   neutronElastic_ExperimentConstruction* experiment = new neutronElastic_ExperimentConstruction();
   runManager->SetUserInitialization(experiment);
+
+  // create scorer for reading out relevant detector events
+  G4ScoringManager* scoringManager = G4ScoringManager::GetScoringManager();
   
   // register the appropriate physics w/ run manager
   G4VModularPhysicsList* physicsList = new QGSP_BERT_HP(1);

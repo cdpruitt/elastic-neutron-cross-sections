@@ -1,6 +1,4 @@
-1 0 0.25 15 d2o 1
-
-
+1 0 0.0025 15 d2o 1
 
 guide:
 a b c nubar exptname runno

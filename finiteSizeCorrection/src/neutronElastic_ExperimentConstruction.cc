@@ -1,4 +1,5 @@
 #include "neutronElastic_ExperimentConstruction.hh"
+//#include "../include/MyDetector.hh"
 
 using namespace CLHEP;
 
@@ -42,7 +43,7 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
     G4ThreeVector detPosition = G4ThreeVector(
             DET_DISTANCE*sin(DET_ANGLE), // x-direction
             0,                                 // y-direction
-            DET_DISTANCE*cos(DET_ANGLE)  // z-direction
+            ORIGIN_OFFSET+DET_DISTANCE*cos(DET_ANGLE)  // z-direction
             );
 
     G4RotationMatrix* detRotation = new G4RotationMatrix();
@@ -58,6 +59,14 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
             worldVolume_log, // name of volume in which to place detector
             false,           // no boolean operations (?)
             0);                // new physical volume copy number
+
+    G4MultiFunctionalDetector* detectorScorer =
+        new G4MultiFunctionalDetector("detectorScorer");
+    G4SDManager::GetSDMpointer()->AddNewDetector(detectorScorer);
+    detector_log->SetSensitiveDetector(detectorScorer);
+    G4VPrimitiveSensitivity* totalSurfaceCurrent = new G4PSFlatSurfaceCurrent(
+            "TotalSurfaceCurrent", 1);
+    detectorScorer->Register(totalSurfaceCurrent);
 
     // create the target
     G4Tubs* targetShape = new G4Tubs(
@@ -77,9 +86,10 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
 
     G4RotationMatrix* targetRotation = new G4RotationMatrix();
     targetRotation->rotateX(90*deg);
+
     G4PVPlacement* target = new G4PVPlacement(
             targetRotation,
-            G4ThreeVector(0,0,0),
+            G4ThreeVector(0,0,ORIGIN_OFFSET),
             targetLog,
             "target",
             worldVolume_log,
