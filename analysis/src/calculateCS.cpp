@@ -14,6 +14,7 @@
 
 #include "../include/DataStructures.h"
 #include "../include/ScalerData.h"
+#include "../include/RunConfig.h"
 
 using namespace std;
 
@@ -25,6 +26,7 @@ double TARGET_NUMBER_OF_ATOMS;
 const double REFERENCE_4M_COUNTS = 6596; // integral gates are 1194->1260
 const double REFERENCE_6M_COUNTS = 4258; // integral gates are 780->885
 double REFERENCE_HISTO_COUNTS = 0;
+const double TIME_CALIBRATION_FACTOR = 5.668 // ch/ns
 
 const unsigned int BCI_REFERENCE_VALUE = 500000;
 
@@ -51,18 +53,6 @@ void readTargetDataFile(TargetData& targetData, string fileName)
     }
 }
 
-struct RunConfig
-{
-    RunConfig() {}
-    RunConfig(vector<string> configData) :
-        runNumber(stoi(configData[0])), targetName(configData[1]),
-        angle(stod(configData[2])) {}
-
-    int runNumber;
-    string targetName;
-    double angle;
-};
-
 struct CSPrereqs
 {
     CSPrereqs() {}
@@ -78,66 +68,6 @@ struct CrossSection
     double value;
     double error;
 };
-
-// Determine the angle and target for a given run
-vector<RunConfig> getRunConfig(string detectorName)
-{
-    string targetOrderLocation = "configuration/runConfig.txt";
-
-    ifstream dataFile(targetOrderLocation.c_str());
-    if(!dataFile.is_open())
-    {
-        cerr << "Failed to find target order data in " << targetOrderLocation << std::endl;
-        exit(1);
-    }
-
-    string str;
-    vector<RunConfig> allRuns;
-
-    while(getline(dataFile,str))
-    {
-        // ignore comments in data file
-        string delimiter = "-";
-        string token = str.substr(0,str.find(delimiter));
-        if(!atoi(token.c_str()))
-        {
-            // This line starts with a non-integer and is thus a comment; ignore
-            continue;
-        }
-
-        // parse data lines into space-delimited tokens
-        vector<string> tokens;
-        istringstream iss(str);
-        copy(istream_iterator<string>(iss),
-                istream_iterator<string>(),
-                back_inserter(tokens));
-
-        vector<string> singleDetConfig;
-
-        singleDetConfig.push_back(tokens[0]);
-        singleDetConfig.push_back(tokens[1]);
-
-        if(detectorName=="4M")
-        {
-            singleDetConfig.push_back(tokens[2]);
-        }
-
-        else if(detectorName=="6M")
-        {
-            singleDetConfig.push_back(tokens[3]);
-        }
-
-        else
-        {
-            cerr << "Error: attempted to read run config, but detector named " << detectorName << " is not an implemented option." << endl;
-            exit(1);
-        }
-
-        allRuns.push_back(singleDetConfig);
-    }
-
-    return allRuns;
-}
 
 vector<unsigned int> getIntegralBounds(string integralBoundsFileName)
 {
@@ -162,6 +92,25 @@ vector<unsigned int> getIntegralBounds(string integralBoundsFileName)
     integralBounds.push_back(highBound);
 
     return integralBounds;
+}
+
+int getIntegralBoundsCorrection(string fileName)
+{
+    ifstream file(fileName.c_str());
+    if(!file.is_open())
+    {
+        cerr << "Failed to find integral bounds data in " << fileName << std::endl;
+        exit(1);
+    }
+
+    int integralBoundsCorrection;
+
+    string dummy;
+    getline(file,dummy);
+
+    file >> integralBoundsCorrection;
+
+    return (int)TIME_CALIBRATION_FACTOR*integralBoundsCorrection;
 }
 
 void outputCrossSections(const vector<CrossSection>& crossSections,
@@ -253,10 +202,10 @@ int main(int, char** argv)
     CSPrereqs reference; // for reference n,p target
 
     string integralBoundsFileName =
-        "configuration/gates/" + detectorName + ".txt";
+            "configuration/gates/" + detectorName + ".txt";
 
-    vector<unsigned int> integralBounds =
-        getIntegralBounds(integralBoundsFileName);
+        vector<unsigned int> integralBounds =
+            getIntegralBounds(integralBoundsFileName);
 
     for(RunConfig rc : allConfigs)
     {
@@ -275,9 +224,15 @@ int main(int, char** argv)
         string histoName = detectorName + "TDC";
         TH1I* histo = (TH1I*)histoFile.Get(histoName.c_str());
 
+        string integralBoundsCorrectionFileName =
+            "configuration/gates/" + rc.targetName + "/" + detectorName + "/" + runConfig.angle + ".txt";
+
+        int integralBoundsCorrection =
+            getIntegralBoundsCorrection(integralBoundsCorrectionFileName);
+
         // extract counts from histo based on histogram gates
         unsigned int lowBin = histo->GetBinLowEdge(0);
-        csPrereqs.histoCounts = histo->Integral(integralBounds[0]-lowBin,integralBounds[1]-lowBin);
+        csPrereqs.histoCounts = histo->Integral(integralBounds[0]-integralBoundsCorrection-lowBin,integralBounds[1]-integralBoundsCorrection-lowBin);
 
         allCSPrereqs.push_back(csPrereqs);
 
@@ -347,6 +302,12 @@ int main(int, char** argv)
     for(int i=0; i<combinedCSPrereqs.size(); i++)
     {
         CrossSection cs;
+
+        // start by looking at runs with targets
+        if(combinedCSPrereqs[i].runConfig.targetName=="blank")
+        {
+            continue;
+        }
 
         if(combinedCSPrereqs[i].runConfig.targetName=="Sn112")
         {
