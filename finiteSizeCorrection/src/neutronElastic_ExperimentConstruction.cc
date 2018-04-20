@@ -1,10 +1,14 @@
 #include "neutronElastic_ExperimentConstruction.hh"
-//#include "../include/MyDetector.hh"
+#include "G4MultiFunctionalDetector.hh"
+#include "G4PSFlatSurfaceCurrent.hh"
+#include "G4VSensitiveDetector.hh"
+#include "mySensitiveDetector.hh"
 
 using namespace CLHEP;
 
 neutronElastic_ExperimentConstruction::neutronElastic_ExperimentConstruction()
-    :  worldVolume_log(0),
+    :  G4VUserDetectorConstruction(),
+    worldVolume_log(0),
     worldVolume_phys(0)
 {
     materialFactory = new MaterialFactory();
@@ -51,22 +55,27 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
 
     G4LogicalVolume * detector_log = detConstruction->GetADetector();
 
-    G4PVPlacement* detector = new G4PVPlacement(
+    /*G4VSensitiveDetector* detectorScorer =
+        new mySensitiveDetector("scorer");
+    G4SDManager* SDMan = G4SDManager::GetSDMpointer();
+    SDMan->AddNewDetector(detectorScorer);
+    detector_log->SetSensitiveDetector(detectorScorer);
+    */
+
+    /*G4PVPlacement* detector = new G4PVPlacement(
             detRotation,     // detector rotation
             detPosition,     // detector position vector
             detector_log,    // logical volume used to instantiate this detector
             "detector",      // name of detector
             worldVolume_log, // name of volume in which to place detector
             false,           // no boolean operations (?)
-            0);                // new physical volume copy number
+            0);              // new physical volume copy number
+            */
 
-    G4MultiFunctionalDetector* detectorScorer =
-        new G4MultiFunctionalDetector("detectorScorer");
-    G4SDManager::GetSDMpointer()->AddNewDetector(detectorScorer);
-    detector_log->SetSensitiveDetector(detectorScorer);
-    G4VPrimitiveSensitivity* totalSurfaceCurrent = new G4PSFlatSurfaceCurrent(
-            "TotalSurfaceCurrent", 1);
-    detectorScorer->Register(totalSurfaceCurrent);
+    //G4PSFlatSurfaceCurrent* scorer =
+     //   new G4PSFlatSurfaceCurrent("scorer", fCurrent_In);
+
+    //detector->SetSensitiveDetector("scorer",detector_log);
 
     // create the target
     G4Tubs* targetShape = new G4Tubs(
@@ -106,4 +115,10 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
             0);
 
     return world;
+}
+
+G4bool neutronElastic_ExperimentConstruction::ProcessHits(G4Step* aStep, G4TouchableHistory* ROHist)
+{
+    cout << "Got a hit!" << endl;
+    return true;
 }

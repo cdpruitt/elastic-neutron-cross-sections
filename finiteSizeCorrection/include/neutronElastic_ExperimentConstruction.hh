@@ -19,17 +19,20 @@
 #include "MaterialFactory.hh"
 #include "DetectorConstruction.hh"
 #include "G4UserLimits.hh"
+#include "G4VSensitiveDetector.hh"
 
 #include "G4SystemOfUnits.hh" // including this header is a new requirement for GEANT-defined units for GEANT 10.0+
 
 using namespace std;
 
 const G4double DET_DISTANCE = 375*cm;
+//const G4double DET_DISTANCE = 30*cm;
 const G4double DET_ANGLE = 30*deg;
 
 const G4double ORIGIN_OFFSET = 0*cm;
 
-class neutronElastic_ExperimentConstruction : public G4VUserDetectorConstruction
+class neutronElastic_ExperimentConstruction :
+    public G4VUserDetectorConstruction
 {
     public:
 
@@ -37,6 +40,8 @@ class neutronElastic_ExperimentConstruction : public G4VUserDetectorConstruction
         ~neutronElastic_ExperimentConstruction();
 
         G4VPhysicalVolume* Construct();
+
+        virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROHist);
 
         //inline vector<double> GetBackFaceDist() {return back_face_dist;}
 

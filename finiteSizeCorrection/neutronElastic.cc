@@ -47,15 +47,16 @@ int main(int argc,char* argv[])
   // Construct the default run manager
   G4RunManager* runManager = new G4RunManager;
 
+// create scorer for reading out relevant detector events
+  G4ScoringManager* scoringManager = G4ScoringManager::GetScoringManager();
+
   // create the experimental setup and register w/ run manager
   neutronElastic_ExperimentConstruction* experiment = new neutronElastic_ExperimentConstruction();
   runManager->SetUserInitialization(experiment);
 
-  // create scorer for reading out relevant detector events
-  G4ScoringManager* scoringManager = G4ScoringManager::GetScoringManager();
-  
   // register the appropriate physics w/ run manager
   G4VModularPhysicsList* physicsList = new QGSP_BERT_HP(1);
+  physicsList->SetVerboseLevel(0);
 
   // stop tracking neutrons after a time threshold
   G4NeutronTrackingCut* neutronCut = new G4NeutronTrackingCut();
@@ -68,17 +69,14 @@ int main(int argc,char* argv[])
   string sinfilename;
   sinfilename.assign(infilename);
   neutronElastic_Primary* gen_action = new neutronElastic_Primary(sinfilename);
-
-  // create ROOT tree generator
-  std::string runname = gen_action->GetRunname();
-  int runno = gen_action->GetRunno();
   runManager->SetUserAction(gen_action);
 
-  neutronElastic_EventAction* ev_action = new neutronElastic_EventAction();
-  runManager->SetUserAction(ev_action);
+  // create ROOT tree generator
+  //neutronElastic_EventAction* ev_action = new neutronElastic_EventAction();
+  //runManager->SetUserAction(ev_action);
 
-  neutronElastic_TrackingAction* tr_action = new neutronElastic_TrackingAction;
-  runManager->SetUserAction(tr_action);
+  //neutronElastic_TrackingAction* tr_action = new neutronElastic_TrackingAction;
+  //runManager->SetUserAction(tr_action);
 
   // Initialize G4 kernel
   runManager->Initialize();

@@ -275,6 +275,33 @@ src/MaterialFactory.cc.s:
 	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/MaterialFactory.cc.s
 .PHONY : src/MaterialFactory.cc.s
 
+src/mySensitiveDetector.o: src/mySensitiveDetector.cc.o
+
+.PHONY : src/mySensitiveDetector.o
+
+# target to build an object file
+src/mySensitiveDetector.cc.o:
+	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/mySensitiveDetector.cc.o
+.PHONY : src/mySensitiveDetector.cc.o
+
+src/mySensitiveDetector.i: src/mySensitiveDetector.cc.i
+
+.PHONY : src/mySensitiveDetector.i
+
+# target to preprocess a source file
+src/mySensitiveDetector.cc.i:
+	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/mySensitiveDetector.cc.i
+.PHONY : src/mySensitiveDetector.cc.i
+
+src/mySensitiveDetector.s: src/mySensitiveDetector.cc.s
+
+.PHONY : src/mySensitiveDetector.s
+
+# target to generate assembly for a file
+src/mySensitiveDetector.cc.s:
+	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/mySensitiveDetector.cc.s
+.PHONY : src/mySensitiveDetector.cc.s
+
 src/neutronElastic_EventAction.o: src/neutronElastic_EventAction.cc.o
 
 .PHONY : src/neutronElastic_EventAction.o
@@ -435,9 +462,9 @@ help:
 	@echo "... src/MaterialFactory.o"
 	@echo "... src/MaterialFactory.i"
 	@echo "... src/MaterialFactory.s"
-	@echo "... src/MyDetector.o"
-	@echo "... src/MyDetector.i"
-	@echo "... src/MyDetector.s"
+	@echo "... src/mySensitiveDetector.o"
+	@echo "... src/mySensitiveDetector.i"
+	@echo "... src/mySensitiveDetector.s"
 	@echo "... src/neutronElastic_EventAction.o"
 	@echo "... src/neutronElastic_EventAction.i"
 	@echo "... src/neutronElastic_EventAction.s"

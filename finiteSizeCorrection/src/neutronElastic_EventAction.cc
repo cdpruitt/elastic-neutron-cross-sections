@@ -56,7 +56,6 @@ void neutronElastic_EventAction::EndOfEventAction(const G4Event* evt)
 
         if( fHitsCollection )
         {
-
             for(int i=0; i<fHitsCollection->entries(); i++)
             {
 
