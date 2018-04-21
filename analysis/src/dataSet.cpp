@@ -11,9 +11,7 @@
 
 using namespace std;
 
-DataSet::DataSet()
-{
-}
+DataSet::DataSet() {}
 
 DataSet::DataSet(std::vector<double> var1, std::vector<double> var2, std::vector<double> var3, std::string ref)
 {
@@ -42,8 +40,6 @@ DataSet::DataSet(string dataSetLocation)
     std::getline(dataFile,dummy);
 
     double dum,dum2,dum3;
-
-    //cout << reference;
 
     while(dataFile >> dum >> dum2 >> dum3)
     {
