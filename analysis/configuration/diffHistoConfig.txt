@@ -1,0 +1,6 @@
+This file lists how runs should be grouped to calculate difference histograms
+*******************************************************************************
+Group       Angle          Blank run      Sn112 run        Sn124 run
+*******************************************************************************
+1           23             218            219              217
+2           23             222            221              223 

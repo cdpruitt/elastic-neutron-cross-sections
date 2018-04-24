@@ -1,4 +1,4 @@
-#include "TH1I.h"
+#include "TH1D.h"
 #include "TFile.h"
 
 #include <sys/types.h>
@@ -6,13 +6,15 @@
 #include <unistd.h>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 #include "../include/ScalerData.h"
 #include "../include/RunConfig.h"
+#include "../include/DiffGroup.h"
 
 using namespace std;
 
-void subtractBackground(TH1I* targetHist, TH1I* blankHist, unsigned int targetScaling, unsigned int blankScaling, string outputFileName)
+void subtractBackground(TH1D* targetHist, TH1D* blankHist, unsigned int targetScaling, unsigned int blankScaling, string name, string distance)
 {
     if(!targetHist || !blankHist)
     {
@@ -26,93 +28,71 @@ void subtractBackground(TH1I* targetHist, TH1I* blankHist, unsigned int targetSc
         return;
     }
 
-    TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
+    string targetHistName = name + "_" + distance;
+    string blankHistName = "blank_" + distance;
 
-    TH1I* th = (TH1I*)targetHist->Clone("target");
-    TH1I* bh = (TH1I*)blankHist->Clone("blank");
+    TH1D* th = (TH1D*)targetHist->Clone(targetHistName.c_str());
+    TH1D* bh = (TH1D*)blankHist->Clone(blankHistName.c_str());
 
     bh->Scale((double)targetScaling/blankScaling);
 
-    TH1I* difference = (TH1I*)th->Clone("difference");
+    string differenceName = name + "Difference" + "_" + distance;
+    TH1D* difference = (TH1D*)th->Clone(differenceName.c_str());
     difference->Add(bh,-1);
 
-    outputFile->cd();
+    th->SetOption("l");
+    bh->SetOption("l");
 
     th->Write();
     bh->Write();
     difference->Write();
-
-    outputFile->Close();
 }
 
-int main(int argc, char** argv)
+int main()
 {
-    string detectorName = argv[1];
-
-    vector<RunConfig> allConfigs = getRunConfig(detectorName);
-
-    for(RunConfig rc1 : allConfigs)
+    for(auto& group : readDiffHistoConfig())
     {
-        // start by looking at runs with targets
-        if(rc1.targetName=="blank" || rc1.targetName=="graphite" || rc1.targetName=="polyethylene")
-        {
-            continue;
-        }
+        // read target1 histo data
+        string target1HistoFileName = "../analyzedData/runs/" + to_string(group.target1) + "/histos.root";
+        TFile target1HistoFile(target1HistoFileName.c_str(),"READ");
 
-        for(RunConfig rc2 : allConfigs)
-        {
-            if(
-                    (rc1.angle==
-                     rc2.angle) &&
-                    (rc2.targetName == "blank"))
-            {
-                // read beam flux information for target run
-                string targetScalerFileName = "../rawData/runs/" + to_string(rc1.runNumber) + "/scalers.txt";
-                ScalerData tsd(targetScalerFileName);
+        string target1_4MHistoName = "4MTDC";
+        TH1D* target1_4MHisto = (TH1D*)target1HistoFile.Get(target1_4MHistoName.c_str());
+        string target1_6MHistoName = "6MTDC";
+        TH1D* target1_6MHisto = (TH1D*)target1HistoFile.Get(target1_6MHistoName.c_str());
+        TH1D* target1MonitorHisto = (TH1D*)target1HistoFile.Get("CMONPSD");
 
-                string targetHistoFileName = "../analyzedData/runs/" + to_string(rc1.runNumber) + "/histos.root";
-                TFile targetHistoFile(targetHistoFileName.c_str(),"READ");
+        // read target2 histo data
+        string target2HistoFileName = "../analyzedData/runs/" + to_string(group.target2) + "/histos.root";
+        TFile target2HistoFile(target2HistoFileName.c_str(),"READ");
 
-                string targetHistoName = detectorName + "TDC";
-                TH1I* targetHisto = (TH1I*)targetHistoFile.Get(targetHistoName.c_str());
+        string target2_4MHistoName = "4MTDC";
+        TH1D* target2_4MHisto = (TH1D*)target2HistoFile.Get(target2_4MHistoName.c_str());
+        string target2_6MHistoName = "6MTDC";
+        TH1D* target2_6MHisto = (TH1D*)target2HistoFile.Get(target2_6MHistoName.c_str());
+        TH1D* target2MonitorHisto = (TH1D*)target2HistoFile.Get("CMONPSD");
 
-                // read beam flux information for blank run
-                string blankScalerFileName = "../rawData/runs/" + to_string(rc2.runNumber) + "/scalers.txt";
-                ScalerData bsd(blankScalerFileName);
+        // read blank histo data
+        string blankHistoFileName = "../analyzedData/runs/" + to_string(group.blank) + "/histos.root";
+        TFile blankHistoFile(blankHistoFileName.c_str(),"READ");
 
-                string blankHistoFileName = "../analyzedData/runs/" + to_string(rc2.runNumber) + "/histos.root";
-                TFile blankHistoFile(blankHistoFileName.c_str(),"READ");
+        string blank_4MHistoName = "4MTDC";
+        TH1D* blank_4MHisto = (TH1D*)blankHistoFile.Get(blank_4MHistoName.c_str());
+        string blank_6MHistoName = "6MTDC";
+        TH1D* blank_6MHisto = (TH1D*)blankHistoFile.Get(blank_6MHistoName.c_str());
+        TH1D* blankMonitorHisto = (TH1D*)blankHistoFile.Get("CMONPSD");
 
-                string blankHistoName = detectorName + "TDC";
-                TH1I* blankHisto = (TH1I*)blankHistoFile.Get(blankHistoName.c_str());
+        // if directory for this group doesn't exist yet, create it
+        string outputFileName = "../analyzedData/diffHistos/group" + to_string(group.groupNumber) + ".root";
 
-                // if directory for this angle doesn't exist yet, create it
-                string directoryName = "../analyzedData/angles/" + to_string((int)rc1.angle) + "/";
+        TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
 
-                struct stat st = {0};
-                if(stat(directoryName.c_str(), &st) == -1)
-                {
-                    mkdir(directoryName.c_str(), 0700);
-                }
+        subtractBackground(target1_4MHisto, blank_4MHisto, target1MonitorHisto->GetEntries(), blankMonitorHisto->GetEntries(), "Sn112", "4M");
+        subtractBackground(target2_4MHisto, blank_4MHisto, target2MonitorHisto->GetEntries(), blankMonitorHisto->GetEntries(), "Sn124", "4M");
+        subtractBackground(target1_6MHisto, blank_6MHisto, target1MonitorHisto->GetEntries(), blankMonitorHisto->GetEntries(), "Sn112", "6M");
+        subtractBackground(target2_6MHisto, blank_6MHisto, target2MonitorHisto->GetEntries(), blankMonitorHisto->GetEntries(), "Sn124", "6M");
 
-                // produce output histo of difference between target and blank
-                unsigned int runCounter = 0;
-                string outputFileName = directoryName + rc1.targetName + "_" + to_string(runCounter) + ".root";
-
-                while(ifstream(outputFileName))
-                {
-                    runCounter++;
-                    outputFileName = directoryName + rc1.targetName + "_" + to_string(runCounter) + ".root";
-                }
-
-                if(!targetHisto || !blankHisto)
-                {
-                    continue;
-                }
-
-                subtractBackground(targetHisto, blankHisto, tsd.BCI, bsd.BCI, outputFileName);
-            }
-        }
+        outputFile->Close();
     }
 
     return 0;

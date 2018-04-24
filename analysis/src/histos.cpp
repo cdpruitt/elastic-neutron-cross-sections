@@ -5,7 +5,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
-#include "TH1I.h"
+#include "TH1.h"
 
 #include "../include/Detector.h"
 #include "../include/experimentalConstants.h"
@@ -63,17 +63,32 @@ int main(int argc, char** argv)
 
         for(Detector d : detectors)
         {
-            // apply gates
-            if(d.TDC > d.TDCLowThreshold &&
-                    d.TDC < d.TDCHighThreshold &&
-                    d.pulseHeight > d.pulseHeightThreshold)
-            {
-                d.PSDHisto->Fill(d.PSD);
+            // fill raw spectra before gates
+            d.rawPH->Fill(d.pulseHeight);
+            d.rawPSD->Fill(d.PSD);
+            d.rawTDC->Fill(detectors[4].TDC);
 
-                if(d.PSD>d.PSDThreshold)
-                {
-                    d.TDCHisto->Fill(detectors[4].TDC);
-                }
+            // apply gates
+            if(d.pulseHeight > d.pulseHeightThreshold)
+            {
+                d.PHGatedPH->Fill(d.pulseHeight);
+                d.PHGatedPSD->Fill(d.PSD);
+                d.PHGatedTDC->Fill(detectors[4].TDC);
+            }
+
+            if(d.PSD > d.PSDThreshold)
+            {
+                d.PSDGatedPH->Fill(d.pulseHeight);
+                d.PSDGatedPSD->Fill(d.PSD);
+                d.PSDGatedTDC->Fill(detectors[4].TDC);
+            }
+
+            if(d.pulseHeight > d.pulseHeightThreshold &&
+                    d.PSD > d.PSDThreshold)
+            {
+                d.pulseHeightHisto->Fill(d.pulseHeight);
+                d.PSDHisto->Fill(d.PSD);
+                d.TDCHisto->Fill(detectors[4].TDC);
             }
         }
 

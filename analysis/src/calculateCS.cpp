@@ -26,7 +26,7 @@ double TARGET_NUMBER_OF_ATOMS;
 const double REFERENCE_4M_COUNTS = 6596; // integral gates are 1194->1260
 const double REFERENCE_6M_COUNTS = 4258; // integral gates are 780->885
 double REFERENCE_HISTO_COUNTS = 0;
-const double TIME_CALIBRATION_FACTOR = 5.668 // ch/ns
+const double TIME_CALIBRATION_FACTOR = 5.668; // ch/ns
 
 const unsigned int BCI_REFERENCE_VALUE = 500000;
 
@@ -201,11 +201,12 @@ int main(int, char** argv)
 
     CSPrereqs reference; // for reference n,p target
 
+    // read integral bounds information for this configuration
     string integralBoundsFileName =
-            "configuration/gates/" + detectorName + ".txt";
+        "./configuration/gates/" + detectorName + ".txt";
 
-        vector<unsigned int> integralBounds =
-            getIntegralBounds(integralBoundsFileName);
+    vector<unsigned int> integralBounds =
+        getIntegralBounds(integralBoundsFileName);
 
     for(RunConfig rc : allConfigs)
     {
@@ -225,7 +226,7 @@ int main(int, char** argv)
         TH1I* histo = (TH1I*)histoFile.Get(histoName.c_str());
 
         string integralBoundsCorrectionFileName =
-            "configuration/gates/" + rc.targetName + "/" + detectorName + "/" + runConfig.angle + ".txt";
+            "./configuration/gates/" + rc.targetName + "/" + detectorName + "/" + to_string(rc.angle) + ".txt";
 
         int integralBoundsCorrection =
             getIntegralBoundsCorrection(integralBoundsCorrectionFileName);

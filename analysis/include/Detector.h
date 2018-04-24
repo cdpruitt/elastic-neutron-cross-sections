@@ -21,9 +21,21 @@ struct Detector
     unsigned int TDCLowThreshold;
     unsigned int TDCHighThreshold;
 
-    TH1I* pulseHeightHisto;
-    TH1I* PSDHisto;
-    TH1I* TDCHisto;
+    TH1D* pulseHeightHisto;
+    TH1D* PSDHisto;
+    TH1D* TDCHisto;
+
+    TH1D* rawPH;
+    TH1D* rawPSD;
+    TH1D* rawTDC;
+
+    TH1D* PHGatedPH;
+    TH1D* PHGatedPSD;
+    TH1D* PHGatedTDC;
+
+    TH1D* PSDGatedPH;
+    TH1D* PSDGatedPSD;
+    TH1D* PSDGatedTDC;
 };
 
 #endif /* DETECTOR_H */

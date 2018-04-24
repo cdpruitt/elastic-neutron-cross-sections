@@ -90,7 +90,7 @@ then
 
         # Check to see if all subruns should be analyzed, or just one
         # Sort all sub-runs in the specified run directory
-        for f in "../rawData/runs/$runNumber/tree.root";
+        for f in "../17MeV/snmay_${runNumber}_tree.root";
         do
             if [[ $recreateHistos = true ]]
             then
@@ -106,8 +106,8 @@ then
     done < runsToSort.txt
 
     # using each detector, calculate cross sections for all angles
-    ./calculateCS 4M
-    ./calculateCS 6M
+    #./calculateCS 4M
+    #./calculateCS 6M
 
     printf "\n\n"
 
