@@ -93,7 +93,8 @@ Detector::Detector(string n) : name(n)
     string rawPHName = PHName + "raw";
     string rawPSDName = PSDName + "raw";
     string rawTDCName = TDCName + "raw";
-
+    string rawPHPSDName = name + "PHPSDraw";
+    
     rawPH = new TH1D(rawPHName.c_str(), rawPHName.c_str(),
             5000, 0, 5000);
 
@@ -102,6 +103,11 @@ Detector::Detector(string n) : name(n)
 
     rawTDC = new TH1D(rawTDCName.c_str(), rawTDCName.c_str(),
             5000, 0, 5000);
+
+    rawPHPSD = new TH2D(rawPHPSDName.c_str(), rawPHPSDName.c_str(),
+            1000, 0, 5000,
+            1000, 0, 5000);
+
 
     string PHGatedPHName = PHName + "PHGated";
     string PHGatedPSDName = PSDName + "PHGated";
@@ -129,4 +135,8 @@ Detector::Detector(string n) : name(n)
     PSDGatedTDC = new TH1D(PSDGatedTDCName.c_str(), PSDGatedTDCName.c_str(),
             5000, 0, 5000);
 
+    string PHPSDName = name + "PHPSD";
+    PHPSD = new TH2D(PHPSDName.c_str(), PHPSDName.c_str(),
+            1000, 0, 5000,
+            1000, 0, 5000);
 }

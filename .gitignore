@@ -1,0 +1,7 @@
+*
+*/
+!analysis/
+!analysis/*
+!finiteSizeCorrection/
+!finiteSizeCorrection/*
+

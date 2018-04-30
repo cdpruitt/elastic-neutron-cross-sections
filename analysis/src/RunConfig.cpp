@@ -9,7 +9,7 @@
 using namespace std;
 
 // Determine the angle and target for a given run
-vector<RunConfig> getRunConfig(string detectorName)
+AllConfigs getRunConfig()
 {
     string targetOrderLocation = "configuration/runConfig.txt";
 
@@ -21,7 +21,8 @@ vector<RunConfig> getRunConfig(string detectorName)
     }
 
     string str;
-    vector<RunConfig> allRuns;
+
+    AllConfigs allRuns;
 
     while(getline(dataFile,str))
     {
@@ -41,29 +42,81 @@ vector<RunConfig> getRunConfig(string detectorName)
                 istream_iterator<string>(),
                 back_inserter(tokens));
 
-        vector<string> singleDetConfig;
-
-        singleDetConfig.push_back(tokens[0]);
-        singleDetConfig.push_back(tokens[1]);
-
-        if(detectorName=="4M")
-        {
-            singleDetConfig.push_back(tokens[2]);
-        }
-
-        else if(detectorName=="6M")
-        {
-            singleDetConfig.push_back(tokens[3]);
-        }
-
-        else
-        {
-            cerr << "Error: attempted to read run config, but detector named " << detectorName << " is not an implemented option." << endl;
-            exit(1);
-        }
-
-        allRuns.push_back(singleDetConfig);
+        allRuns.runs.push_back(RunConfig(tokens));
     }
 
     return allRuns;
+}
+
+AngleData AllAngles::getAngle(double a)
+{
+    for(auto& angle : angles)
+    {
+        if(angle.angle==a)
+        {
+            return angle;
+        }
+    }
+
+    return AngleData();
+}
+
+void AllAngles::getRunData(AllConfigs ac)
+{
+    for(auto& run : ac.runs)
+    {
+        bool alreadyAdded = false;
+
+        for(auto& angle : angles)
+        {
+            if(angle.angle==run.angle4M)
+            {
+                alreadyAdded = true;
+                break;
+            }
+        }
+
+        if(!alreadyAdded)
+        {
+            AngleData a;
+            a.angle = run.angle4M;
+            angles.push_back(a);
+        }
+    }
+
+    for(auto& run : ac.runs)
+    {
+        bool alreadyAdded = false;
+
+        for(auto& angle : angles)
+        {
+            if(angle.angle==run.angle6M)
+            {
+                alreadyAdded = true;
+                break;
+            }
+        }
+
+        if(!alreadyAdded)
+        {
+            AngleData a;
+            a.angle = run.angle6M;
+            angles.push_back(a);
+        }
+    }
+    
+    sort(angles.begin(), angles.end());
+}
+
+RunConfig AllConfigs::getRunConfig(int runNumber)
+{
+    for(auto& run : runs)
+    {
+        if(run.runNumber==runNumber)
+        {
+            return run;
+        }
+    }
+
+    return RunConfig();
 }

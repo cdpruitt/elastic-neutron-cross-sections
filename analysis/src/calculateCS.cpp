@@ -13,22 +13,33 @@
 #include "TH1I.h"
 
 #include "../include/DataStructures.h"
-#include "../include/ScalerData.h"
 #include "../include/RunConfig.h"
 
 using namespace std;
 
-const double REFERENCE_CS = 229.4;
+const double REFERENCE_CS = 163.8; // p,n cross section in mb/sr - for lab angle of 23 degrees @ 17 MeV
 const double REFERENCE_NUMBER_OF_ATOMS = 2.91e23;
 const double Sn112_NUMBER_OF_ATOMS = 2.676e22;
 const double Sn124_NUMBER_OF_ATOMS = 2.697e22;
-double TARGET_NUMBER_OF_ATOMS;
-const double REFERENCE_4M_COUNTS = 6596; // integral gates are 1194->1260
-const double REFERENCE_6M_COUNTS = 4258; // integral gates are 780->885
-double REFERENCE_HISTO_COUNTS = 0;
-const double TIME_CALIBRATION_FACTOR = 5.668; // ch/ns
 
-const unsigned int BCI_REFERENCE_VALUE = 500000;
+double TARGET_NUMBER_OF_ATOMS;
+double TARGET_MASS;
+
+const double REFERENCE_4M_COUNTS = 12308;
+const double REFERENCE_6M_COUNTS = 11784;
+const double REFERENCE_MONITOR_COUNTS = 88910;
+
+double REFERENCE_HISTO_COUNTS; 
+
+const double FOURM_INT_LIMIT_MIN = 1276;
+const double FOURM_INT_LIMIT_MAX = 1302;
+double INTEGRAL_LIMIT_MIN;
+
+const double SIXM_INT_LIMIT_MIN = 940;
+const double SIXM_INT_LIMIT_MAX = 975;
+double INTEGRAL_LIMIT_MAX;
+
+const double NEUTRON_MASS = 1.008665; // in unified atomic mass units
 
 void readTargetDataFile(TargetData& targetData, string fileName)
 {
@@ -53,23 +64,7 @@ void readTargetDataFile(TargetData& targetData, string fileName)
     }
 }
 
-struct CSPrereqs
-{
-    CSPrereqs() {}
-    RunConfig runConfig;
-    unsigned int BCICounts;
-    unsigned int histoCounts;
-};
-
-struct CrossSection
-{
-    string target;
-    double angle;
-    double value;
-    double error;
-};
-
-vector<unsigned int> getIntegralBounds(string integralBoundsFileName)
+/*vector<unsigned int> getIntegralBounds(string integralBoundsFileName)
 {
     ifstream file(integralBoundsFileName.c_str());
     if(!file.is_open())
@@ -148,7 +143,7 @@ void outputCrossSections(const vector<CrossSection>& crossSections,
                 setw(11) << cs.error << endl;
         }
     }
-}
+}*/
 
 // convert a lab angle (in degrees) to a center-of-mass angle (in degrees),
 // ranging from 0-180
@@ -182,208 +177,132 @@ double labToCMJacobian(double labAngle, double massOfProjectile, double massOfTa
     return numerator/denominator;
 }
 
-int main(int, char** argv)
+int main()
 {
-    string detectorName = argv[1];
+    vector<string> detectorNames = {"4M", "6M"};
+    vector<string> targetNames = {"Sn112", "Sn124"};
 
-    if(detectorName=="4M")
+    AllConfigs allConfigs = getRunConfig();
+
+    AllAngles allAngles;
+    allAngles.getRunData(allConfigs);
+
+    ofstream Sn112_4M("literatureData/Sn112_4M.txt");
+    ofstream Sn124_4M("literatureData/Sn124_4M.txt");
+    ofstream Sn112_6M("literatureData/Sn112_6M.txt");
+    ofstream Sn124_6M("literatureData/Sn124_6M.txt");
+
+    Sn112_4M << endl << "Sn112, 4M" << endl;
+    Sn112_4M << "Degrees    mB/sr      Error (mB/sr)" << endl;
+
+    Sn124_4M << endl << "Sn124, 4M" << endl;
+    Sn124_4M << "Degrees    mB/sr      Error (mB/sr)" << endl;
+
+    Sn112_6M << endl << "Sn112, 6M" << endl;
+    Sn112_6M << "Degrees    mB/sr      Error (mB/sr)" << endl;
+
+    Sn124_6M << endl << "Sn124, 6M" << endl;
+    Sn124_6M << "Degrees    mB/sr      Error (mB/sr)" << endl;
+
+    ofstream* fileOut;
+
+    for(auto& target : targetNames)
     {
-        REFERENCE_HISTO_COUNTS = REFERENCE_4M_COUNTS;
-    }
-
-    if(detectorName=="6M")
-    {
-        REFERENCE_HISTO_COUNTS = REFERENCE_6M_COUNTS;
-    }
-
-    vector<RunConfig> allConfigs = getRunConfig(detectorName);
-    vector<CSPrereqs> allCSPrereqs;
-
-    CSPrereqs reference; // for reference n,p target
-
-    // read integral bounds information for this configuration
-    string integralBoundsFileName =
-        "./configuration/gates/" + detectorName + ".txt";
-
-    vector<unsigned int> integralBounds =
-        getIntegralBounds(integralBoundsFileName);
-
-    for(RunConfig rc : allConfigs)
-    {
-        CSPrereqs csPrereqs;
-        csPrereqs.runConfig = rc;
-
-        // read beam flux information for this run
-        string scalerFileName = "../rawData/runs/" + to_string(rc.runNumber) + "/scalers.txt";
-        ScalerData sd(scalerFileName);
-        csPrereqs.BCICounts = sd.BCI;
-
-        // read histogram counts for each run
-        string histoFileName = "../analyzedData/runs/" + to_string(rc.runNumber) + "/histos.root";
-        TFile histoFile(histoFileName.c_str(),"UPDATE");
-
-        string histoName = detectorName + "TDC";
-        TH1I* histo = (TH1I*)histoFile.Get(histoName.c_str());
-
-        string integralBoundsCorrectionFileName =
-            "./configuration/gates/" + rc.targetName + "/" + detectorName + "/" + to_string(rc.angle) + ".txt";
-
-        int integralBoundsCorrection =
-            getIntegralBoundsCorrection(integralBoundsCorrectionFileName);
-
-        // extract counts from histo based on histogram gates
-        unsigned int lowBin = histo->GetBinLowEdge(0);
-        csPrereqs.histoCounts = histo->Integral(integralBounds[0]-integralBoundsCorrection-lowBin,integralBounds[1]-integralBoundsCorrection-lowBin);
-
-        allCSPrereqs.push_back(csPrereqs);
-
-        // produce BCI-scaled histograms for this run
-        string scaledHistoName = histoName + "Scaled";
-        TH1I* scaledHisto = (TH1I*) histo->Clone(scaledHistoName.c_str());
-        scaledHisto->Scale((double)BCI_REFERENCE_VALUE/sd.BCI);
-        scaledHisto->Write();
-    }
-
-    // locate reference run
-    for(int i=0; i<allCSPrereqs.size(); i++)
-    {
-        if(allCSPrereqs[i].runConfig.targetName=="polyethylene")
+        if(target=="Sn112")
         {
-            reference = allCSPrereqs[i];
-            break;
-        }
-    }
-
-    // combine runs with same run configurations
-    vector<CSPrereqs> combinedCSPrereqs;
-    for(int i=0; i<allCSPrereqs.size(); i++)
-    {
-        CSPrereqs currentCSPrereq = allCSPrereqs[i];
-        for(int j=i+1; j<allCSPrereqs.size(); j++)
-        {
-            CSPrereqs trialCSPrereq = allCSPrereqs[j];
-            if(
-                    (trialCSPrereq.runConfig.targetName ==
-                     currentCSPrereq.runConfig.targetName) &&
-                    (trialCSPrereq.runConfig.angle ==
-                     currentCSPrereq.runConfig.angle))
-            {
-                currentCSPrereq.BCICounts += trialCSPrereq.BCICounts;
-                currentCSPrereq.histoCounts += trialCSPrereq.histoCounts;
-            }
+            TARGET_NUMBER_OF_ATOMS = Sn112_NUMBER_OF_ATOMS; 
+            TARGET_MASS = 111.905; // in unified atomic mass units
         }
 
-        // don't add the same run config data twice
-        bool unique = true;
-        for(int j=0; j<combinedCSPrereqs.size(); j++)
-        {
-            if(
-                    (currentCSPrereq.runConfig.targetName ==
-                     combinedCSPrereqs[j].runConfig.targetName) &&
-                    (currentCSPrereq.runConfig.angle ==
-                     combinedCSPrereqs[j].runConfig.angle))
-            {
-                unique = false;
-            }
-        }
-
-        if(unique)
-        {
-            combinedCSPrereqs.push_back(currentCSPrereq);
-        }
-    }
-
-    // for each angle, find target and blank and perform the cross section
-    // calculation
-    vector<CrossSection> crossSections;
-
-    double TARGET_MASS;
-    const double NEUTRON_MASS = 1.008665; // in unified atomic mass units
-
-    for(int i=0; i<combinedCSPrereqs.size(); i++)
-    {
-        CrossSection cs;
-
-        // start by looking at runs with targets
-        if(combinedCSPrereqs[i].runConfig.targetName=="blank")
-        {
-            continue;
-        }
-
-        if(combinedCSPrereqs[i].runConfig.targetName=="Sn112")
-        {
-           TARGET_NUMBER_OF_ATOMS = Sn112_NUMBER_OF_ATOMS; 
-           cs.target = "Sn112";
-           TARGET_MASS = 111.905; // in unified atomic mass units
-        }
-
-        else if(combinedCSPrereqs[i].runConfig.targetName=="Sn124")
+        else if (target=="Sn124")
         {
             TARGET_NUMBER_OF_ATOMS = Sn124_NUMBER_OF_ATOMS; 
-            cs.target = "Sn124";
             TARGET_MASS = 123.905; // in unified atomic mass units
         }
 
-        // convert from lab angle to CM angle
-        double labAngle = combinedCSPrereqs[i].runConfig.angle;
-        cs.angle = labAngleToCMAngle(labAngle, NEUTRON_MASS, TARGET_MASS);
-        
-        for(int j=0; j<combinedCSPrereqs.size(); j++)
+        for(auto& detectorName : detectorNames)
         {
-            if(
-                    (combinedCSPrereqs[j].runConfig.angle==
-                     combinedCSPrereqs[i].runConfig.angle) &&
-                    (combinedCSPrereqs[j].runConfig.targetName == "blank"))
+            for(auto& angle : allAngles.angles)
             {
-                // calculate CS
-                if(
-                        (combinedCSPrereqs[i].histoCounts<=0) ||
-                        (combinedCSPrereqs[j].histoCounts<=0) ||
-                        (combinedCSPrereqs[i].BCICounts<=0) ||
-                        (combinedCSPrereqs[j].BCICounts<=0))
+                if(detectorName=="4M")
                 {
-                    cerr << "Error: tried to calculate CS for angle = " <<
-                        combinedCSPrereqs[i].runConfig.angle << ", but " <<
-                        " flux or histogram counts was not positive definite." << endl;
-                    break;
+                    REFERENCE_HISTO_COUNTS = REFERENCE_4M_COUNTS;
+                    INTEGRAL_LIMIT_MIN = FOURM_INT_LIMIT_MIN;
+                    INTEGRAL_LIMIT_MAX = FOURM_INT_LIMIT_MAX;
+
+                    if(target=="Sn112")
+                    {
+                        fileOut = &Sn112_4M;
+                    }
+
+                    else if(target=="Sn124")
+                    {
+                        fileOut = &Sn124_4M;
+                    }
                 }
 
-                double difference =
-                    combinedCSPrereqs[i].histoCounts-
-                    (double)combinedCSPrereqs[j].histoCounts*
-                    ((double)combinedCSPrereqs[i].BCICounts/
-                     combinedCSPrereqs[j].BCICounts);
+                else if(detectorName=="6M")
+                {
+                    REFERENCE_HISTO_COUNTS = REFERENCE_6M_COUNTS;
+                    INTEGRAL_LIMIT_MIN = SIXM_INT_LIMIT_MIN;
+                    INTEGRAL_LIMIT_MAX = SIXM_INT_LIMIT_MAX;
+
+                    if(target=="Sn112")
+                    {
+                        fileOut = &Sn112_6M;
+                    }
+
+                    else if(target=="Sn124")
+                    {
+                        fileOut = &Sn124_6M;
+                    }
+                }
+
+                // read histogram counts for each run
+                stringstream ss;
+                ss << setprecision(4) << angle.angle;
+                string histoFileName = "../analyzedData/angles/" + ss.str() + "/" + target + ".root";
+                TFile histoFile(histoFileName.c_str(),"UPDATE");
+
+                string histoName = target + "Difference" + detectorName;
+                TH1I* histo = (TH1I*)histoFile.Get(histoName.c_str());
+
+                string monitorName = target + "Monitor" + detectorName + "Total";
+                TH1I* monitor= (TH1I*)histoFile.Get(monitorName.c_str());
+
+                if(!histo || !monitor)
+                {
+                    continue;
+                }
+
+                // extract counts from histo based on histogram gates
+                int minIntBin = histo->FindBin(INTEGRAL_LIMIT_MIN);
+                int maxIntBin = histo->FindBin(INTEGRAL_LIMIT_MAX);
+
+                double difference = histo->Integral(minIntBin, maxIntBin);
+
+                // convert from lab angle to CM angle
+                double CMAngle = labAngleToCMAngle(angle.angle, NEUTRON_MASS, TARGET_MASS);
+                double monitorCounts = monitor->GetEntries();
 
                 // calculate differential cross section in lab frame
-                cs.value = ((double)difference/REFERENCE_HISTO_COUNTS)*
-                    ((double)reference.BCICounts/combinedCSPrereqs[i].BCICounts)*
+                double value = ((double)difference/REFERENCE_HISTO_COUNTS)*
+                    ((double)REFERENCE_MONITOR_COUNTS/monitorCounts)*
                     (REFERENCE_NUMBER_OF_ATOMS/TARGET_NUMBER_OF_ATOMS)*
                     REFERENCE_CS;
 
                 // convert lab frame cross section to center-of-mass frame via
                 // Jacobian
-                cs.value *= labToCMJacobian(labAngle, NEUTRON_MASS, TARGET_MASS);
+                value *= labToCMJacobian(angle.angle, NEUTRON_MASS, TARGET_MASS);
 
-                cs.error = 0;
-                
-                crossSections.push_back(cs);
+                *fileOut << angle.angle << " " << value
+                    << " " << "0" << endl;
 
-                break;
-            }
-
-            if(j+1==combinedCSPrereqs.size())
-            {
-                cerr << "Error: didn't find blank target run for angle " <<
-                    cs.angle << ", target " <<
-                    combinedCSPrereqs[i].runConfig.targetName <<
-                    "; cannot compute cross section." << endl;
-                break;
+                // need to add efficiency correction for energy drop at high angles affecting count
+                // rates
             }
         }
     }
-
-    outputCrossSections(crossSections, "Sn112", detectorName);
-    outputCrossSections(crossSections, "Sn124", detectorName);
 
     return 0;
 }

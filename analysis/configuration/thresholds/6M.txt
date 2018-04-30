@@ -2,7 +2,7 @@ PSD Threshold
 810
 
 Pulse Height Threshold
-230
+360
 
 TDC LowThreshold
 300   

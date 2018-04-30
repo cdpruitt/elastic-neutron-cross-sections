@@ -38,81 +38,70 @@
     gPad->SetTicky(2);
 
     string litFileName = "../literatureData/literatureData.root";
-    string expSn112FileName = "../experimentalData/Sn112/crossSections.root";
 
     // read in literature graphs
     TFile* litFile = new TFile(litFileName.c_str(),"READ");
     
-    string litSn116_11MeVGraphName = "Sn116(n,n) [11 MeV]";
+    string graph1Name = "Sn120(n,n) [17 MeV]";
+    string graph2Name = "Sn124, 4M";
+    string graph3Name = "Sn112, 4M";
+    string graph4Name = "Sn124, 6M";
+    string graph5Name = "Sn112, 6M";
 
-    string litSn116_24MeVGraphName = "Sn116(n,n) [24 MeV]";
-
-    string DOMSn112_17MeVGraphName = "Sn112(n,n) [17 MeV]";
-
-    TGraphErrors* litSn116_11MeVGraph = (TGraphErrors*)litFile->Get(litSn116_11MeVGraphName.c_str());
-
-    TGraphErrors* litSn116_24MeVGraph = (TGraphErrors*)litFile->Get(litSn116_24MeVGraphName.c_str());
-
-    if(
-            !litSn116_11MeVGraph ||
-            !litSn116_24MeVGraph
-      )
-    {
-        cerr << "Error: failed to open a literature data graph. Exiting..." << endl;
-        exit(1);
-    }
-
-    TGraphErrors* DOMSn112_17MeVGraph = (TGraphErrors*)litFile->Get(DOMSn112_17MeVGraphName.c_str());
+    TGraphErrors* graph1 = (TGraphErrors*)litFile->Get(graph1Name.c_str());
+    TGraphErrors* graph2 = (TGraphErrors*)litFile->Get(graph2Name.c_str());
+    TGraphErrors* graph3 = (TGraphErrors*)litFile->Get(graph3Name.c_str());
+    TGraphErrors* graph4 = (TGraphErrors*)litFile->Get(graph4Name.c_str());
+    TGraphErrors* graph5 = (TGraphErrors*)litFile->Get(graph5Name.c_str());
 
     if(
-            !DOMSn112_17MeVGraph
+            !graph1 ||
+            !graph2 ||
+            !graph3 ||
+            !graph4 ||
+            !graph5
       )
     {
-        cerr << "Error: failed to open DOM graph. Exiting..." << endl;
-        exit(1);
-    }
-
-    // read in experimental graphs
-    TFile* expSn112File = new TFile(expSn112FileName.c_str(),"READ");
-
-    string expSn112_GraphName = "Exp. Sn112";
-
-    TGraphErrors* ExpSn112_6MGraph = (TGraphErrors*)expSn112File->Get(expSn112_GraphName.c_str());
-
-    if(
-            !ExpSn112_6MGraph
-      )
-    {
-        cerr << "Error: failed to open experimental data graph. Exiting..." << endl;
+        cerr << "Error: failed to open a data graph. Exiting..." << endl;
         exit(1);
     }
 
     // create multigraph for holding all graphs
     TMultiGraph *mg = new TMultiGraph();
 
-    mg->Add(litSn116_11MeVGraph);
-    mg->Add(litSn116_24MeVGraph);
-    mg->Add(DOMSn112_17MeVGraph);
-    mg->Add(ExpSn112_6MGraph);
+    mg->Add(graph1, "l");
+    mg->Add(graph2, "p");
+    mg->Add(graph3, "p");
+    mg->Add(graph4, "p");
+    mg->Add(graph5, "p");
 
     // Set graph point and line characteristics
-    litSn116_11MeVGraph->SetLineColor(kBlue-7);
-    litSn116_11MeVGraph->SetLineWidth(2);
-    litSn116_11MeVGraph->SetLineStyle(0);
+    graph1->SetLineColor(kBlack);
+    graph1->SetLineWidth(3);
+    graph1->SetLineStyle(0);
 
-    litSn116_24MeVGraph->SetLineColor(kBlue-9);
-    litSn116_24MeVGraph->SetLineWidth(2);
-    litSn116_24MeVGraph->SetLineStyle(3);
+    graph2->SetMarkerColor(kRed);
+    graph2->SetMarkerSize(4);
+    graph2->SetMarkerStyle(29);
+    //graph2->SetLineWidth(2);
+    //graph2->SetLineStyle(3);
 
-    DOMSn112_17MeVGraph->SetLineColor(kRed);
-    DOMSn112_17MeVGraph->SetLineWidth(6);
-    DOMSn112_17MeVGraph->SetLineStyle(3);
+    graph4->SetMarkerColor(kRed);
+    graph4->SetMarkerSize(4);
+    graph4->SetMarkerStyle(23);
 
-    ExpSn112_6MGraph->SetLineColor(kRed);
-    ExpSn112_6MGraph->SetLineWidth(6);
-    ExpSn112_6MGraph->SetLineStyle(0);
+    //graph3->SetLineWidth(6);
+    //graph3->SetLineStyle(3);
 
-    mg->Draw("al");
+    graph3->SetMarkerColor(kBlue);
+    graph3->SetMarkerSize(4);
+    graph3->SetMarkerStyle(29);
+
+    graph5->SetMarkerColor(kBlue);
+    graph5->SetMarkerSize(4);
+    graph5->SetMarkerStyle(23);
+
+    mg->Draw("a");
 
     // X-axis parameters
     mg->GetXaxis()->SetTitle("Angle (degrees, CM)");
@@ -154,13 +143,14 @@
     //latex.DrawLatex(0.32,0.4,"C");
 
     // Define legend format and contents
-    TLegend *legend = new TLegend(0.4,0.65,0.95,0.9);
+    TLegend *legend = new TLegend(0.35,0.65,0.95,0.9);
     //legend->SetHeader("data","C");
     legend->SetTextSize(0.03);
-    legend->AddEntry(ExpSn112_6MGraph,"Last year's {}^{112}Sn, 11 MeV","l");
-    legend->AddEntry(DOMSn112_17MeVGraph,"DOM prediction, {}^{112}Sn, 17 MeV","l");
-    legend->AddEntry(litSn116_11MeVGraph,"Rapaport {}^{116}Sn, 11 MeV","l");
-    legend->AddEntry(litSn116_24MeVGraph,"Rapaport {}^{116}Sn, 24 MeV","l");
+    legend->AddEntry(graph1,"{}^{120}Sn, 17 MeV, lit (P. Gus, 1989)","l");
+    legend->AddEntry(graph2,"{}^{124}Sn, 17 MeV, exp (4M det)","p");
+    legend->AddEntry(graph4,"{}^{124}Sn, 17 MeV, exp (6M det)","p");
+    legend->AddEntry(graph3,"{}^{112}Sn, 17 MeV, exp (4M det)","p");
+    legend->AddEntry(graph5,"{}^{112}Sn, 17 MeV, exp (6M det)","p");
 
     legend->Draw();
 

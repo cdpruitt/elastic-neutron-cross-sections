@@ -7,7 +7,8 @@ const double SIXM_INT_LIMIT_MAX = 985;
 struct DiffGroup
 {
     int groupNumber;
-    double angle;
+    double angle4M;
+    double angle6M;
     int blank;
     int target1;
     int target2;
@@ -39,7 +40,7 @@ DiffGroup getDiffGroup(int groupNumber)
         }
 
         DiffGroup group;
-        stringstream(str) >> group.groupNumber >> group.angle >> group.blank >> group.target1 >> group.target2;
+        stringstream(str) >> group.groupNumber >> group.angle4M >> group.angle6M >> group.blank >> group.target1 >> group.target2;
 
         if(groupNumber==group.groupNumber)
         {
@@ -57,9 +58,13 @@ void plotDiffHistos(int groupNumber)
 
     DiffGroup g = getDiffGroup(groupNumber);
     ostringstream ss;
-    ss << fixed << setprecision(1) << g.angle;
+    ss << fixed << setprecision(1) << g.angle4M;
 
-    string angle = ss.str();
+    string angle4M = ss.str();
+
+    ostringstream ss2;
+    ss2 << fixed << setprecision(1) << g.angle6M;
+    string angle6M = ss2.str();
     
     //const unsigned int CANVAS_HEIGHT = ceil((double)expFileNames.size()/CANVAS_WIDTH);
 
@@ -115,11 +120,14 @@ void plotDiffHistos(int groupNumber)
         string blankHistoName = "blank_4M";
         string differenceHistoName = "Sn112Difference_4M";
 
+        string monitorHistoName = "Sn112MonitorHisto";
+
         TH1I* targetHisto = (TH1I*)expFile->Get(targetHistoName.c_str());
         TH1I* blankHisto = (TH1I*)expFile->Get(blankHistoName.c_str());
         TH1I* differenceHisto = (TH1I*)expFile->Get(differenceHistoName.c_str());
+        TH1I* monitorHisto = (TH1I*)expFile->Get(monitorHistoName.c_str());
 
-        if(!targetHisto || !blankHisto || !differenceHisto)
+        if(!targetHisto || !blankHisto || !differenceHisto || !monitorHisto)
         {
             cerr << "Error: couldn't find a histo needed for diff Histo plotting" << endl;
             exit(1);
@@ -160,7 +168,7 @@ void plotDiffHistos(int groupNumber)
         targetHisto->GetXaxis()->SetNdivisions(10);
         targetHisto->GetXaxis()->SetTickLength(0.03);
 
-        targetHisto->GetXaxis()->SetRangeUser(1260,1330);
+        targetHisto->GetXaxis()->SetRangeUser(1220,1350);
 
         // Y-axis parameters
         targetHisto->GetYaxis()->SetTitle("Counts");
@@ -176,18 +184,21 @@ void plotDiffHistos(int groupNumber)
         targetHisto->GetYaxis()->SetNdivisions(10);
         targetHisto->GetYaxis()->SetTickLength(0);
 
-        string title = angle + " deg, Sn112, 4M";
+        string title = angle4M + " deg, Sn112, 4M";
         targetHisto->SetTitle(title.c_str());
+
+        blankHisto->SetFillColor(29);
+        targetHisto->SetFillColor(19);
 
         targetHisto->Draw("hist");
         blankHisto->Draw("hist same");
-        differenceHisto->Draw("hist same");
+        //differenceHisto->Draw("hist same");
 
         int minIntBin = differenceHisto->FindBin(FOURM_INT_LIMIT_MIN);
         int maxIntBin = differenceHisto->FindBin(FOURM_INT_LIMIT_MAX);
 
         ostringstream ss;
-        ss << differenceHisto->Integral(minIntBin, maxIntBin);
+        ss << differenceHisto->Integral(minIntBin, maxIntBin)/monitorHisto->GetEntries();
         string integral = ss.str();
 
         TLatex latex;
@@ -197,11 +208,11 @@ void plotDiffHistos(int groupNumber)
         latex.SetTextColor(kRed);
 
         string diffInt = "Diff sum: ";
-        latex.DrawLatex(0.20,0.65,diffInt.c_str());
-        latex.DrawLatex(0.20, 0.58, integral.c_str());
+        latex.DrawLatex(0.20,0.85,diffInt.c_str());
+        latex.DrawLatex(0.20, 0.78, integral.c_str());
 
-        TLine *gateLowLine = new TLine(FOURM_INT_LIMIT_MIN,0,FOURM_INT_LIMIT_MIN,200);
-        TLine *gateHighLine = new TLine(FOURM_INT_LIMIT_MAX,0,FOURM_INT_LIMIT_MAX,200);
+        TLine *gateLowLine = new TLine(FOURM_INT_LIMIT_MIN,0,FOURM_INT_LIMIT_MIN,50);
+        TLine *gateHighLine = new TLine(FOURM_INT_LIMIT_MAX,0,FOURM_INT_LIMIT_MAX,50);
         gateLowLine->SetLineStyle(7);
         gateLowLine->SetLineWidth(3);
         gateLowLine->SetLineColor(kBlue);
@@ -221,11 +232,14 @@ void plotDiffHistos(int groupNumber)
         string blankHistoName = "blank_6M";
         string differenceHistoName = "Sn112Difference_6M";
 
+        string monitorHistoName = "Sn112MonitorHisto";
+
         TH1I* targetHisto = (TH1I*)expFile->Get(targetHistoName.c_str());
         TH1I* blankHisto = (TH1I*)expFile->Get(blankHistoName.c_str());
         TH1I* differenceHisto = (TH1I*)expFile->Get(differenceHistoName.c_str());
+        TH1I* monitorHisto = (TH1I*)expFile->Get(monitorHistoName.c_str());
 
-        if(!targetHisto || !blankHisto || !differenceHisto)
+        if(!targetHisto || !blankHisto || !differenceHisto || !monitorHisto)
         {
             cerr << "Error: couldn't find a histo needed for diff Histo plotting" << endl;
             exit(1);
@@ -266,7 +280,7 @@ void plotDiffHistos(int groupNumber)
         targetHisto->GetXaxis()->SetNdivisions(10);
         targetHisto->GetXaxis()->SetTickLength(0.03);
 
-        targetHisto->GetXaxis()->SetRangeUser(900,1000);
+        targetHisto->GetXaxis()->SetRangeUser(850,1050);
 
         // Y-axis parameters
         targetHisto->GetYaxis()->SetTitle("Counts");
@@ -282,18 +296,21 @@ void plotDiffHistos(int groupNumber)
         //targetHisto->GetYaxis()->SetNdivisions(10);
         targetHisto->GetYaxis()->SetTickLength(0);
 
-        string title = angle + " deg, Sn112, 6M";
+        string title = angle6M + " deg, Sn112, 6M";
         targetHisto->SetTitle(title.c_str());
+
+        blankHisto->SetFillColor(29);
+        targetHisto->SetFillColor(19);
 
         targetHisto->Draw("hist");
         blankHisto->Draw("hist same");
-        differenceHisto->Draw("hist same");
+        //differenceHisto->Draw("hist same");
 
         int minIntBin = differenceHisto->FindBin(SIXM_INT_LIMIT_MIN);
         int maxIntBin = differenceHisto->FindBin(SIXM_INT_LIMIT_MAX);
 
         ostringstream ss;
-        ss << differenceHisto->Integral(minIntBin, maxIntBin);
+        ss << differenceHisto->Integral(minIntBin, maxIntBin)/monitorHisto->GetEntries();
         string integral = ss.str();
 
         TLatex latex;
@@ -303,11 +320,11 @@ void plotDiffHistos(int groupNumber)
         latex.SetTextColor(kRed);
 
         string diffInt = "Diff sum: ";
-        latex.DrawLatex(0.20,0.65,diffInt.c_str());
-        latex.DrawLatex(0.20, 0.58, integral.c_str());
+        latex.DrawLatex(0.20,0.85,diffInt.c_str());
+        latex.DrawLatex(0.20, 0.78, integral.c_str());
 
-        TLine *gateLowLine = new TLine(SIXM_INT_LIMIT_MIN,0,SIXM_INT_LIMIT_MIN,200);
-        TLine *gateHighLine = new TLine(SIXM_INT_LIMIT_MAX,0,SIXM_INT_LIMIT_MAX,200);
+        TLine *gateLowLine = new TLine(SIXM_INT_LIMIT_MIN,0,SIXM_INT_LIMIT_MIN,50);
+        TLine *gateHighLine = new TLine(SIXM_INT_LIMIT_MAX,0,SIXM_INT_LIMIT_MAX,50);
         gateLowLine->SetLineStyle(7);
         gateLowLine->SetLineWidth(3);
         gateLowLine->SetLineColor(kBlue);
@@ -326,12 +343,14 @@ void plotDiffHistos(int groupNumber)
         string targetHistoName = "Sn124_4M";
         string blankHistoName = "blank_4M";
         string differenceHistoName = "Sn124Difference_4M";
+        string monitorHistoName = "Sn124MonitorHisto";
 
         TH1I* targetHisto = (TH1I*)expFile->Get(targetHistoName.c_str());
         TH1I* blankHisto = (TH1I*)expFile->Get(blankHistoName.c_str());
         TH1I* differenceHisto = (TH1I*)expFile->Get(differenceHistoName.c_str());
+        TH1I* monitorHisto = (TH1I*)expFile->Get(monitorHistoName.c_str());
 
-        if(!targetHisto || !blankHisto || !differenceHisto)
+        if(!targetHisto || !blankHisto || !differenceHisto || !monitorHisto)
         {
             cerr << "Error: couldn't find a histo needed for diff Histo plotting" << endl;
             exit(1);
@@ -372,7 +391,7 @@ void plotDiffHistos(int groupNumber)
         targetHisto->GetXaxis()->SetNdivisions(10);
         //targetHisto->GetXaxis()->SetTickLength(0.03);
 
-        targetHisto->GetXaxis()->SetRangeUser(1260,1330);
+        targetHisto->GetXaxis()->SetRangeUser(1220,1350);
 
         // Y-axis parameters
         targetHisto->GetYaxis()->SetTitle("Counts");
@@ -388,18 +407,21 @@ void plotDiffHistos(int groupNumber)
         //targetHisto->GetYaxis()->SetNdivisions(10);
         targetHisto->GetYaxis()->SetTickLength(0);
 
-        string title = angle + " deg, Sn124, 4M";
+        string title = angle4M + " deg, Sn124, 4M";
         targetHisto->SetTitle(title.c_str());
+
+        blankHisto->SetFillColor(29);
+        targetHisto->SetFillColor(19);
 
         targetHisto->Draw("hist");
         blankHisto->Draw("hist same");
-        differenceHisto->Draw("hist same");
+        //differenceHisto->Draw("hist same");
 
         int minIntBin = differenceHisto->FindBin(FOURM_INT_LIMIT_MIN);
         int maxIntBin = differenceHisto->FindBin(FOURM_INT_LIMIT_MAX);
 
         ostringstream ss;
-        ss << differenceHisto->Integral(minIntBin, maxIntBin);
+        ss << differenceHisto->Integral(minIntBin, maxIntBin)/monitorHisto->GetEntries();
         string integral = ss.str();
 
         TLatex latex;
@@ -409,11 +431,11 @@ void plotDiffHistos(int groupNumber)
         latex.SetTextColor(kRed);
 
         string diffInt = "Diff sum: ";
-        latex.DrawLatex(0.20,0.65,diffInt.c_str());
-        latex.DrawLatex(0.20, 0.58, integral.c_str());
+        latex.DrawLatex(0.20,0.85,diffInt.c_str());
+        latex.DrawLatex(0.20, 0.78, integral.c_str());
 
-        TLine *gateLowLine = new TLine(FOURM_INT_LIMIT_MIN,0,FOURM_INT_LIMIT_MIN,200);
-        TLine *gateHighLine = new TLine(FOURM_INT_LIMIT_MAX,0,FOURM_INT_LIMIT_MAX,200);
+        TLine *gateLowLine = new TLine(FOURM_INT_LIMIT_MIN,0,FOURM_INT_LIMIT_MIN,50);
+        TLine *gateHighLine = new TLine(FOURM_INT_LIMIT_MAX,0,FOURM_INT_LIMIT_MAX,50);
         gateLowLine->SetLineStyle(7);
         gateLowLine->SetLineWidth(3);
         gateLowLine->SetLineColor(kBlue);
@@ -432,17 +454,18 @@ void plotDiffHistos(int groupNumber)
         string targetHistoName = "Sn124_6M";
         string blankHistoName = "blank_6M";
         string differenceHistoName = "Sn124Difference_6M";
+        string monitorHistoName = "Sn124MonitorHisto";
 
         TH1I* targetHisto = (TH1I*)expFile->Get(targetHistoName.c_str());
         TH1I* blankHisto = (TH1I*)expFile->Get(blankHistoName.c_str());
         TH1I* differenceHisto = (TH1I*)expFile->Get(differenceHistoName.c_str());
+        TH1I* monitorHisto = (TH1I*)expFile->Get(monitorHistoName.c_str());
 
-        if(!targetHisto || !blankHisto || !differenceHisto)
+        if(!targetHisto || !blankHisto || !differenceHisto || !monitorHisto)
         {
             cerr << "Error: couldn't find a histo needed for diff Histo plotting" << endl;
             exit(1);
         }
-
         // Pad dimensions and margins
         //gPad->SetPad(0, 0.8, 1, 0);
         gPad->SetLeftMargin(0.12);
@@ -478,7 +501,7 @@ void plotDiffHistos(int groupNumber)
         targetHisto->GetXaxis()->SetNdivisions(10);
         //targetHisto->GetXaxis()->SetTickLength(0.03);
 
-        targetHisto->GetXaxis()->SetRangeUser(900,1000);
+        targetHisto->GetXaxis()->SetRangeUser(850,1050);
 
         // Y-axis parameters
         targetHisto->GetYaxis()->SetTitle("Counts");
@@ -494,18 +517,21 @@ void plotDiffHistos(int groupNumber)
         //targetHisto->GetYaxis()->SetNdivisions(10);
         targetHisto->GetYaxis()->SetTickLength(0);
 
-        string title = angle + " deg, Sn124, 6M";
+        string title = angle6M + " deg, Sn124, 6M";
         targetHisto->SetTitle(title.c_str());
+
+        blankHisto->SetFillColor(29);
+        targetHisto->SetFillColor(19);
 
         targetHisto->Draw("hist");
         blankHisto->Draw("hist same");
-        differenceHisto->Draw("hist same");
+        //differenceHisto->Draw("hist same");
 
         int minIntBin = differenceHisto->FindBin(SIXM_INT_LIMIT_MIN);
         int maxIntBin = differenceHisto->FindBin(SIXM_INT_LIMIT_MAX);
 
         ostringstream ss;
-        ss << differenceHisto->Integral(minIntBin, maxIntBin);
+        ss << differenceHisto->Integral(minIntBin, maxIntBin)/monitorHisto->GetEntries();
         string integral = ss.str();
 
         TLatex latex;
@@ -515,11 +541,11 @@ void plotDiffHistos(int groupNumber)
         latex.SetTextColor(kRed);
 
         string diffInt = "Diff sum: ";
-        latex.DrawLatex(0.20,0.65,diffInt.c_str());
-        latex.DrawLatex(0.20, 0.58, integral.c_str());
+        latex.DrawLatex(0.20,0.85,diffInt.c_str());
+        latex.DrawLatex(0.20, 0.78, integral.c_str());
 
-        TLine *gateLowLine = new TLine(SIXM_INT_LIMIT_MIN,0,SIXM_INT_LIMIT_MIN,200);
-        TLine *gateHighLine = new TLine(SIXM_INT_LIMIT_MAX,0,SIXM_INT_LIMIT_MAX,200);
+        TLine *gateLowLine = new TLine(SIXM_INT_LIMIT_MIN,0,SIXM_INT_LIMIT_MIN,50);
+        TLine *gateHighLine = new TLine(SIXM_INT_LIMIT_MAX,0,SIXM_INT_LIMIT_MAX,50);
         gateLowLine->SetLineStyle(7);
         gateLowLine->SetLineWidth(3);
         gateLowLine->SetLineColor(kBlue);

@@ -3,7 +3,13 @@ lit116SnElasticXS_24.dat
 lit118SnElasticXS_11.dat
 lit118SnElasticXS_24.dat
 lit120SnElasticXS_11.dat
+lit120SnElasticXS_17.dat
 lit122SnElasticXS_11.dat
 lit124SnElasticXS_11.dat
 lit124SnElasticXS_24.dat
-DOMPrediction_112SnElasticXS_17.dat
+exp112SnElasticXS_17.dat
+exp124SnElasticXS_17.dat
+Sn112_4M.txt
+Sn112_6M.txt
+Sn124_4M.txt
+Sn124_6M.txt

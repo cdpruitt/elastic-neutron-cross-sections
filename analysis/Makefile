@@ -18,8 +18,8 @@ scaleCSDataFile: src/scaleCSDataFile.cpp src/dataSet.cpp src/dataPoint.cpp
 subtractBackground: src/subtractBackground.cpp src/ScalerData.cpp src/RunConfig.cpp src/DiffGroup.cpp
 	$(COMPILER) $(CFLAGS) -o subtractBackground src/subtractBackground.cpp src/ScalerData.cpp src/RunConfig.cpp src/DiffGroup.cpp $(LINKOPTION)
 
-calculateCS: src/calculateCS.cpp src/ScalerData.cpp src/RunConfig.cpp
-	$(COMPILER) $(CFLAGS) -o calculateCS src/calculateCS.cpp src/ScalerData.cpp src/RunConfig.cpp $(LINKOPTION)
+calculateCS: src/calculateCS.cpp src/ScalerData.cpp src/RunConfig.cpp src/DiffGroup.cpp
+	$(COMPILER) $(CFLAGS) -o calculateCS src/calculateCS.cpp src/ScalerData.cpp src/RunConfig.cpp src/DiffGroup.cpp $(LINKOPTION)
 
 histos: src/histos.cpp src/Detector.cpp
 	$(COMPILER) $(CFLAGS) -o histos src/histos.cpp src/Detector.cpp $(LINKOPTION)

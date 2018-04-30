@@ -3,7 +3,8 @@
 
 #include <string>
 
-#include "TH1I.h"
+#include "TH1.h"
+#include "TH2.h"
 
 struct Detector
 {
@@ -24,10 +25,12 @@ struct Detector
     TH1D* pulseHeightHisto;
     TH1D* PSDHisto;
     TH1D* TDCHisto;
+    TH2D* PHPSD;
 
     TH1D* rawPH;
     TH1D* rawPSD;
     TH1D* rawTDC;
+    TH2D* rawPHPSD;
 
     TH1D* PHGatedPH;
     TH1D* PHGatedPSD;
