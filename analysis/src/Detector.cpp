@@ -8,7 +8,7 @@ using namespace std;
 Detector::Detector(string n) : name(n)
 {
     // read in thresholds for each variable
-    string thresholdFileName = "configuration/thresholds/" + name + ".txt";
+    string thresholdFileName = "../configuration/thresholds/" + name + ".txt";
     ifstream file(thresholdFileName);
 
     if(!file.is_open())

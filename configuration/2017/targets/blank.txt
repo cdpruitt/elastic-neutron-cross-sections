@@ -1,0 +1,8 @@
+Name: blank
+Length:     0 cm
+Diameter:   0 cm
+Diameter uncertainty: 0 cm
+Mass:       0 g
+Mass uncertainty: 0 g
+Molar Mass: 0 g/mol
+Molar mass uncertainty: 0 g/mol

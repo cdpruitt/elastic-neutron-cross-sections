@@ -4,24 +4,49 @@
 #                               analyze.sh                                     #
 ################################################################################
 #
-# This script initiates data analysis. It decides which experimental
-# runs to analyze, then calls a series of C++ codes to process those runs.
-# Several flags can be used to manage this workflow:
+# This script initiates data analysis on raw ROOT trees containing from an
+# elastic neutron scattering experiment at TUNL.
+# In order to make data analysis modular (and to facilitate review) results from
+# each stage of analysis are stored in ROOT files that are used for subsequent
+# stages of analysis.
+#
+# The stages are:
+#
+# - ./readConfig, which reads the configuration data for the experimental setup
+# in question (from ../configuration directory)
+#
+# - ./histos, which takes raw data in the form of one ROOT tree per experimental
+# run (located in ../rawData/<experiment name> directory) and produces raw and
+# PID-gated histograms for each detector (located in ../processedData/runs)
+#
+# - ./subtractBackground, which takes PID-gated histograms and produces
+# difference histograms between target and blank for each detector angle
+# (located in ../processedData/angles). This is the "signal" used to calculate
+# cross sections.
+#
+# - ./calculateCS, which takes the difference histograms generated above and,
+# using a reference cross section, calculates the cross section for each
+# detector angle and target (results are written to ../results directory).
+#
+################################################################################
+#                              HOW TO USE
+################################################################################
+#
+# To start data analysis, run:
+#
+#   ./analyze.sh -<flag>
+#
+# where zero or more of the following flags are used.
 #
 #  Flag |                           Description
 #-------+-----------------------------------------------------------------------
-#    -r | for each run given in ../<experiment>/runsToSort.txt, analyze the most
-#       | recent subrun
-#       | (e.g., ./analyze -r)
+#    -h | recreate histograms from the raw root tree data (the default mode is
+#       | not to recreate histograms if they already exist)
 #-------+-----------------------------------------------------------------------
-#    -h | for each run analyzed, recreate histograms from the raw root tree data
-#-------+-----------------------------------------------------------------------
-
 #
 ################################################################################
 
-# SECTION 1: recompile analysis code
-
+# Before starting analysis, recompile analysis code if necessary
 make
 if [ "$?" != 0 ] # "$?" is return value of previous command
 then
@@ -29,24 +54,20 @@ then
     exit $?
 fi
 
-################################################################################
-
-# SECTION 2: process script flags
-
-# Parse runtime flags
-while getopts "rh" opt; do
+# read flags
+while getopts "h" opt; do
     case ${opt} in
-        r)
-            runlist=true
-            ;;
         h)
             recreateHistos=true
+            if [[ $recreateHistos = true ]]
+            then
+                printf "\n Flag -h used: recreating histos for all runs.\n\n"
+            fi
             ;;
         \?)
             # Flags unrecognized - exit script and give user help text
             printf "\nInvalid flag given.\n\nValid flags are:\n"
-            printf "    -r (analyze runs listed in ..runsToSort.txt)\n"
-            printf "    -h (recreate histos from trees)\n"
+            printf "    -h (recreate histos from raw data trees)\n"
 
             exit
             ;;
@@ -55,61 +76,72 @@ done
 
 ################################################################################
 
-# SECTION 3: define analysis workflow
-
-# This function is called once for each data set we want to analyze.
-
-analyze ()
-{
-    inputFileName=$1
-    outputDirectoryName=$2
-
-    # Send error messages to a text file
-    2>&1 | tee > "$outputDirectoryName"/error.txt
-
-    ./histos "$inputFileName" "$outputDirectoryName"/histos.root
-}
-
-################################################################################
-
-# SECTION 4: determine which runs should be analyzed
-
-# Analyze runs listed in runsToSort.txt
-if [[ $runlist = true && -a runsToSort.txt ]]
+experimentFileName="../configuration/experiment.txt"
+if ! [[ -a $experimentFileName ]]
 then
-    printf "\nRunlist mode enabled. Reading runs from ./runsToSort.txt...\n"
-
-    # loop through all runs listed in runsToSort.txt
-    while read runNumber; do
-
-        # Create directory to hold the output of our analysis
-        if [ ! -d "../processedData/runs/$runNumber" ]
-        then
-            mkdir "../processedData/runs/$runNumber"
-        fi
-
-        # Check to see if all subruns should be analyzed, or just one
-        # Sort all sub-runs in the specified run directory
-        for f in "../rawData/2018/snmay_${runNumber}_tree.root";
-        do
-            if [[ $recreateHistos = true ]]
-            then
-                printf "\n************************************"
-                printf "\n     Reading data from $runNumber"
-                printf "\n************************************\n"
-
-                outputDirectoryName="../processedData/runs/$runNumber"
-                analyze "$f" "$outputDirectoryName"
-            fi
-        done
-
-    done < runsToSort.txt
-
-    # using each detector, calculate cross sections for all angles
-    #./calculateCS 4M
-    #./calculateCS 6M
-
-    printf "\n\n"
-
+    printf "Error: failed to find $experimentFileName."
     exit
 fi
+read -r experiment<$experimentFileName # find out which experimental dataset to analyze
+
+if [ ! $experiment ]
+then
+    printf "Error: failed to read experimental directory name from\
+    $experimentFileName. Is the file empty?\n"
+    exit
+fi
+
+printf "Analyzing data from $experiment"
+
+if ! [[ -a "../configuration/$experiment/runConfig.txt" ]]
+then
+    printf "Error: failed to find runConfig.txt in\
+    ../configuration/$experiment."
+    exit
+fi
+
+while read line
+do
+    IFS=' ' read -r -a tokens <<< "$line" # parse line into space-delimited tokens
+
+    re='[0-9]+'
+    if ! [[ "${tokens[0]}" =~ $re ]]
+    then
+        continue # skip lines that do not start with an integer
+    fi
+
+    runNumber=${tokens[0]}
+
+    if [[ $recreateHistos = true ]]
+    then
+        inputFileName="../rawData/$experiment/run${runNumber}.root"
+        outputDirectoryName="../processedData/$experiment/runs/$runNumber"
+
+        if [ ! -f $inputDirectoryName ]
+        then
+            printf "Error: failed to find $(inputFileName). Skipping run\
+            $(runNumber)..."
+
+            continue
+        fi
+
+        if [ ! -d $outputDirectoryName ]
+        then
+            mkdir $outputDirectoryName
+        fi
+
+        printf "\n************************************"
+        printf "\n     Reading data from $runNumber"
+        printf "\n************************************\n"
+
+        # Send error messages to a text file
+        2>&1 | tee > "$outputDirectoryName"/error.txt
+
+        ./bin/histos "$inputFileName" "$outputDirectoryName"/histos.root
+    fi
+done < ../configuration/$experiment/runConfig.txt
+
+#./subtractBackground
+#./calculateCS
+
+printf "\nFinished analysis.\n\n"

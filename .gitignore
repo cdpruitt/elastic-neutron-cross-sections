@@ -1,7 +1,2 @@
-*
-*/
-!analysis/
-!analysis/*
-!finiteSizeCorrection/
-!finiteSizeCorrection/*
-
+rawData/
+processedData/

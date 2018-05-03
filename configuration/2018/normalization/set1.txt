@@ -1,0 +1,15 @@
+This file lists runs to calculate a reference cross
+section for normalizing all other cross section results
+********************************************************************************
+Polyethylene run number:    217
+Blank run number:           218
+Graphite run number:        219
+
+Angle (degrees, lab):       23
+Lit. (n,p) CS (mb):         163.8
+
+Low integration limit, 4M:  1200
+High integration limit, 6M: 1300
+
+Low integration limit, 4M:  900
+High integration limit, 6M: 1000

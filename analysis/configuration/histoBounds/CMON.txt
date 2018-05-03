@@ -1,8 +1,0 @@
-PH Minimum      PH Maximum
-0               1000
-
-PSD Minimum     PSD Maximum
-600             1300
-
-TDC Minimum     TDC Maximum
-0               2000

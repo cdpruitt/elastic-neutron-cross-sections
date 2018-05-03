@@ -1,2 +1,0 @@
-Integral lower bound        Integral upper bound
-955                         985

@@ -1,0 +1,7 @@
+Integration limits for Sn112 TDC histograms
+********************************************************************************
+Low limit, 4M:      1200
+High limit, 4M:     1300
+
+Low limit, 6M:      900
+High limit, 6M:     1000
