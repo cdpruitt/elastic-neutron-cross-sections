@@ -1,0 +1,8 @@
+This file lists the target used and the detector angles (lab frame) for each run.
+The data format is:
+*******************************************************************************
+Run No.     Target          4m det angle    6m det angle
+*******************************************************************************
+217         polyethylene    23              23
+218         blank           23              23
+219         graphite        23              23

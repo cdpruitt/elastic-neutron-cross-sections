@@ -260,17 +260,19 @@ int main()
 
                 // read histogram counts for each run
                 stringstream ss;
-                ss << setprecision(4) << angle.angle;
-                string histoFileName = "../analyzedData/angles/" + ss.str() + "/" + target + ".root";
+                ss << setprecision(5) << angle.angle;
+                string histoFileName = "../processedData/angles/" + ss.str() + "/" + target + ".root";
                 TFile histoFile(histoFileName.c_str(),"UPDATE");
 
-                string histoName = target + "Difference" + detectorName;
+                if(!histoFile.IsOpen())
+                {
+                    continue;
+                }
+
+                string histoName = "diff" + detectorName;
                 TH1I* histo = (TH1I*)histoFile.Get(histoName.c_str());
 
-                string monitorName = target + "Monitor" + detectorName + "Total";
-                TH1I* monitor= (TH1I*)histoFile.Get(monitorName.c_str());
-
-                if(!histo || !monitor)
+                if(!histo)
                 {
                     continue;
                 }
@@ -283,11 +285,10 @@ int main()
 
                 // convert from lab angle to CM angle
                 double CMAngle = labAngleToCMAngle(angle.angle, NEUTRON_MASS, TARGET_MASS);
-                double monitorCounts = monitor->GetEntries();
 
                 // calculate differential cross section in lab frame
                 double value = ((double)difference/REFERENCE_HISTO_COUNTS)*
-                    ((double)REFERENCE_MONITOR_COUNTS/monitorCounts)*
+                    ((double)REFERENCE_MONITOR_COUNTS/NORMALIZATION_SCALING)*
                     (REFERENCE_NUMBER_OF_ATOMS/TARGET_NUMBER_OF_ATOMS)*
                     REFERENCE_CS;
 

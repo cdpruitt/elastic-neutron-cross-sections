@@ -83,14 +83,14 @@ then
     while read runNumber; do
 
         # Create directory to hold the output of our analysis
-        if [ ! -d "../analyzedData/runs/$runNumber" ]
+        if [ ! -d "../processedData/runs/$runNumber" ]
         then
-            mkdir "../analyzedData/runs/$runNumber"
+            mkdir "../processedData/runs/$runNumber"
         fi
 
         # Check to see if all subruns should be analyzed, or just one
         # Sort all sub-runs in the specified run directory
-        for f in "../17MeV/snmay_${runNumber}_tree.root";
+        for f in "../rawData/2018/snmay_${runNumber}_tree.root";
         do
             if [[ $recreateHistos = true ]]
             then
@@ -98,7 +98,7 @@ then
                 printf "\n     Reading data from $runNumber"
                 printf "\n************************************\n"
 
-                outputDirectoryName="../analyzedData/runs/$runNumber"
+                outputDirectoryName="../processedData/runs/$runNumber"
                 analyze "$f" "$outputDirectoryName"
             fi
         done

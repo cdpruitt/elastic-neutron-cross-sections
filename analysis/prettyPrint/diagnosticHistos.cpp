@@ -38,8 +38,8 @@ diagnosticHistos (unsigned int targetRunNumber, unsigned blankRunNumber)
     gPad->SetBottomMargin(0.15);
     gPad->SetTicky(2);
 
-    string targetFileName = "../analyzedData/runs/" + itos(targetRunNumber) + "/histos.root";
-    string blankRunNumber = "../analyzedData/runs/" + itos(blankRunNumber) + "/histos.root";
+    string targetFileName = "../processedData/runs/" + itos(targetRunNumber) + "/histos.root";
+    string blankRunNumber = "../processedData/runs/" + itos(blankRunNumber) + "/histos.root";
     
     // read in target histos
     TFile* expFile = new TFile(expFileName.c_str(),"READ");

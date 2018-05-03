@@ -6,6 +6,8 @@
 #include "TH1.h"
 #include "TH2.h"
 
+#include "PIDBanana.h"
+
 struct Detector
 {
     Detector(std::string n);
@@ -32,13 +34,7 @@ struct Detector
     TH1D* rawTDC;
     TH2D* rawPHPSD;
 
-    TH1D* PHGatedPH;
-    TH1D* PHGatedPSD;
-    TH1D* PHGatedTDC;
-
-    TH1D* PSDGatedPH;
-    TH1D* PSDGatedPSD;
-    TH1D* PSDGatedTDC;
+    PIDBanana banana;
 };
 
 #endif /* DETECTOR_H */

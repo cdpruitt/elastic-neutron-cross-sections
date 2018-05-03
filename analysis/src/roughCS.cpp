@@ -71,7 +71,7 @@ int main(int, char** argv)
 
     string angle = ss.str();
 
-    string diffFileName = "../analyzedData/diffHistos/group" + to_string(g.groupNumber) + ".root";
+    string diffFileName = "../processedData/diffHistos/group" + to_string(g.groupNumber) + ".root";
     TFile* diffFile = new TFile(diffFileName.c_str(),"READ");
 
     string differenceHistoName = "Sn112Difference_4M";
@@ -82,11 +82,11 @@ int main(int, char** argv)
 
     double difference = differenceHisto->Integral(minIntBin, maxIntBin);
 
-    string target1MonitorFileName = "../analyzedData/runs/" + to_string(g.target1) + "/histos.root";
+    string target1MonitorFileName = "../processedData/runs/" + to_string(g.target1) + "/histos.root";
     TFile* target1MonitorFile = new TFile(target1MonitorFileName.c_str());
     TH1I* target1MonitorHisto = (TH1I*)target1MonitorFile->Get("CMONTDC");
 
-    string target2MonitorFileName = "../analyzedData/runs/" + to_string(g.target2) + "/histos.root";
+    string target2MonitorFileName = "../processedData/runs/" + to_string(g.target2) + "/histos.root";
     TFile* target2MonitorFile = new TFile(target1MonitorFileName.c_str());
     TH1I* target2MonitorHisto = (TH1I*)target2MonitorFile->Get("CMONTDC");
 

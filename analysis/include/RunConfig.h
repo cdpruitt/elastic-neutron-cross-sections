@@ -3,8 +3,12 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "TH1.h"
+
+#include "Target.h"
+#include "experimentalConstants.h"
 
 struct RunConfig
 {
@@ -29,21 +33,32 @@ struct AllConfigs
 
 struct AngleData
 {
+    AngleData()
+    {
+        for(auto& name : TARGET_NAMES)
+        {
+            targets.push_back(Target(name));
+        }
+    };
+
     double angle;
-    std::vector<TH1D*> Sn112Histo4M;
-    std::vector<TH1D*> Sn112Monitor4M;
-    std::vector<TH1D*> Sn112Histo6M;
-    std::vector<TH1D*> Sn112Monitor6M;
 
-    std::vector<TH1D*> Sn124Histo4M;
-    std::vector<TH1D*> Sn124Monitor4M;
-    std::vector<TH1D*> Sn124Histo6M;
-    std::vector<TH1D*> Sn124Monitor6M;
+    std::vector<Target> targets;
 
-    std::vector<TH1D*> blankHisto4M;
-    std::vector<TH1D*> blankMonitor4M;
-    std::vector<TH1D*> blankHisto6M;
-    std::vector<TH1D*> blankMonitor6M;
+    Target getBlank()
+    {
+        for(auto& target : targets)
+        {
+            if(target.name=="blank")
+            {
+                return target;
+            }
+        }
+
+        std::cerr << "Error: couldn't find blank target in angle " << std::to_string(angle)
+            << ". Returning empty target..." << std::endl;
+        return Target();
+    };
 
     bool operator<(const AngleData& comparand) const
     {

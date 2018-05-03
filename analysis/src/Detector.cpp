@@ -56,7 +56,8 @@ Detector::Detector(string n) : name(n)
     string PHName = name + "PH";
     string PSDName = name + "PSD";
     string TDCName = name + "TDC";
- 
+    string PHPSDName = name + "PHPSD";
+
     getline(histoFile,dummy);
 
     unsigned int PH_MINIMUM;
@@ -88,6 +89,10 @@ Detector::Detector(string n) : name(n)
     TDCHisto = new TH1D(TDCName.c_str(), TDCName.c_str(),
             TDC_MAXIMUM-TDC_MINIMUM, TDC_MINIMUM, TDC_MAXIMUM);
 
+    PHPSD = new TH2D(PHPSDName.c_str(), PHPSDName.c_str(),
+            1000, 0, 5000,
+            1000, 0, 5000);
+
     histoFile.close();
 
     string rawPHName = PHName + "raw";
@@ -108,35 +113,5 @@ Detector::Detector(string n) : name(n)
             1000, 0, 5000,
             1000, 0, 5000);
 
-
-    string PHGatedPHName = PHName + "PHGated";
-    string PHGatedPSDName = PSDName + "PHGated";
-    string PHGatedTDCName = TDCName + "PHGated";
-
-    PHGatedPH = new TH1D(PHGatedPHName.c_str(), PHGatedPHName.c_str(),
-            5000, 0, 5000);
-
-    PHGatedPSD = new TH1D(PHGatedPSDName.c_str(), PHGatedPSDName.c_str(),
-            5000, 0, 5000);
-
-    PHGatedTDC = new TH1D(PHGatedTDCName.c_str(), PHGatedTDCName.c_str(),
-            5000, 0, 5000);
-
-    string PSDGatedPHName = PHName + "PSDGated";
-    string PSDGatedPSDName = PSDName + "PSDGated";
-    string PSDGatedTDCName = TDCName + "PSDGated";
-
-    PSDGatedPH = new TH1D(PSDGatedPHName.c_str(), PSDGatedPHName.c_str(),
-            5000, 0, 5000);
-
-    PSDGatedPSD = new TH1D(PSDGatedPSDName.c_str(), PSDGatedPSDName.c_str(),
-            5000, 0, 5000);
-
-    PSDGatedTDC = new TH1D(PSDGatedTDCName.c_str(), PSDGatedTDCName.c_str(),
-            5000, 0, 5000);
-
-    string PHPSDName = name + "PHPSD";
-    PHPSD = new TH2D(PHPSDName.c_str(), PHPSDName.c_str(),
-            1000, 0, 5000,
-            1000, 0, 5000);
+    banana = PIDBanana(name);
 }

@@ -15,8 +15,10 @@ const int SIX_METER_TIME_MAXIMUM = 84;
 const int FOUR_METER_TIME_MINIMUM = 73;
 const int FOUR_METER_TIME_MAXIMUM = 94;
 
+const double NORMALIZATION_SCALING = 300000;
+
 const std::vector<std::string> TARGET_NAMES =
-{"Sn112", "Sn124"};
+{"Sn112", "Sn124", "blank", "SnNat"};
 
 const std::vector<std::string> DETECTOR_NAMES =
 {"4M", "6M", "0DEG", "CMON", "RF"};

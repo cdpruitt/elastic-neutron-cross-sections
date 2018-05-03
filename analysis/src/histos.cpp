@@ -34,65 +34,6 @@ int main(int argc, char** argv)
     string inputFileName = argv[1];
     string outputFileName = argv[2];
 
-    // read bananas for PID: 4M
-    ifstream bananaFile4M("configuration/PSDGates/4MBanana.data");
-    if(!bananaFile4M.is_open())
-    {
-        cerr << "Error: couldn't open banana file for 4M detector." << endl;
-        exit(1);
-    }
-
-    vector<float> bananaXs4M;
-    vector<float> bananaYs4M;
-
-    string line;
-
-    while(getline(bananaFile4M, line))
-    {
-        vector<string> tokens;
-        istringstream iss(line);
-        copy(istream_iterator<string>(iss),
-                istream_iterator<string>(),
-                back_inserter(tokens));
-
-        bananaXs4M.push_back(stod(tokens[0]));
-        bananaYs4M.push_back(stod(tokens[1]));
-    }
-
-    // read bananas for PID: 6M
-    ifstream bananaFile6M("configuration/PSDGates/6MBanana.data");
-    vector<float> bananaXs6M;
-    vector<float> bananaYs6M;
-
-    while(getline(bananaFile6M, line))
-    {
-        vector<string> tokens;
-        istringstream iss(line);
-        copy(istream_iterator<string>(iss),
-                istream_iterator<string>(),
-                back_inserter(tokens));
-
-        bananaXs6M.push_back(stod(tokens[0]));
-        bananaYs6M.push_back(stod(tokens[1]));
-    }
-
-    // read bananas for PID: monitor
-    ifstream bananaFileMon("configuration/PSDGates/MonitorBanana.data");
-    vector<float> bananaXsMon;
-    vector<float> bananaYsMon;
-
-    while(getline(bananaFileMon, line))
-    {
-        vector<string> tokens;
-        istringstream iss(line);
-        copy(istream_iterator<string>(iss),
-                istream_iterator<string>(),
-                back_inserter(tokens));
-
-        bananaXsMon.push_back(stod(tokens[0]));
-        bananaYsMon.push_back(stod(tokens[1]));
-    }
-
     TFile inputFile(inputFileName.c_str());
     TTree* tree = (TTree*)inputFile.Get("tree");
     if(!tree)
@@ -125,36 +66,27 @@ int main(int argc, char** argv)
 
         for(Detector d : detectors)
         {
+            // skip events where another detector caused the trigger
+            if(d.rawPH<=0)
+            {
+                continue;
+            }
+
             // fill raw spectra before gates
             d.rawPH->Fill(d.pulseHeight);
             d.rawPSD->Fill(d.PSD);
             d.rawTDC->Fill(detectors[4].TDC);
             d.rawPHPSD->Fill(d.PSD, d.pulseHeight);
 
-            // apply gates
-            /*if(d.pulseHeight > d.pulseHeightThreshold)
-            {
-                d.PHGatedPH->Fill(d.pulseHeight);
-                d.PHGatedPSD->Fill(d.PSD);
-                d.PHGatedTDC->Fill(detectors[4].TDC);
-            }
-
-            if(d.PSD > d.PSDThreshold)
-            {
-                d.PSDGatedPH->Fill(d.pulseHeight);
-                d.PSDGatedPSD->Fill(d.PSD);
-                d.PSDGatedTDC->Fill(detectors[4].TDC);
-            }*/
-
             // test that event is inside PSD-pulse height banana
-            if(d.name=="4M")
+            if(d.name=="4M" || d.name=="6M" || d.name=="CMON")
             {
                 if(TMath::IsInside(
                             d.PSD,
                             d.pulseHeight,
-                            bananaXs4M.size(),
-                            &bananaXs4M[0],
-                            &bananaYs4M[0])
+                            d.banana.X.size(),
+                            &d.banana.X[0],
+                            &d.banana.Y[0])
                   )
 
                   /*if(d.pulseHeight > d.pulseHeightThreshold &&
@@ -165,49 +97,6 @@ int main(int argc, char** argv)
                     d.TDCHisto->Fill(detectors[4].TDC);
                     d.PHPSD->Fill(d.PSD, d.pulseHeight);
                 }
-            }
-
-            else if(d.name=="6M")
-            {
-                if(TMath::IsInside(
-                            d.PSD,
-                            d.pulseHeight,
-                            bananaYs6M.size(),
-                            &bananaXs6M[0],
-                            &bananaYs6M[0])
-                  )
-
-                    /*if(d.pulseHeight > d.pulseHeightThreshold &&
-                      d.PSD > d.PSDThreshold)
-                      */
-                {
-                    d.pulseHeightHisto->Fill(d.pulseHeight);
-                    d.PSDHisto->Fill(d.PSD);
-                    d.TDCHisto->Fill(detectors[4].TDC);
-                    d.PHPSD->Fill(d.PSD, d.pulseHeight);
-                }
-            }
-
-            else if(d.name=="CMON")
-            {
-                if(TMath::IsInside(
-                            d.PSD,
-                            d.pulseHeight,
-                            bananaYsMon.size(),
-                            &bananaXsMon[0],
-                            &bananaYsMon[0])
-                  )
-
-                    /*if(d.pulseHeight > d.pulseHeightThreshold &&
-                      d.PSD > d.PSDThreshold)
-                      */
-                {
-                    d.pulseHeightHisto->Fill(d.pulseHeight);
-                    d.PSDHisto->Fill(d.PSD);
-                    d.TDCHisto->Fill(detectors[4].TDC);
-                    d.PHPSD->Fill(d.PSD, d.pulseHeight);
-                }
-
             }
 
             else
