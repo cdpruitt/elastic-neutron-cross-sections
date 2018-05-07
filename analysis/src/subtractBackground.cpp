@@ -8,9 +8,10 @@
 #include <iostream>
 #include <sstream>
 
-#include "../include/ScalerData.h"
-#include "../include/RunConfig.h"
+#include "../include/Config.h"
 #include "../include/experimentalConstants.h"
+
+extern Config config;
 
 using namespace std;
 
@@ -70,92 +71,101 @@ void subtractBackground(
     }
 }
 
-int main()
+int subtractBackground()
 {
-    AllConfigs allConfigs = getRunConfig();
-
-    AllAngles allAngles;
-    allAngles.getRunData(allConfigs);
-
-    for(auto& angle : allAngles.angles)
+    for(auto& angle : config.angles)
     {
-        for(auto& run : allConfigs.runs)
+        cout << "Subtracting background for angle " << angle.value << "\r";
+        fflush(stdout);
+
+        for(auto& run : config.runs)
         {
-            if(run.angle4M==angle.angle)
+            for(auto& runAngle : run.angles)
             {
-                for(auto& target : angle.targets)
+                if(runAngle==angle.value)
                 {
-                    if(run.targetName==target.name)
+                    bool alreadyAddedTarget = false;
+
+                    for(auto& target : angle.targets)
                     {
-                        string histoFileName = "../processedData/runs/" + to_string(run.runNumber) + "/histos.root";
+                        if(run.target==target.name)
+                        {
+                            alreadyAddedTarget = true;
+                            break;
+                        }
+                    }
+
+                    if(!alreadyAddedTarget)
+                    {
+                        string targetFileName = "../configuration/" + config.experiment
+                            + "/targets/" + run.target + "/physical.txt";
+                        angle.targets.push_back(Target(run.target));
+                    }
+                }
+            }
+
+            for(auto& target : angle.targets)
+            {
+                if(target.name!=run.target)
+                {
+                    continue;
+                }
+
+                for(int i=0; i<run.angles.size(); i++)
+                {
+                    if(run.angles[i]==angle.value)
+                    {
+                        string histoFileName = "../processedData/" + config.experiment
+                            + "/runs/" + to_string(run.number) + "/histos.root";
                         TFile histoFile(histoFileName.c_str(),"READ");
 
-                        string histoName = "4MTDC";
+                        string histoName = DETECTOR_NAMES[i] + "TDC";
                         TH1D* histo = (TH1D*)histoFile.Get(histoName.c_str());
+                        if(!histo)
+                        {
+                            cerr << "Error: couldn't open " << histoName << " in file "
+                                << histoFileName << endl;
+                            continue;
+                        }
 
-                        string newHistoName = "histo4M_run" + to_string(run.runNumber);
-                        target.histo4M.push_back((TH1D*)(histo->Clone(newHistoName.c_str())));
-                        target.histo4M.back()->SetDirectory(0);
+                        string newHistoName = "histo" + DETECTOR_NAMES[i] + "_run" + to_string(run.number);
+                        target.histos[i].push_back((TH1D*)(histo->Clone(newHistoName.c_str())));
+                        target.histos[i].back()->SetDirectory(0);
 
                         TH1D* monitor = (TH1D*)histoFile.Get("CMONPSD");
 
-                        string newMonitorName = "monitor_run" + to_string(run.runNumber);
-                        target.monitor4M.push_back((TH1D*)(monitor->Clone(newMonitorName.c_str())));
-                        target.monitor4M.back()->SetDirectory(0);
+                        string newMonitorName = "monitor_run" + to_string(run.number);
+                        target.monitors[i].push_back((TH1D*)(monitor->Clone(newMonitorName.c_str())));
+                        target.monitors[i].back()->SetDirectory(0);
 
                         histoFile.Close();
                     }
                 }
             }
 
-            if(run.angle6M==angle.angle)
+            // if directory for this angle doesn't exist yet, create it
+            struct stat st = {0};
+
+            stringstream ss;
+            ss << setprecision(5) << angle.value;
+            string dirName = "../processedData/" + config.experiment + "/angles/" + ss.str();
+            if(stat(dirName.c_str(), &st) == -1)
             {
-                for(auto& target : angle.targets)
-                {
-                    if(run.targetName==target.name)
-                    {
-                        string histoFileName = "../processedData/runs/" + to_string(run.runNumber) + "/histos.root";
-                        TFile histoFile(histoFileName.c_str(),"READ");
-
-                        string histoName = "6MTDC";
-                        TH1D* histo = (TH1D*)histoFile.Get(histoName.c_str());
-
-                        string newHistoName = "histo6M_run" + to_string(run.runNumber);
-                        target.histo6M.push_back((TH1D*)(histo->Clone(newHistoName.c_str())));
-                        target.histo6M.back()->SetDirectory(0);
-
-                        TH1D* monitor = (TH1D*)histoFile.Get("CMONPSD");
-
-                        string newMonitorName = "monitor_run" + to_string(run.runNumber);
-                        target.monitor6M.push_back((TH1D*)(monitor->Clone(newMonitorName.c_str())));
-                        target.monitor6M.back()->SetDirectory(0);
-
-                        histoFile.Close();
-                    }
-                }
+                mkdir(dirName.c_str(), 0700);
             }
-        }
 
-        // if directory for this group doesn't exist yet, create it
-        struct stat st = {0};
+            for(auto& target : angle.targets)
+            {
+                string outputFileName = dirName + "/" + target.name + ".root";
+                TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
 
-        stringstream ss;
-        ss << setprecision(5) << angle.angle;
-        string dirName = "../processedData/angles/" + ss.str();
-        if(stat(dirName.c_str(), &st) == -1)
-        {
-            mkdir(dirName.c_str(), 0700);
-        }
+                for(int i=0; i<target.histos.size(); i++)
+                {
+                    subtractBackground(target.histos[i], target.monitors[i], angle.getBlank().histos[i], angle.getBlank().monitors[i], target.name, DETECTOR_NAMES[i]);
+                }
 
-        for(auto& target : angle.targets)
-        {
-            string outputFileName = dirName + "/" + target.name + ".root";
-            TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
-
-            subtractBackground(target.histo4M, target.monitor4M, angle.getBlank().histo4M, angle.getBlank().monitor4M, target.name, "4M");
-            subtractBackground(target.histo6M, target.monitor6M, angle.getBlank().histo6M, angle.getBlank().monitor6M, target.name, "6M");
-
-            outputFile->Close();
+                outputFile->Close();
+            }
         }
     }
 

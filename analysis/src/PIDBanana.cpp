@@ -7,13 +7,12 @@
 
 using namespace std;
 
-PIDBanana::PIDBanana(string detectorName)
+PIDBanana::PIDBanana(string fileName)
 {
-    string fileName = "configuration/PSDGates/" + detectorName + "Banana.data";
     ifstream bananaFile(fileName.c_str());
     if(!bananaFile.is_open())
     {
-        cerr << "Error: couldn't open banana file for " + detectorName + " detector." << endl;
+        cerr << "Error: couldn't open banana file " + fileName + "." << endl;
         return;
     }
 

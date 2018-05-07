@@ -8,22 +8,20 @@ OBJECTS = $(SOURCES:.c=.o)
 
 LINKOPTION = $(shell root-config --libs)
 
-TARGETS = readDataToGraph scaleCSDataFile calculateCS histos subtractBackground
+TARGETS = readDataToGraph scaleCSDataFile driver
 all: $(addprefix $(BIN), $(TARGETS))
 
-# produce gated histograms from raw ROOT trees with event data
-$(BIN)histos: src/histos.cpp src/Detector.cpp src/PIDBanana.cpp
-	$(COMPILER) $(CFLAGS) -o $(BIN)histos src/histos.cpp src/Detector.cpp src/PIDBanana.cpp $(LINKOPTION)
-
-# using gated histograms for each run, produce difference histograms between
-# target and background for each angle and detector
-$(BIN)subtractBackground: src/subtractBackground.cpp src/ScalerData.cpp src/RunConfig.cpp 
-	$(COMPILER) $(CFLAGS) -o $(BIN)subtractBackground src/subtractBackground.cpp src/ScalerData.cpp src/RunConfig.cpp $(LINKOPTION)
-
-# using difference histograms and a reference cross section, produce cross
-# sections by angle, target, and detector
-$(BIN)calculateCS: src/calculateCS.cpp src/ScalerData.cpp src/RunConfig.cpp
-	$(COMPILER) $(CFLAGS) -o $(BIN)calculateCS src/calculateCS.cpp src/ScalerData.cpp src/RunConfig.cpp $(LINKOPTION)
+# run analysis in three steps:
+# 	- produce gated histograms from raw ROOT trees with event data
+# 	
+# 	- using gated histograms for each run, produce difference histograms between
+# 	  target and blank for each angle
+#
+# 	- using difference histograms and a reference cross section, produce cross
+# 	  sections by angle, target, and detector
+$(BIN)driver: src/driver.cpp src/histos.cpp src/subtractBackground.cpp src/calculateCS.cpp src/Detector.cpp src/PIDBanana.cpp src/Config.cpp
+	$(COMPILER) $(CFLAGS) -o $(BIN)driver src/driver.cpp src/histos.cpp src/subtractBackground.cpp src/calculateCS.cpp src/Detector.cpp src/PIDBanana.cpp\
+	    src/Config.cpp $(LINKOPTION)
 
 # read data points from text files to ROOT graphs
 $(BIN)readDataToGraph: src/readDataToGraph.cpp src/dataSet.cpp src/dataPoint.cpp

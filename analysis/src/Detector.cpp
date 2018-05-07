@@ -2,98 +2,29 @@
 #include <fstream>
 
 #include "../include/Detector.h"
+#include "../include/Config.h"
 
 using namespace std;
 
-Detector::Detector(string n) : name(n)
+Detector::Detector(string n, string experiment) : name(n)
 {
-    // read in thresholds for each variable
-    string thresholdFileName = "../configuration/thresholds/" + name + ".txt";
-    ifstream file(thresholdFileName);
-
-    if(!file.is_open())
-    {
-        cerr << "Error: failed to open " << thresholdFileName << " when attempting to read thresholds for " << name;
-        exit(1);
-    }
-
-    string dummy;
-
-    getline(file,dummy);
-
-    file >> PSDThreshold;
-
-    getline(file,dummy);
-    getline(file,dummy);
-    getline(file,dummy);
-
-    file >> pulseHeightThreshold;
-
-    getline(file,dummy);
-    getline(file,dummy);
-    getline(file,dummy);
-
-    file >> TDCLowThreshold;
-    
-    getline(file,dummy);
-    getline(file,dummy);
-    getline(file,dummy);
- 
-    file >> TDCHighThreshold;
-
-    file.close();
-
-    // read in histogram specifications
-    string histoFileName = "configuration/histoBounds/" + name + ".txt";
-    ifstream histoFile(histoFileName);
-
-    if(!histoFile.is_open())
-    {
-        cerr << "Error: failed to open " << histoFileName << " when attempting to read thresholds for " << name;
-        exit(1);
-    }
-
     string PHName = name + "PH";
     string PSDName = name + "PSD";
     string TDCName = name + "TDC";
     string PHPSDName = name + "PHPSD";
 
-    getline(histoFile,dummy);
-
-    unsigned int PH_MINIMUM;
-    unsigned int PH_MAXIMUM;
-    histoFile >> PH_MINIMUM >> PH_MAXIMUM;
-
     pulseHeightHisto = new TH1D(PHName.c_str(), PHName.c_str(),
-            PH_MAXIMUM-PH_MINIMUM, PH_MINIMUM, PH_MAXIMUM);
-
-    getline(histoFile,dummy);
-    getline(histoFile,dummy);
-    getline(histoFile,dummy);
-
-    unsigned int PSD_MINIMUM;
-    unsigned int PSD_MAXIMUM;
-    histoFile >> PSD_MINIMUM >> PSD_MAXIMUM;
+            5000, 0, 5000);
 
     PSDHisto = new TH1D(PSDName.c_str(), PSDName.c_str(),
-            PSD_MAXIMUM-PSD_MINIMUM, PSD_MINIMUM, PSD_MAXIMUM);
-
-    getline(histoFile,dummy);
-    getline(histoFile,dummy);
-    getline(histoFile,dummy);
-
-    unsigned int TDC_MINIMUM;
-    unsigned int TDC_MAXIMUM;
-    histoFile >> TDC_MINIMUM >> TDC_MAXIMUM;
+            5000, 0, 5000);
 
     TDCHisto = new TH1D(TDCName.c_str(), TDCName.c_str(),
-            TDC_MAXIMUM-TDC_MINIMUM, TDC_MINIMUM, TDC_MAXIMUM);
+            5000, 0, 5000);
 
     PHPSD = new TH2D(PHPSDName.c_str(), PHPSDName.c_str(),
             1000, 0, 5000,
             1000, 0, 5000);
-
-    histoFile.close();
 
     string rawPHName = PHName + "raw";
     string rawPSDName = PSDName + "raw";
@@ -113,5 +44,19 @@ Detector::Detector(string n) : name(n)
             1000, 0, 5000,
             1000, 0, 5000);
 
-    banana = PIDBanana(name);
+    string bananaFileName = "../configuration/" + experiment + "/PSDGates/" + name + "Banana.data";
+    banana = PIDBanana(bananaFileName);
+}
+
+void Detector::write()
+{
+    rawPH->Write();
+    rawPSD->Write();
+    rawTDC->Write();
+    rawPHPSD->Write();
+
+    pulseHeightHisto->Write();
+    PSDHisto->Write();
+    TDCHisto->Write();
+    PHPSD->Write();
 }

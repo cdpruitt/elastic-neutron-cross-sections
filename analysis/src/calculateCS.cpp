@@ -13,7 +13,10 @@
 #include "TH1I.h"
 
 #include "../include/DataStructures.h"
-#include "../include/RunConfig.h"
+#include "../include/Config.h"
+#include "../include/experimentalConstants.h"
+
+extern Config config;
 
 using namespace std;
 
@@ -40,110 +43,6 @@ const double SIXM_INT_LIMIT_MAX = 975;
 double INTEGRAL_LIMIT_MAX;
 
 const double NEUTRON_MASS = 1.008665; // in unified atomic mass units
-
-void readTargetDataFile(TargetData& targetData, string fileName)
-{
-    ifstream file(fileName.c_str());
-    if(!file.is_open())
-    {
-        cerr << "Error: failed to open " << fileName << ". Exiting..." << endl;
-        exit(1);
-    }
-
-    //ignore two label lines
-    string dummy, dummy2;
-    getline(file, dummy);
-
-    file >> dummy;
-    targetData.numberOfAtoms = stod(dummy);
-
-    file >> dummy2;
-    if(dummy2!="")
-    {
-        targetData.ControlCS = stod(dummy2);
-    }
-}
-
-/*vector<unsigned int> getIntegralBounds(string integralBoundsFileName)
-{
-    ifstream file(integralBoundsFileName.c_str());
-    if(!file.is_open())
-    {
-        cerr << "Failed to find integral bounds data in " << integralBoundsFileName << std::endl;
-        exit(1);
-    }
-
-    vector<unsigned int> integralBounds;
-
-    string dummy;
-    getline(file,dummy);
-
-    unsigned int lowBound;
-    unsigned int highBound;
-
-    file >> lowBound >> highBound;
-
-    integralBounds.push_back(lowBound);
-    integralBounds.push_back(highBound);
-
-    return integralBounds;
-}
-
-int getIntegralBoundsCorrection(string fileName)
-{
-    ifstream file(fileName.c_str());
-    if(!file.is_open())
-    {
-        cerr << "Failed to find integral bounds data in " << fileName << std::endl;
-        exit(1);
-    }
-
-    int integralBoundsCorrection;
-
-    string dummy;
-    getline(file,dummy);
-
-    file >> integralBoundsCorrection;
-
-    return (int)TIME_CALIBRATION_FACTOR*integralBoundsCorrection;
-}
-
-void outputCrossSections(const vector<CrossSection>& crossSections,
-        string targetName, string detectorName)
-{
-    // read header material we should print at the start of output files
-    string headerFileName = "configuration/output/" + targetName + "/" + detectorName + ".txt";
-    ifstream headerFile(headerFileName);
-
-    string dummy;
-    getline(headerFile, dummy);
-    getline(headerFile, dummy);
-
-    vector<string> headerMaterial;
-
-    while(getline(headerFile,dummy))
-    {
-        headerMaterial.push_back(dummy);
-    }
-
-    string outputFileName = "experimentalData/" + targetName + "_11_" + detectorName + ".txt";
-    ofstream outputFile(outputFileName);
-
-    for(string headerLine : headerMaterial)
-    {
-        outputFile << headerLine << endl;
-    }
-
-    for(CrossSection cs : crossSections)
-    {
-        if(cs.target == targetName)
-        {
-            outputFile << setw(11) << left << cs.angle << " " <<
-                setw(11) << cs.value << " " <<
-                setw(11) << cs.error << endl;
-        }
-    }
-}*/
 
 // convert a lab angle (in degrees) to a center-of-mass angle (in degrees),
 // ranging from 0-180
@@ -177,15 +76,10 @@ double labToCMJacobian(double labAngle, double massOfProjectile, double massOfTa
     return numerator/denominator;
 }
 
-int main()
+int calculateCS()
 {
     vector<string> detectorNames = {"4M", "6M"};
     vector<string> targetNames = {"Sn112", "Sn124"};
-
-    AllConfigs allConfigs = getRunConfig();
-
-    AllAngles allAngles;
-    allAngles.getRunData(allConfigs);
 
     ofstream Sn112_4M("literatureData/Sn112_4M.txt");
     ofstream Sn124_4M("literatureData/Sn124_4M.txt");
@@ -222,7 +116,7 @@ int main()
 
         for(auto& detectorName : detectorNames)
         {
-            for(auto& angle : allAngles.angles)
+            for(auto& angle : config.angles)
             {
                 if(detectorName=="4M")
                 {
@@ -260,8 +154,8 @@ int main()
 
                 // read histogram counts for each run
                 stringstream ss;
-                ss << setprecision(5) << angle.angle;
-                string histoFileName = "../processedData/angles/" + ss.str() + "/" + target + ".root";
+                ss << setprecision(5) << angle.value;
+                string histoFileName = "../processedData/" + config.experiment + "/angles/" + ss.str() + "/" + target + ".root";
                 TFile histoFile(histoFileName.c_str(),"UPDATE");
 
                 if(!histoFile.IsOpen())
@@ -284,7 +178,7 @@ int main()
                 double difference = histo->Integral(minIntBin, maxIntBin);
 
                 // convert from lab angle to CM angle
-                double CMAngle = labAngleToCMAngle(angle.angle, NEUTRON_MASS, TARGET_MASS);
+                double CMAngle = labAngleToCMAngle(angle.value, NEUTRON_MASS, TARGET_MASS);
 
                 // calculate differential cross section in lab frame
                 double value = ((double)difference/REFERENCE_HISTO_COUNTS)*
@@ -294,9 +188,9 @@ int main()
 
                 // convert lab frame cross section to center-of-mass frame via
                 // Jacobian
-                value *= labToCMJacobian(angle.angle, NEUTRON_MASS, TARGET_MASS);
+                value *= labToCMJacobian(angle.value, NEUTRON_MASS, TARGET_MASS);
 
-                *fileOut << angle.angle << " " << value
+                *fileOut << angle.value << " " << value
                     << " " << "0" << endl;
 
                 // need to add efficiency correction for energy drop at high angles affecting count

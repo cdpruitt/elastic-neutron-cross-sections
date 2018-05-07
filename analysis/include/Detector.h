@@ -10,19 +10,14 @@
 
 struct Detector
 {
-    Detector(std::string n);
-    void getThresholds(std::string thresholdFileName);
+    Detector(std::string n, std::string experiment);
+    void write();
 
     std::string name;
 
     float pulseHeight;
     float PSD;
     float TDC;
-
-    unsigned int pulseHeightThreshold;
-    unsigned int PSDThreshold;
-    unsigned int TDCLowThreshold;
-    unsigned int TDCHighThreshold;
 
     TH1D* pulseHeightHisto;
     TH1D* PSDHisto;

@@ -77,21 +77,21 @@ done
 ################################################################################
 
 experimentFileName="../configuration/experiment.txt"
-if ! [[ -a $experimentFileName ]]
+if ! [ -f $experimentFileName ]
 then
     printf "Error: failed to find $experimentFileName."
     exit
 fi
 read -r experiment<$experimentFileName # find out which experimental dataset to analyze
 
-if [ ! $experiment ]
+if [ -z $experiment ]
 then
     printf "Error: failed to read experimental directory name from\
     $experimentFileName. Is the file empty?\n"
     exit
 fi
 
-printf "Analyzing data from $experiment"
+printf "Analyzing data from $experiment\n\n"
 
 if ! [[ -a "../configuration/$experiment/runConfig.txt" ]]
 then
@@ -100,48 +100,33 @@ then
     exit
 fi
 
-while read line
-do
-    IFS=' ' read -r -a tokens <<< "$line" # parse line into space-delimited tokens
+./bin/driver "$experiment" "$recreateHistos"
 
-    re='[0-9]+'
-    if ! [[ "${tokens[0]}" =~ $re ]]
-    then
-        continue # skip lines that do not start with an integer
-    fi
+#while read line
+#do
+#    IFS=' ' read -r -a tokens <<< "$line" # parse line into space-delimited tokens
+#
+#    re='[0-9]+'
+#    if ! [[ "${tokens[0]}" =~ $re ]]
+#    then
+#        continue # skip lines that do not start with an integer
+#    fi
+#
+#    runNumber=${tokens[0]}
+#
 
-    runNumber=${tokens[0]}
-
-    if [[ $recreateHistos = true ]]
-    then
-        inputFileName="../rawData/$experiment/run${runNumber}.root"
-        outputDirectoryName="../processedData/$experiment/runs/$runNumber"
-
-        if [ ! -f $inputDirectoryName ]
-        then
-            printf "Error: failed to find $(inputFileName). Skipping run\
-            $(runNumber)..."
-
-            continue
-        fi
-
-        if [ ! -d $outputDirectoryName ]
-        then
-            mkdir $outputDirectoryName
-        fi
-
-        printf "\n************************************"
-        printf "\n     Reading data from $runNumber"
-        printf "\n************************************\n"
-
-        # Send error messages to a text file
-        2>&1 | tee > "$outputDirectoryName"/error.txt
-
-        ./bin/histos "$inputFileName" "$outputDirectoryName"/histos.root
-    fi
-done < ../configuration/$experiment/runConfig.txt
-
-#./subtractBackground
-#./calculateCS
-
-printf "\nFinished analysis.\n\n"
+#        printf "\n************************************"
+#        printf "\n     Reading data from $runNumber"
+#        printf "\n************************************\n"
+#
+#        # Send error messages to a text file
+#        2>&1 | tee > "$outputDirectoryName"/error.txt
+#
+#        ./bin/histos "$inputFileName" "$outputDirectoryName"/histos.root
+#    fi
+#done < ../configuration/$experiment/runConfig.txt
+#
+##./subtractBackground
+##./calculateCS
+#
+#printf "\nFinished analysis.\n\n"

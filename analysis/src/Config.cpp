@@ -1,0 +1,101 @@
+#include "../include/Config.h"
+#include "../include/experimentalConstants.h"
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <iterator>
+
+using namespace std;
+
+// Read the angles and target for a given run
+Config::Config(string experiment) : experiment(experiment)
+{
+    string fileName = "../configuration/" + experiment + "/runConfig.txt";
+
+    ifstream file(fileName.c_str());
+    if(!file.is_open())
+    {
+        cerr << "Failed to find configuration file in " << fileName << std::endl;
+        return;
+    }
+
+    string str;
+
+    while(getline(file,str))
+    {
+        // ignore comments in data file
+        string delimiter = "-";
+        string token = str.substr(0,str.find(delimiter));
+        if(!atoi(token.c_str()))
+        {
+            // This line starts with a non-integer and is thus a comment; ignore
+            continue;
+        }
+
+        // parse data lines into space-delimited tokens
+        vector<string> tokens;
+        istringstream iss(str);
+        copy(istream_iterator<string>(iss),
+                istream_iterator<string>(),
+                back_inserter(tokens));
+
+        runs.push_back(Run(tokens));
+    }
+
+    for(auto& run : runs)
+    {
+        for(auto& runAngle : run.angles)
+        {
+            bool alreadyAdded = false;
+
+            for(auto& angle : angles)
+            {
+                if(angle.value==runAngle)
+                {
+                    alreadyAdded = true;
+                    break;
+                }
+            }
+
+            if(!alreadyAdded)
+            {
+                Angle a;
+                a.value = runAngle;
+                angles.push_back(a);
+            }
+        }
+    }
+
+    sort(angles.begin(), angles.end());
+}
+
+Run Config::getRun(int runNumber)
+{
+    for(auto& run : runs)
+    {
+        if(run.number==runNumber)
+        {
+            return run;
+        }
+    }
+
+    cerr << "Error: failed to find run " << runNumber
+        << " in config file. Returning empty run." << endl;
+    return Run();
+}
+
+Angle Config::getAngle(double value)
+{
+    for(auto& angle : angles)
+    {
+        if(angle.value==value)
+        {
+            return angle;
+        }
+    }
+
+    cerr << "Error: failed to find angle " << value
+        << " in config file. Returning empty Angle." << endl;
+    return Angle();
+}

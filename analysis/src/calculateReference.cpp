@@ -9,7 +9,7 @@
 #include <sstream>
 
 #include "../include/ScalerData.h"
-#include "../include/RunConfig.h"
+#include "../include/Run.h"
 #include "../include/experimentalConstants.h"
 
 using namespace std;
@@ -72,7 +72,7 @@ void subtractBackground(
 
 int main()
 {
-    AllConfigs allConfigs = getRunConfig();
+    AllConfigs allConfigs = getRun();
 
     AllAngles allAngles;
     allAngles.getRunData(allConfigs);

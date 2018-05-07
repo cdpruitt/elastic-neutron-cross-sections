@@ -12,12 +12,16 @@
 
 #include "../include/Detector.h"
 #include "../include/experimentalConstants.h"
+#include "../include/histos.h"
+#include "../include/Config.h"
+
+extern Config config;
 
 using namespace std;
 
 void setBranches(TTree* t, vector<Detector>& detectors)
 {
-    for(Detector& d : detectors)
+    for(auto& d : detectors)
     {
         string PHName = d.name + "PH";
         string PSDName = d.name + "PSD";
@@ -29,12 +33,9 @@ void setBranches(TTree* t, vector<Detector>& detectors)
     }
 }
 
-int main(int argc, char** argv)
+int histos(string inputFileName, string outputFileName)
 {
-    string inputFileName = argv[1];
-    string outputFileName = argv[2];
-
-    TFile inputFile(inputFileName.c_str());
+    TFile inputFile(inputFileName.c_str(), "READ");
     TTree* tree = (TTree*)inputFile.Get("tree");
     if(!tree)
     {
@@ -42,16 +43,14 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    cout << "Creating histograms for " << inputFileName << endl;
+    std::vector<Detector> detectors;
+    for(auto& name : DETECTOR_NAMES)
+    {
+        detectors.push_back(Detector(name, config.experiment));
+    }
 
     TFile outputFile(outputFileName.c_str(),"RECREATE");
-
-    // initialize the detectors used for the experiment
-    vector<Detector> detectors;
-    for(string s : DETECTOR_NAMES)
-    {
-        detectors.push_back(Detector(s));
-    }
+    cout << "Creating histograms for " << inputFileName << endl;
 
     // connect tree to detector variables, so data can be read out from tree
     // into each detector
@@ -64,7 +63,7 @@ int main(int argc, char** argv)
     {
         tree->GetEvent(i);
 
-        for(Detector d : detectors)
+        for(auto& d : detectors)
         {
             // skip events where another detector caused the trigger
             if(d.rawPH<=0)
@@ -98,18 +97,6 @@ int main(int argc, char** argv)
                     d.PHPSD->Fill(d.PSD, d.pulseHeight);
                 }
             }
-
-            else
-            {
-                if(d.pulseHeight > d.pulseHeightThreshold &&
-                      d.PSD > d.PSDThreshold)
-                {
-                    d.pulseHeightHisto->Fill(d.pulseHeight);
-                    d.PSDHisto->Fill(d.PSD);
-                    d.TDCHisto->Fill(detectors[4].TDC);
-                    d.PHPSD->Fill(d.PSD, d.pulseHeight);
-                }
-            }
         }
 
         // print progress every 10000 events
@@ -118,6 +105,11 @@ int main(int argc, char** argv)
             cout << "Processed " << i << " events\r";
             fflush(stdout);
         }
+    }
+
+    for(auto& detector : detectors)
+    {
+        detector.write();
     }
 
     outputFile.Write();
