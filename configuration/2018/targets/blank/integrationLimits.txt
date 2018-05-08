@@ -1,4 +1,4 @@
-Integration limits for Sn124 TDC histograms
+Integration limits for blank TDC histograms
 ********************************************************************************
 Low limit, 4M:      1284
 High limit, 4M:     1310

@@ -1,19 +1,19 @@
-const double FOUR_M_INT_LIMIT_MIN = 1285;
-const double FOUR_M_INT_LIMIT_MAX = 1315;
+const double FOUR_M_INT_LIMIT_MIN = 1284;
+const double FOUR_M_INT_LIMIT_MAX = 1310;
 
-const double SIX_M_INT_LIMIT_MIN = 940;
-const double SIX_M_INT_LIMIT_MAX = 985;
+const double SIX_M_INT_LIMIT_MIN = 959;
+const double SIX_M_INT_LIMIT_MAX = 978;
 
 vector<string> detectors = {"4M", "6M"};
 vector<string> targets = {"Sn112", "Sn124"};
 
-void allDiffHistos()
+void allDiffHistos(string experiment)
 {
     double INT_LIMIT_MIN;
     double INT_LIMIT_MAX;
 
     // read angles to be plotted
-    string configFileName = "../configuration/runConfig.txt";
+    string configFileName = "../../configuration/" + experiment + "/runConfig.txt";
 
     ifstream configFile(configFileName.c_str());
     if(!configFile.is_open())
@@ -167,7 +167,7 @@ void allDiffHistos()
                     canvasOffset = 10;
                 }
 
-                string fileName = "../../processedData/angles/" + angles[i] + "/" + target + ".root";
+                string fileName = "../../processedData/" + experiment + "/angles/" + angles[i] + "/" + target + ".root";
                 TFile* file = new TFile(fileName.c_str(),"READ");
 
                 if(!file->IsOpen())

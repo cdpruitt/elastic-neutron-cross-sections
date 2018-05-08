@@ -10,10 +10,12 @@ using namespace std;
 
 Target::Target(string targetDataLocation)
 {
-    ifstream dataFile(targetDataLocation.c_str());
+    string targetPhysicalData = targetDataLocation + "physical.txt";
+
+    ifstream dataFile(targetPhysicalData.c_str());
     if(!dataFile.is_open())
     {
-        std::cout << "Attempted to create Target, but failed to find target data in " << targetDataLocation << std::endl;
+        std::cout << "Attempted to create Target, but failed to find target data in " << targetPhysicalData << std::endl;
         exit(1);
     }
 
@@ -73,6 +75,51 @@ Target::Target(string targetDataLocation)
         {
             cerr << "Error - couldn't parse a line in a targetData text file" << endl;
             exit(1);
+        }
+    }
+
+    histos.push_back(vector<TH1D*>());
+    histos.push_back(vector<TH1D*>());
+
+    monitors.push_back(vector<TH1D*>());
+    monitors.push_back(vector<TH1D*>());
+
+    // read detector integration limits
+    string targetIntegrationLimitLocation = targetDataLocation + "integrationLimits.txt";
+    ifstream integrationLimitFile(targetIntegrationLimitLocation);
+
+    if(!integrationLimitFile.is_open())
+    {
+        cerr << "Error: couldn't open integration limit file " << targetIntegrationLimitLocation << endl;
+        return;
+    }
+
+    while(getline(integrationLimitFile,str))
+    {
+        // ignore comments in data file
+        string delimiter = " ";
+        string token = str.substr(0,str.find(delimiter));
+
+        // parse data lines into space-delimited tokens
+        vector<string> tokens;
+        istringstream iss(str);
+        copy(istream_iterator<string>(iss),
+                istream_iterator<string>(),
+                back_inserter(tokens));
+
+        if(tokens.size()==0)
+        {
+            continue;
+        }
+
+        if(tokens[0] == "Low")
+        {
+            intLimits.low.push_back(stod(tokens[3]));
+        }
+        
+        if(tokens[0] == "High")
+        {
+            intLimits.high.push_back(stod(tokens[3]));
         }
     }
 }

@@ -15,34 +15,12 @@
 #include "../include/DataStructures.h"
 #include "../include/Config.h"
 #include "../include/experimentalConstants.h"
+#include "../include/physicalConstants.h"
+#include "../include/ReferenceCS.h"
 
 extern Config config;
 
 using namespace std;
-
-const double REFERENCE_CS = 163.8; // p,n cross section in mb/sr - for lab angle of 23 degrees @ 17 MeV
-const double REFERENCE_NUMBER_OF_ATOMS = 2.91e23;
-const double Sn112_NUMBER_OF_ATOMS = 2.676e22;
-const double Sn124_NUMBER_OF_ATOMS = 2.697e22;
-
-double TARGET_NUMBER_OF_ATOMS;
-double TARGET_MASS;
-
-const double REFERENCE_4M_COUNTS = 12308;
-const double REFERENCE_6M_COUNTS = 11784;
-const double REFERENCE_MONITOR_COUNTS = 88910;
-
-double REFERENCE_HISTO_COUNTS; 
-
-const double FOURM_INT_LIMIT_MIN = 1276;
-const double FOURM_INT_LIMIT_MAX = 1302;
-double INTEGRAL_LIMIT_MIN;
-
-const double SIXM_INT_LIMIT_MIN = 940;
-const double SIXM_INT_LIMIT_MAX = 975;
-double INTEGRAL_LIMIT_MAX;
-
-const double NEUTRON_MASS = 1.008665; // in unified atomic mass units
 
 // convert a lab angle (in degrees) to a center-of-mass angle (in degrees),
 // ranging from 0-180
@@ -76,86 +54,30 @@ double labToCMJacobian(double labAngle, double massOfProjectile, double massOfTa
     return numerator/denominator;
 }
 
-int calculateCS()
+int calculateCS(const ReferenceCS& reference)
 {
     vector<string> detectorNames = {"4M", "6M"};
-    vector<string> targetNames = {"Sn112", "Sn124"};
 
-    ofstream Sn112_4M("literatureData/Sn112_4M.txt");
-    ofstream Sn124_4M("literatureData/Sn124_4M.txt");
-    ofstream Sn112_6M("literatureData/Sn112_6M.txt");
-    ofstream Sn124_6M("literatureData/Sn124_6M.txt");
+    string referenceFileLocation = "../configuration/" + config.experiment
+        + "/normalization/";
 
-    Sn112_4M << endl << "Sn112, 4M" << endl;
-    Sn112_4M << "Degrees    mB/sr      Error (mB/sr)" << endl;
-
-    Sn124_4M << endl << "Sn124, 4M" << endl;
-    Sn124_4M << "Degrees    mB/sr      Error (mB/sr)" << endl;
-
-    Sn112_6M << endl << "Sn112, 6M" << endl;
-    Sn112_6M << "Degrees    mB/sr      Error (mB/sr)" << endl;
-
-    Sn124_6M << endl << "Sn124, 6M" << endl;
-    Sn124_6M << "Degrees    mB/sr      Error (mB/sr)" << endl;
-
-    ofstream* fileOut;
-
-    for(auto& target : targetNames)
+    for(auto& name : TARGET_NAMES)
     {
-        if(target=="Sn112")
-        {
-            TARGET_NUMBER_OF_ATOMS = Sn112_NUMBER_OF_ATOMS; 
-            TARGET_MASS = 111.905; // in unified atomic mass units
-        }
+        Target t = Target("../configuration/" + config.experiment
+            + "/targets/" + name + "/");
 
-        else if (target=="Sn124")
+        for(int i=0; i<detectorNames.size(); i++)
         {
-            TARGET_NUMBER_OF_ATOMS = Sn124_NUMBER_OF_ATOMS; 
-            TARGET_MASS = 123.905; // in unified atomic mass units
-        }
+            ofstream fileOut("literatureData/" + name + "_" + detectorNames[i] + ".txt");
+            fileOut << endl << name << ", " << detectorNames[i] << endl;
+            fileOut << "Degrees    mB/sr      Error (mB/sr)" << endl;
 
-        for(auto& detectorName : detectorNames)
-        {
             for(auto& angle : config.angles)
             {
-                if(detectorName=="4M")
-                {
-                    REFERENCE_HISTO_COUNTS = REFERENCE_4M_COUNTS;
-                    INTEGRAL_LIMIT_MIN = FOURM_INT_LIMIT_MIN;
-                    INTEGRAL_LIMIT_MAX = FOURM_INT_LIMIT_MAX;
-
-                    if(target=="Sn112")
-                    {
-                        fileOut = &Sn112_4M;
-                    }
-
-                    else if(target=="Sn124")
-                    {
-                        fileOut = &Sn124_4M;
-                    }
-                }
-
-                else if(detectorName=="6M")
-                {
-                    REFERENCE_HISTO_COUNTS = REFERENCE_6M_COUNTS;
-                    INTEGRAL_LIMIT_MIN = SIXM_INT_LIMIT_MIN;
-                    INTEGRAL_LIMIT_MAX = SIXM_INT_LIMIT_MAX;
-
-                    if(target=="Sn112")
-                    {
-                        fileOut = &Sn112_6M;
-                    }
-
-                    else if(target=="Sn124")
-                    {
-                        fileOut = &Sn124_6M;
-                    }
-                }
-
                 // read histogram counts for each run
                 stringstream ss;
                 ss << setprecision(5) << angle.value;
-                string histoFileName = "../processedData/" + config.experiment + "/angles/" + ss.str() + "/" + target + ".root";
+                string histoFileName = "../processedData/" + config.experiment + "/angles/" + ss.str() + "/" + name + ".root";
                 TFile histoFile(histoFileName.c_str(),"UPDATE");
 
                 if(!histoFile.IsOpen())
@@ -163,7 +85,7 @@ int calculateCS()
                     continue;
                 }
 
-                string histoName = "diff" + detectorName;
+                string histoName = "diff" + detectorNames[i];
                 TH1I* histo = (TH1I*)histoFile.Get(histoName.c_str());
 
                 if(!histo)
@@ -172,25 +94,40 @@ int calculateCS()
                 }
 
                 // extract counts from histo based on histogram gates
-                int minIntBin = histo->FindBin(INTEGRAL_LIMIT_MIN);
-                int maxIntBin = histo->FindBin(INTEGRAL_LIMIT_MAX);
+                int minIntBin = histo->FindBin(t.intLimits.low[i]);
+                int maxIntBin = histo->FindBin(t.intLimits.high[i]);
 
                 double difference = histo->Integral(minIntBin, maxIntBin);
 
                 // convert from lab angle to CM angle
-                double CMAngle = labAngleToCMAngle(angle.value, NEUTRON_MASS, TARGET_MASS);
+                double CMAngle = labAngleToCMAngle(angle.value, NEUTRON_MASS, t.getMass());
+
+                double targetNumberOfAtoms = (t.getMass()/t.getMolarMass())*AVOGADROS_NUMBER;
+
+                if((reference.counts.size()-1 < i)
+                        || (reference.monitors.size()-1 < i))
+                {
+                    cerr << "Error: reference counts or monitors not available for detector " << detectorNames[i]
+                        << endl;
+                    return 1;
+                }
+
+                /*cout << "For " << detectorNames[i] << " at " << angle.value << " degrees, integrated diff = " << difference
+                    << ", reference counts = " << reference.counts[i]
+                    << endl;
+                    */
 
                 // calculate differential cross section in lab frame
-                double value = ((double)difference/REFERENCE_HISTO_COUNTS)*
-                    ((double)REFERENCE_MONITOR_COUNTS/NORMALIZATION_SCALING)*
-                    (REFERENCE_NUMBER_OF_ATOMS/TARGET_NUMBER_OF_ATOMS)*
-                    REFERENCE_CS;
+                double value = ((double)difference/reference.counts[i])*
+                    ((double)reference.monitors[i]/NORMALIZATION_SCALING)*
+                    (reference.polyNumberOfAtoms/targetNumberOfAtoms)*
+                    reference.crossSection;
 
                 // convert lab frame cross section to center-of-mass frame via
                 // Jacobian
-                value *= labToCMJacobian(angle.value, NEUTRON_MASS, TARGET_MASS);
+                value *= labToCMJacobian(angle.value, NEUTRON_MASS, t.getMass());
 
-                *fileOut << angle.value << " " << value
+                fileOut << angle.value << " " << value
                     << " " << "0" << endl;
 
                 // need to add efficiency correction for energy drop at high angles affecting count

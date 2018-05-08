@@ -6,10 +6,13 @@ Blank run number:           218
 Graphite run number:        219
 
 Angle (degrees, lab):       23
-Lit. (n,p) CS (mb):         163.8
+Literature CS (mb):         163.8
 
-Low integration limit, 4M:  1200
-High integration limit, 6M: 1300
+Number of atoms, poly:      2.91e23
+Number of atoms, graphite:  2.91e23
 
-Low integration limit, 4M:  900
-High integration limit, 6M: 1000
+Low limit, 4M:  1240
+High limit, 4M: 1282
+
+Low limit, 6M:  895
+High limit, 6M: 946

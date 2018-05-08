@@ -1,0 +1,14 @@
+This file lists the reference runs for the experiment.
+The data format is:
+*******************************************************************************
+Run No.     Target          4m det angle    6m det angle
+*******************************************************************************
+217         polyethylene    23              23
+218         graphite        23              23
+219         blankRef        23              23
+312         polyethylene    23              23
+313         blankRef        23              23
+314         graphite        23              23
+315         polyethylene    30              30
+316         blankRef        30              30
+317         graphite        30              30

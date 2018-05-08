@@ -18,9 +18,9 @@ const int FOUR_METER_TIME_MAXIMUM = 94;
 const double NORMALIZATION_SCALING = 300000;
 
 const std::vector<std::string> TARGET_NAMES =
-{"Sn112", "Sn124", "blank", "SnNat"};
+{"Sn112", "Sn124", "SnNat", "blank"};
 
 const std::vector<std::string> DETECTOR_NAMES =
-{"4M", "6M", "0DEG", "CMON", "RF"};
+{"4M", "6M", "CMON", "0DEG", "RF"};
 
 #endif /* EXPERIMENTAL_CONSTANTS_H */

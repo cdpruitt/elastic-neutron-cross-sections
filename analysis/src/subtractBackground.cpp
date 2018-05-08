@@ -75,35 +75,17 @@ int subtractBackground()
 {
     for(auto& angle : config.angles)
     {
-        cout << "Subtracting background for angle " << angle.value << "\r";
-        fflush(stdout);
+        cout << "Subtracting background for angle " << angle.value << endl;
+
+        for(auto& target : TARGET_NAMES)
+        {
+            string targetDirName = "../configuration/" + config.experiment
+                + "/targets/" + target + "/";
+            angle.targets.push_back(Target(targetDirName));
+        }
 
         for(auto& run : config.runs)
         {
-            for(auto& runAngle : run.angles)
-            {
-                if(runAngle==angle.value)
-                {
-                    bool alreadyAddedTarget = false;
-
-                    for(auto& target : angle.targets)
-                    {
-                        if(run.target==target.name)
-                        {
-                            alreadyAddedTarget = true;
-                            break;
-                        }
-                    }
-
-                    if(!alreadyAddedTarget)
-                    {
-                        string targetFileName = "../configuration/" + config.experiment
-                            + "/targets/" + run.target + "/physical.txt";
-                        angle.targets.push_back(Target(run.target));
-                    }
-                }
-            }
-
             for(auto& target : angle.targets)
             {
                 if(target.name!=run.target)
@@ -142,30 +124,30 @@ int subtractBackground()
                     }
                 }
             }
+        }
 
-            // if directory for this angle doesn't exist yet, create it
-            struct stat st = {0};
+        // if directory for this angle doesn't exist yet, create it
+        struct stat st = {0};
 
-            stringstream ss;
-            ss << setprecision(5) << angle.value;
-            string dirName = "../processedData/" + config.experiment + "/angles/" + ss.str();
-            if(stat(dirName.c_str(), &st) == -1)
+        stringstream ss;
+        ss << setprecision(5) << angle.value;
+        string dirName = "../processedData/" + config.experiment + "/angles/" + ss.str();
+        if(stat(dirName.c_str(), &st) == -1)
+        {
+            mkdir(dirName.c_str(), 0700);
+        }
+
+        for(auto& target : angle.targets)
+        {
+            string outputFileName = dirName + "/" + target.name + ".root";
+            TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
+
+            for(int i=0; i<target.histos.size(); i++)
             {
-                mkdir(dirName.c_str(), 0700);
+                subtractBackground(target.histos[i], target.monitors[i], angle.getBlank().histos[i], angle.getBlank().monitors[i], target.name, DETECTOR_NAMES[i]);
             }
 
-            for(auto& target : angle.targets)
-            {
-                string outputFileName = dirName + "/" + target.name + ".root";
-                TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
-
-                for(int i=0; i<target.histos.size(); i++)
-                {
-                    subtractBackground(target.histos[i], target.monitors[i], angle.getBlank().histos[i], angle.getBlank().monitors[i], target.name, DETECTOR_NAMES[i]);
-                }
-
-                outputFile->Close();
-            }
+            outputFile->Close();
         }
     }
 

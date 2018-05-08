@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include "Target.h"
 
 struct Run
@@ -38,7 +39,7 @@ struct Angle
             }
         }
 
-        std::cerr << "Error: couldn't find blank target in angle " << std::to_string(value)
+        std::cerr << "Error: couldn't find blank target in angle " << std::setprecision(5) << std::to_string(value)
             << ". Returning empty target..." << std::endl;
         return Target();
     };

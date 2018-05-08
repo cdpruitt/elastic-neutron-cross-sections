@@ -17,6 +17,8 @@
 #include "../include/histos.h"
 #include "../include/subtractBackground.h"
 #include "../include/calculateCS.h"
+#include "../include/calculateReference.h"
+#include "../include/ReferenceCS.h"
 
 using namespace std;
 
@@ -73,5 +75,9 @@ int main(int argc, char** argv)
     }
 
     subtractBackground();
-    calculateCS();
+
+    ReferenceCS reference;
+    calculateReference(config.experiment, "set1", reference);
+
+    calculateCS(reference);
 }
