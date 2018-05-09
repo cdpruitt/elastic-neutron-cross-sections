@@ -1,17 +1,8 @@
-const double FOUR_M_INT_LIMIT_MIN = 1284;
-const double FOUR_M_INT_LIMIT_MAX = 1310;
-
-const double SIX_M_INT_LIMIT_MIN = 959;
-const double SIX_M_INT_LIMIT_MAX = 978;
-
 vector<string> detectors = {"4M", "6M"};
 vector<string> targets = {"Sn112", "Sn124"};
 
 void allDiffHistos(string experiment)
 {
-    double INT_LIMIT_MIN;
-    double INT_LIMIT_MAX;
-
     // read angles to be plotted
     string configFileName = "../../configuration/" + experiment + "/runConfig.txt";
 
@@ -123,51 +114,78 @@ void allDiffHistos(string experiment)
             c->Divide(CANVAS_WIDTH, CANVAS_HEIGHT);
         }
 
-        for(auto& detector : detectors)
+        for(int detector=0; detector<detectors.size(); detector++)
         {
-            if(detector=="4M")
+            for(int target=0; target<targets.size(); target++)
             {
-                INT_LIMIT_MIN = FOUR_M_INT_LIMIT_MIN;
-                INT_LIMIT_MAX = FOUR_M_INT_LIMIT_MAX;
-            }
+                // read integration limits from config file
+                string intLimitFileName = "../../configuration/" + experiment
+                    + "/targets/" + targets[target] + "/integrationLimits.txt";
+                ifstream intLimitFile(intLimitFileName.c_str());
 
-            else if (detector=="6M")
-            {
-                INT_LIMIT_MIN = SIX_M_INT_LIMIT_MIN;
-                INT_LIMIT_MAX = SIX_M_INT_LIMIT_MAX;
-            }
+                if(!intLimitFile.is_open())
+                {
+                    cerr << "Error: failed to open integration limit file "
+                        << intLimitFileName << endl;
+                }
 
-            else
-            {
-                cerr << "Error: detector must be either \"4M\" or \"6M\"" << endl;
-                return;
-            }
+                vector<double> intLimitsLow;
+                vector<double> intLimitsHigh;
 
-            for(auto& target : targets)
-            {
+                string str;
+
+                while(getline(intLimitFile,str))
+                {
+                    // ignore comments in data file
+                    string delimiter = " ";
+                    string token = str.substr(0,str.find(delimiter));
+
+                    // parse data lines into space-delimited tokens
+                    vector<string> tokens;
+                    istringstream iss(str);
+                    copy(istream_iterator<string>(iss),
+                            istream_iterator<string>(),
+                            back_inserter(tokens));
+
+                    if(tokens.size()==0)
+                    {
+                        continue;
+                    }
+
+                    if(tokens[0] == "Low")
+                    {
+                        intLimitsLow.push_back(stod(tokens[3]));
+                    }
+
+                    if(tokens[0] == "High")
+                    {
+                        intLimitsHigh.push_back(stod(tokens[3]));
+                    }
+                }
+
                 double canvasOffset;
 
-                if(detector=="4M" && target=="Sn112")
+                if(detectors[detector]=="4M" && targets[target]=="Sn112")
                 {
                     canvasOffset = 1;
                 }
 
-                if(detector=="6M" && target=="Sn112")
+                if(detectors[detector]=="6M" && targets[target]=="Sn112")
                 {
                     canvasOffset = 4;
                 }
 
-                if(detector=="4M" && target=="Sn124")
+                if(detectors[detector]=="4M" && targets[target]=="Sn124")
                 {
                     canvasOffset = 7;
                 }
 
-                if(detector=="6M" && target=="Sn124")
+                if(detectors[detector]=="6M" && targets[target]=="Sn124")
                 {
                     canvasOffset = 10;
                 }
 
-                string fileName = "../../processedData/" + experiment + "/angles/" + angles[i] + "/" + target + ".root";
+                string fileName = "../../processedData/" + experiment + "/angles/" + angles[i] + "/" + targets[target] + ".root";
                 TFile* file = new TFile(fileName.c_str(),"READ");
 
                 if(!file->IsOpen())
@@ -179,9 +197,9 @@ void allDiffHistos(string experiment)
                 {
                     c->cd(canvasOffset+(i%CANVAS_WIDTH));
 
-                    string targetHistoName = "histo" + detector + "Total";
-                    string blankHistoName = "blank" + detector + "Total";
-                    string differenceHistoName = "diff" + detector;
+                    string targetHistoName = "histo" + detectors[detector] + "Total";
+                    string blankHistoName = "blank" + detectors[detector] + "Total";
+                    string differenceHistoName = "diff" + detectors[detector];
 
                     TH1I* targetHisto = (TH1I*)file->Get(targetHistoName.c_str());
                     TH1I* blankHisto = (TH1I*)file->Get(blankHistoName.c_str());
@@ -238,7 +256,7 @@ void allDiffHistos(string experiment)
                         targetHisto->GetYaxis()->SetNdivisions(10);
                         targetHisto->GetYaxis()->SetTickLength(0);
 
-                        string title = angles[i] + " deg, " + target + " " + detector;
+                        string title = angles[i] + " deg, " + targets[target] + " " + detectors[detector];
                         targetHisto->SetTitle(title.c_str());
 
                         //targetHisto->SetFillColor(19);
@@ -248,10 +266,10 @@ void allDiffHistos(string experiment)
                         blankHisto->Draw("hist same");
                         //differenceHisto->Draw("hist same");
 
-                        targetHisto->GetXaxis()->SetRangeUser(INT_LIMIT_MIN-100,INT_LIMIT_MAX+100);
+                        targetHisto->GetXaxis()->SetRangeUser(intLimitsLow[detector]-100,intLimitsHigh[detector]+100);
 
-                        int minIntBin = differenceHisto->FindBin(INT_LIMIT_MIN);
-                        int maxIntBin = differenceHisto->FindBin(INT_LIMIT_MAX);
+                        int minIntBin = differenceHisto->FindBin(intLimitsLow[detector]);
+                        int maxIntBin = differenceHisto->FindBin(intLimitsHigh[detector]);
 
                         ostringstream ss;
                         ss << differenceHisto->Integral(minIntBin, maxIntBin);
@@ -270,8 +288,8 @@ void allDiffHistos(string experiment)
                         double yAxisLowEdge = targetHisto->GetMinimum();
                         double yAxisHighEdge = targetHisto->GetMaximum();
 
-                        TLine *gateLowLine = new TLine(INT_LIMIT_MIN,yAxisLowEdge,INT_LIMIT_MIN,yAxisHighEdge);
-                        TLine *gateHighLine = new TLine(INT_LIMIT_MAX,yAxisLowEdge,INT_LIMIT_MAX,yAxisHighEdge);
+                        TLine *gateLowLine = new TLine(intLimitsLow[detector],yAxisLowEdge,intLimitsLow[detector],yAxisHighEdge);
+                        TLine *gateHighLine = new TLine(intLimitsHigh[detector],yAxisLowEdge,intLimitsHigh[detector],yAxisHighEdge);
                         gateLowLine->SetLineStyle(7);
                         gateLowLine->SetLineWidth(3);
                         gateLowLine->SetLineColor(kBlue);
@@ -291,10 +309,10 @@ void allDiffHistos(string experiment)
                         latex.SetTextAlign(13); // align at top
                         latex.SetTextColor(kGray+2);
 
-                        string title = "No data for " + angles[i] + " deg, " + target + " " + detector;
+                        string title = "No data for " + angles[i] + " deg, " + targets[target] + " " + detectors[detector];
                         latex.DrawLatex(0.3,0.50,title.c_str());
 
-                        cout << "For " << target << "at " << angles[i] << ", no " << detector << " histos found; skipping." << endl;
+                        cout << "For " << targets[target] << "at " << angles[i] << ", no " << detectors[detector] << " histos found; skipping." << endl;
                     }
                 }
             }
