@@ -1,5 +1,6 @@
 #include "../include/Config.h"
 #include "../include/experimentalConstants.h"
+#include "../include/Detector.h"
 
 #include <iostream>
 #include <fstream>
@@ -68,6 +69,31 @@ Config::Config(string experiment) : experiment(experiment)
     }
 
     sort(angles.begin(), angles.end());
+
+    for(auto& name : DETECTOR_NAMES)
+    {
+        detectors.push_back(Detector(name, experiment));
+
+        for(auto& useForCSName : USE_FOR_CS_NAMES)
+        {
+            if(name==useForCSName)
+            {
+                detectors.back().useForCS = true;
+                break;
+            }
+        }
+    }
+
+    string neutronEnergyFileName = "../configuration/" + experiment + "/neutronEnergy.txt";
+
+    ifstream neutronEnergyFile(neutronEnergyFileName.c_str());
+    if(!neutronEnergyFile.is_open())
+    {
+        cerr << "Failed to find configuration file in " << neutronEnergyFileName << std::endl;
+        return;
+    }
+
+    neutronEnergyFile >> neutronEnergy;
 }
 
 Run Config::getRun(int runNumber)

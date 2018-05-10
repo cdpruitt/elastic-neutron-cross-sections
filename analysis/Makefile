@@ -22,9 +22,14 @@ all: $(addprefix $(BIN), $(TARGETS))
 #
 # 	- using difference histograms and a reference cross section, produce cross
 # 	  sections by angle, target, and detector
-$(BIN)driver: src/driver.cpp src/histos.cpp src/subtractBackground.cpp src/calculateCS.cpp src/Detector.cpp src/PIDBanana.cpp src/Config.cpp src/Target.cpp src/calculateReference.cpp
-	$(COMPILER) $(CFLAGS) -o $(BIN)driver src/driver.cpp src/histos.cpp src/subtractBackground.cpp src/calculateCS.cpp src/Detector.cpp\
-	    src/PIDBanana.cpp src/Config.cpp src/Target.cpp src/calculateReference.cpp $(LINKOPTION)
+$(BIN)driver: src/driver.cpp src/histos.cpp src/subtractBackground.cpp\
+    src/calculateCS.cpp src/utilities.cpp src/Detector.cpp src/PIDBanana.cpp\
+    src/Config.cpp src/Target.cpp src/calculateReference.cpp src/utilities.cpp\
+    src/DetectorHistos.cpp
+	$(COMPILER) $(CFLAGS) -o $(BIN)driver src/driver.cpp src/histos.cpp\
+	    src/subtractBackground.cpp src/calculateCS.cpp src/Detector.cpp\
+	    src/PIDBanana.cpp src/Config.cpp src/Target.cpp src/calculateReference.cpp\
+	    src/utilities.cpp src/DetectorHistos.cpp $(LINKOPTION)
 
 # read data points from text files to ROOT graphs
 $(BIN)readDataToGraph: src/readDataToGraph.cpp src/dataSet.cpp src/dataPoint.cpp

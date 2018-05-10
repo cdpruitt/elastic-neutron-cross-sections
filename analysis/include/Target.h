@@ -17,8 +17,6 @@ struct Target
     std::vector<std::vector<TH1D*>> histos;
     std::vector<std::vector<TH1D*>> monitors;
 
-    IntegrationLimits intLimits;
-
     std::string getName() const;
     double getLength() const;
     double getDiameter() const;

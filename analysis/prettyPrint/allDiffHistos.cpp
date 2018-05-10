@@ -332,3 +332,44 @@ void allDiffHistos(string experiment)
         }
     }
 }
+
+/*
+ // read detector integration limits
+    string intLimitsLocation = "../configuration/" + experiment + "/integrationLimits.txt";
+    ifstream intLimitsFile(intLimitsLocation);
+
+    if(!intLimitsFile.is_open())
+    {
+        cerr << "Error: couldn't open integration limit file " << intLimitsLocation << endl;
+        return;
+    }
+
+    while(getline(intLimitsFile,str))
+    {
+        // ignore comments in data file
+        string delimiter = " ";
+        string token = str.substr(0,str.find(delimiter));
+
+        // parse data lines into space-delimited tokens
+        vector<string> tokens;
+        istringstream iss(str);
+        copy(istream_iterator<string>(iss),
+                istream_iterator<string>(),
+                back_inserter(tokens));
+
+        if(tokens.size()==0)
+        {
+            continue;
+        }
+
+        if(tokens[0] == "Low")
+        {
+            intLimits.low.push_back(stod(tokens[3]));
+        }
+        
+        if(tokens[0] == "High")
+        {
+            intLimits.high.push_back(stod(tokens[3]));
+        }
+    }
+*/

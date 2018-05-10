@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iomanip>
 #include "Target.h"
+#include "Detector.h"
 
 struct Run
 {
@@ -58,9 +59,12 @@ struct Config
     std::string experiment;
     std::vector<Run> runs;
     std::vector<Angle> angles;
+    std::vector<Detector> detectors;
 
     Run getRun(int runNumber);
     Angle getAngle(double angle);
+
+    double neutronEnergy;
 };
 
 #endif /* RUN_CONFIG_H */

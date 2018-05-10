@@ -83,45 +83,6 @@ Target::Target(string targetDataLocation)
 
     monitors.push_back(vector<TH1D*>());
     monitors.push_back(vector<TH1D*>());
-
-    // read detector integration limits
-    string targetIntegrationLimitLocation = targetDataLocation + "integrationLimits.txt";
-    ifstream integrationLimitFile(targetIntegrationLimitLocation);
-
-    if(!integrationLimitFile.is_open())
-    {
-        cerr << "Error: couldn't open integration limit file " << targetIntegrationLimitLocation << endl;
-        return;
-    }
-
-    while(getline(integrationLimitFile,str))
-    {
-        // ignore comments in data file
-        string delimiter = " ";
-        string token = str.substr(0,str.find(delimiter));
-
-        // parse data lines into space-delimited tokens
-        vector<string> tokens;
-        istringstream iss(str);
-        copy(istream_iterator<string>(iss),
-                istream_iterator<string>(),
-                back_inserter(tokens));
-
-        if(tokens.size()==0)
-        {
-            continue;
-        }
-
-        if(tokens[0] == "Low")
-        {
-            intLimits.low.push_back(stod(tokens[3]));
-        }
-        
-        if(tokens[0] == "High")
-        {
-            intLimits.high.push_back(stod(tokens[3]));
-        }
-    }
 }
 
 string Target::getName() const

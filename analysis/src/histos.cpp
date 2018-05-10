@@ -10,8 +10,7 @@
 #include "TH2.h"
 #include "TMath.h"
 
-#include "../include/Detector.h"
-#include "../include/experimentalConstants.h"
+#include "../include/DetectorHistos.h"
 #include "../include/histos.h"
 #include "../include/Config.h"
 
@@ -19,9 +18,9 @@ extern Config config;
 
 using namespace std;
 
-void setBranches(TTree* t, vector<Detector>& detectors)
+void setBranches(TTree* t)
 {
-    for(auto& d : detectors)
+    for(auto& d : config.detectors)
     {
         string PHName = d.name + "PH";
         string PSDName = d.name + "PSD";
@@ -43,18 +42,18 @@ int histos(string inputFileName, string outputFileName)
         exit(1);
     }
 
-    std::vector<Detector> detectors;
-    for(auto& name : DETECTOR_NAMES)
-    {
-        detectors.push_back(Detector(name, config.experiment));
-    }
-
     TFile outputFile(outputFileName.c_str(),"RECREATE");
     cout << "Creating histograms for " << inputFileName << endl;
 
     // connect tree to detector variables, so data can be read out from tree
     // into each detector
-    setBranches(tree, detectors);
+    setBranches(tree);
+
+    // create new histograms for recording this run
+    for(auto& detector : config.detectors)
+    {
+        detector.createHistos();
+    }
 
     // populate tree events into histos
     long treeEntries = tree->GetEntries();
@@ -63,19 +62,19 @@ int histos(string inputFileName, string outputFileName)
     {
         tree->GetEvent(i);
 
-        for(auto& d : detectors)
+        for(auto& d : config.detectors)
         {
             // skip events where another detector caused the trigger
-            if(d.rawPH<=0)
+            if(d.histos.rawPH<=0)
             {
                 continue;
             }
 
             // fill raw spectra before gates
-            d.rawPH->Fill(d.pulseHeight);
-            d.rawPSD->Fill(d.PSD);
-            d.rawTDC->Fill(detectors[4].TDC);
-            d.rawPHPSD->Fill(d.PSD, d.pulseHeight);
+            d.histos.rawPH->Fill(d.pulseHeight);
+            d.histos.rawPSD->Fill(d.PSD);
+            d.histos.rawTDC->Fill(config.detectors[4].TDC);
+            d.histos.rawPHPSD->Fill(d.PSD, d.pulseHeight);
 
             // test that event is inside PSD-pulse height banana
             if(d.name=="4M" || d.name=="6M" || d.name=="CMON")
@@ -91,10 +90,10 @@ int histos(string inputFileName, string outputFileName)
                   /*if(d.pulseHeight > d.pulseHeightThreshold &&
                       d.PSD > d.PSDThreshold)*/
                 {
-                    d.pulseHeightHisto->Fill(d.pulseHeight);
-                    d.PSDHisto->Fill(d.PSD);
-                    d.TDCHisto->Fill(detectors[4].TDC);
-                    d.PHPSD->Fill(d.PSD, d.pulseHeight);
+                    d.histos.pulseHeightHisto->Fill(d.pulseHeight);
+                    d.histos.PSDHisto->Fill(d.PSD);
+                    d.histos.TDCHisto->Fill(config.detectors[4].TDC);
+                    d.histos.PHPSD->Fill(d.PSD, d.pulseHeight);
                 }
             }
         }
@@ -107,9 +106,9 @@ int histos(string inputFileName, string outputFileName)
         }
     }
 
-    for(auto& detector : detectors)
+    for(auto& detector : config.detectors)
     {
-        detector.write();
+        detector.histos.write();
     }
 
     outputFile.Write();

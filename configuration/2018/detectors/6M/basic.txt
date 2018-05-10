@@ -1,0 +1,6 @@
+This file lists basic detector information.
+*******************************************************************************
+Distance:           355.5 cm
+Bins per ns, TDC:   0.2
+Bin offset, TDC:    1000
+Use for CS?         yes
