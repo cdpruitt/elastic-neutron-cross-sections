@@ -1,6 +1,6 @@
 This file lists basic detector information.
 *******************************************************************************
-Distance:           355.5 cm
-Bins per ns, TDC:   0.2
-Bin offset, TDC:    1000
-Use for CS?         yes
+Distance:                           524.9 cm
+Linear calibration of TDC (ns/bin): 0.1806
+Time offset of TDC (ns):            -26.67
+Use for CS?                         yes

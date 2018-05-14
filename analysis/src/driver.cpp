@@ -19,6 +19,7 @@
 #include "../include/calculateCS.h"
 #include "../include/calculateReference.h"
 #include "../include/ReferenceCS.h"
+#include "../include/plotHistos.h"
 
 using namespace std;
 
@@ -73,6 +74,8 @@ int main(int argc, char** argv)
             histos(inputFileName, outputFileName);
         }
     }
+
+    plotHistos();
 
     subtractBackground();
 

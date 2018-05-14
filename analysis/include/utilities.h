@@ -10,7 +10,9 @@ double CMAngleToLabAngle(double CMAngle, double massOfProjectile, double massOfT
 double labToCMJacobian(double labAngle, double massOfProjectile, double massOfTarget);
 
 double calculateScatteredEnergy(
-        double neutronEnergy, // incident neutron energy, in MeV
+        double projectileEnergy, // incident neutron energy, in MeV
+        double excitationEnergy, // energy of inelastic excitation, if any, in MeV
+        double projectileMass,
         double targetMass, // in amu
         double labAngle // in degrees
         );
@@ -23,8 +25,8 @@ double calculateTOFShift(
         );
 
 double calculateTOF(
-        Detector d,
-        Target t,
+        double distance,
+        double targetMass,
         double angle,
         double neutronEnergyBefore
         );

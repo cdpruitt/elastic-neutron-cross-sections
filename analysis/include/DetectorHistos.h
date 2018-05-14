@@ -15,6 +15,7 @@ struct DetectorHistos
     TH1D* pulseHeightHisto;
     TH1D* PSDHisto;
     TH1D* TDCHisto;
+    TH1D* TOFHisto;
     TH2D* PHPSD;
 
     TH1D* rawPH;

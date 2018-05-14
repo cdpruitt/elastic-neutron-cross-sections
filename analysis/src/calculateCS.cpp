@@ -64,16 +64,7 @@ int calculateCS(const ReferenceCS& reference)
                     continue;
                 }
 
-                double neutronTOF = calculateTOF(d, t, angle.value, config.neutronEnergy);
-
-                cout << "For distance " << d.distance << " and target mass " << t.getMolarMass()
-                    << ", neutron TOF is " << neutronTOF << " at " << angle.value << " degrees."
-                    << endl;
-
-                // extract counts from histo based on histogram gates
-                //int integralBin = histo->FindBin(
-                //        d.getMinBin
-                //        );
+                double neutronTOF = calculateTOF(d.distance, t.getMolarMass(), angle.value, config.neutronEnergy);
 
                 double difference = histo->Integral(
                         d.getTDCBin(neutronTOF) - d.TOFResolution,
@@ -101,7 +92,7 @@ int calculateCS(const ReferenceCS& reference)
                 // calculate differential cross section in lab frame
                 double value = ((double)difference/reference.counts[i])*
                     ((double)reference.monitors[i]/NORMALIZATION_SCALING)*
-                    (reference.polyNumberOfAtoms/targetNumberOfAtoms)*
+                    (2*reference.polyNumberOfAtoms/targetNumberOfAtoms)*
                     reference.crossSection;
 
                 // convert lab frame cross section to center-of-mass frame via

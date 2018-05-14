@@ -1,4 +1,4 @@
-vector<string> detectors = {"4M", "6M", "CMON"};
+//vector<string> detectors = {"4M", "6M", "CMON"};
 
 void allRawRuns(string experiment)
 {

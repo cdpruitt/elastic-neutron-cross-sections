@@ -58,8 +58,8 @@ void subtractBackground(
 
     string diffHistoName = "polyMinusGraphite" + detector;
     TH1D* diffHisto = (TH1D*)polyMinusBlank->Clone(diffHistoName.c_str());
-    //double molRatio = reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms;
-    //graphiteMinusBlank->Scale(molRatio);
+    double molRatio = reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms;
+    graphiteMinusBlank->Scale(molRatio);
     diffHisto->Add(graphiteMinusBlank, -1);
     diffHisto->Write();
 

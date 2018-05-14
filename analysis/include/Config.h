@@ -11,15 +11,19 @@
 struct Run
 {
     Run() {}
-    Run(std::vector<std::string> configData) :
-        number(stoi(configData[0])), target(configData[1])
+    Run(std::vector<std::string> configData, std::string experiment) :
+        number(stoi(configData[0]))
     {
         angles.push_back(stod(configData[2]));
         angles.push_back(stod(configData[3]));
+
+        std::string targetDataLocation = "../configuration/" + experiment + "/targets/" +
+            configData[1] + "/";
+        target = Target(targetDataLocation);
     }
 
     int number;
-    std::string target;
+    Target target;
     std::vector<double> angles;
 };
 
@@ -65,6 +69,7 @@ struct Config
     Angle getAngle(double angle);
 
     double neutronEnergy;
+    double timeOffset;
 };
 
 #endif /* RUN_CONFIG_H */

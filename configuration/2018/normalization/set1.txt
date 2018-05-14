@@ -8,8 +8,8 @@ Graphite run number:        219
 Angle (degrees, lab):       23
 Literature CS (mb):         163.8
 
-Number of atoms, poly:      2.91e23
-Number of atoms, graphite:  2.91e23
+Number of atoms, poly:      1.45e23
+Number of atoms, graphite:  1.47e23
 
 Low limit, 4M:  1240
 High limit, 4M: 1282

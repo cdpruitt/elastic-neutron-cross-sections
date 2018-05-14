@@ -2,6 +2,7 @@
 #include <cmath>
 
 #include "../include/physicalConstants.h"
+#include <iostream>
 
 using namespace std;
 
@@ -11,10 +12,10 @@ using namespace std;
 // and Thornton, page 310)
 double labAngleToCMAngle(double labAngle, double massOfProjectile, double massOfTarget)
 {
-    double tanCMAngle = sin(labAngle*(M_PI/180))/(cos(labAngle*M_PI/180)-massOfProjectile/massOfTarget);
+    double tanCMAngle = sin(labAngle*(M_PI/180))/(cos(labAngle*M_PI/180)-massOfProjectile/(massOfProjectile+massOfTarget));
     double cmAngle = (180/M_PI)*atan2(tanCMAngle, 1);
 
-    // translate output range from (-90,90) to (0,180)
+    // convert from (-90,90) to (0,180)
     if(cmAngle<0)
     {
         cmAngle += 180;
@@ -25,14 +26,12 @@ double labAngleToCMAngle(double labAngle, double massOfProjectile, double massOf
 
 // convert a center-of-mass angle (in degrees) to a lab angle (in degrees),
 // ranging from 0-180
-// (see "Classical Dynamics of Particles and Systems", 3rd Edition, by Marion
-// and Thornton, page 310)
 double CMAngleToLabAngle(double CMAngle, double massOfProjectile, double massOfTarget)
 {
     double tanLabAngle = sin(CMAngle*(M_PI/180))/(cos(CMAngle*M_PI/180)+massOfProjectile/massOfTarget);
-    double labAngle = (180/M_PI)*atan2(tanLabAngle, 1);
+    double labAngle = (180/M_PI)*atan2(tanLabAngle,1);
 
-    // translate output range from (-90,90) to (0,180)
+    // convert from (-90,90) to (0,180)
     if(labAngle<0)
     {
         labAngle += 180;
@@ -57,30 +56,41 @@ double labToCMJacobian(double labAngle, double massOfProjectile, double massOfTa
 
 double calculateScatteredEnergy(
         double projectileEnergy, // projectile energy before collision, in MeV
-        double projectileMass, // in amu
-        double targetMass, // in amu
+        double excitationEnergy, // energy removed from elastic scattering
+        double projectileMass, // in MeV/c^2
+        double targetMass, // in MeV/c^2
         double labAngle // in degrees
         )
 {
     // calculate lab frame velocity of neutron before collision
-    double neutronVelBefore = pow(2*projectileEnergy/projectileMass,0.5);
+    double neutronVelBefore = pow(2*projectileEnergy/projectileMass,0.5); // as fraction of C
 
     // calculate velocity of the center of mass frame with respect to the lab
     // frame
     double CMvelocity = neutronVelBefore*(projectileMass/(projectileMass+targetMass));
+    double CMAngle = labAngleToCMAngle(labAngle, projectileMass, targetMass);
 
-    double CMangle = labAngleToCMAngle(labAngle, projectileMass, targetMass);
+    // calculate velocity of projectile in center of mass frame before
+    // scattering
+    double neutronVCM = neutronVelBefore-CMvelocity;
+    double targetVCM = -neutronVCM*(projectileMass/targetMass);
 
-    // calculate velocity of projectile in center of mass frame
-    double neutronVCM = neutronVelBefore*(1-projectileMass/(projectileMass+targetMass));
+    // calculate fraction of velocity lost by inelastic excitation during
+    // scattering
+    double fractionVelLost = pow(excitationEnergy/projectileEnergy,0.5);
 
-    // calculate velocity of projectile in lab frame after collision
-    double neutronVlabX = CMvelocity + neutronVCM*cos(CMangle*(M_PI/180));
-    double neutronVlabY = neutronVCM*sin(CMangle*(M_PI/180));
-    double neutronVlabAfter = pow(pow(neutronVlabX,2) + pow(neutronVlabY,2),0.5);
+    // calculate velocity of projectile in center of mass frame after scattering
+    double neutronVCMX = (1-fractionVelLost)*neutronVCM*cos(CMAngle*(M_PI/180));
+    double neutronVCMY = (1-fractionVelLost)*neutronVCM*sin(CMAngle*(M_PI/180));
+
+    // calculate velocity of target in lab frame after collision
+    double targetVCMX = (1-fractionVelLost)*targetVCM*cos(CMAngle*(M_PI/180));
+    double targetVCMY = (1-fractionVelLost)*targetVCM*sin(CMAngle*(M_PI/180));
 
     // calculate energy of projectile in lab frame after collision
-    return 0.5*projectileMass*pow(neutronVlabAfter,2);
+    double projectileEnergyAfter = 0.5*projectileMass*(pow(neutronVCMX+CMvelocity,2)+pow(neutronVCMY,2)); // in MeV
+
+    return projectileEnergyAfter;
 }
 
 double calculateTOF(
@@ -93,8 +103,8 @@ double calculateTOF(
 }
 
 double calculateTOF(
-        Detector d,
-        Target t,
+        double distance,
+        double targetMass,
         double angle,
         double neutronEnergyBefore
         )
@@ -102,11 +112,10 @@ double calculateTOF(
     // calculate neutron energy after scattering to lab angle
     double neutronEnergyAfter = calculateScatteredEnergy(
             neutronEnergyBefore,
-            NEUTRON_MASS,
-            t.getMolarMass(),
+            1,
+            NEUTRON_MASS*AMU_TO_MEVC2,
+            targetMass*AMU_TO_MEVC2,
             angle);
 
-    double neutronTOFAngle = d.distance/pow(2*neutronEnergyAfter/NEUTRON_MASS, 0.5);
-
-    return neutronTOFAngle;
+    return distance/pow(2*neutronEnergyAfter/NEUTRON_MASS, 0.5);
 }

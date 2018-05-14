@@ -41,7 +41,7 @@ Config::Config(string experiment) : experiment(experiment)
                 istream_iterator<string>(),
                 back_inserter(tokens));
 
-        runs.push_back(Run(tokens));
+        runs.push_back(Run(tokens, experiment));
     }
 
     for(auto& run : runs)
@@ -94,6 +94,7 @@ Config::Config(string experiment) : experiment(experiment)
     }
 
     neutronEnergyFile >> neutronEnergy;
+    timeOffset = 158;
 }
 
 Run Config::getRun(int runNumber)

@@ -24,8 +24,8 @@ struct Detector
 
     DetectorHistos histos;
 
-    double binsPerNS;
-    double binOffset;
+    double linearCalibration; // in ns/bin
+    double timeOffset; // in ns
     double TOFResolution;
 
     bool useForCS = false;

@@ -34,22 +34,22 @@ Detector::Detector(string n, string experiment) : name(n)
                 istream_iterator<string>(),
                 back_inserter(tokens));
 
-        if(tokens[0]=="Distance:")
+        if(tokens[0]=="Distance")
         {
-            distance = stod(tokens[1]);
+            distance = stod(tokens.back());
         }
 
-        else if(tokens[0]=="Bins")
+        else if(tokens[0]=="Linear")
         {
-            binsPerNS = stod(tokens[4]);
+            linearCalibration = stod(tokens.back());
         }
 
-        else if(tokens[0]=="Bin")
+        else if(tokens[0]=="Time")
         {
-            binOffset = stod(tokens[3]);
+            timeOffset = stod(tokens.back());
         }
 
-        else if(tokens[0]=="Use" && tokens[3]=="yes")
+        else if(tokens[0]=="Use" && tokens.back()=="yes")
         {
             useForCS = true;
         }
@@ -69,5 +69,5 @@ void Detector::createHistos()
 
 int Detector::getTDCBin(double neutronTOF)
 {
-    return binsPerNS*neutronTOF + binOffset;
+    return (neutronTOF+timeOffset)/linearCalibration;
 }

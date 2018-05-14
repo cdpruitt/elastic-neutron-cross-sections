@@ -9,6 +9,7 @@ DetectorHistos::DetectorHistos(string name)
     string PSDName = name + "PSD";
     string TDCName = name + "TDC";
     string PHPSDName = name + "PHPSD";
+    string TOFName = name + "TOF";
 
     pulseHeightHisto = new TH1D(PHName.c_str(), PHName.c_str(),
             5000, 0, 5000);
@@ -22,6 +23,13 @@ DetectorHistos::DetectorHistos(string name)
     PHPSD = new TH2D(PHPSDName.c_str(), PHPSDName.c_str(),
             1000, 0, 5000,
             1000, 0, 5000);
+
+    double TOFHistoStart = 0;
+    double TOFHistoStop = 500;
+    int TOFHistoBins = ceil((TOFHistoStop-TOFHistoStart)/(0.1806));
+
+    TOFHisto = new TH1D(TOFName.c_str(), TOFName.c_str(),
+            TOFHistoBins, TOFHistoStart, TOFHistoStop);
 
     string rawPHName = PHName + "raw";
     string rawPSDName = PSDName + "raw";
@@ -52,5 +60,6 @@ void DetectorHistos::write()
     pulseHeightHisto->Write();
     PSDHisto->Write();
     TDCHisto->Write();
+    TOFHisto->Write();
     PHPSD->Write();
 }

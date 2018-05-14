@@ -1,8 +1,8 @@
 Name: graphite
-Length:     2.729 cm
-Diameter:   0.826 cm
+Length:     2.358 cm
+Diameter:   0.939 cm
 Diameter uncertainty: 0.0005 cm
-Mass:       2.4680 g
+Mass:       2.924 g
 Mass uncertainty: 0.0001 g
 Molar Mass: 12.011 g/mol
 Molar mass uncertainty: 0.0005 g/mol

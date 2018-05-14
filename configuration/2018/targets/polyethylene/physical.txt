@@ -1,8 +1,8 @@
 Name: polyethylene
-Length:     2.729 cm
-Diameter:   0.826 cm
+Length:     2.270 cm
+Diameter:   1.418 cm
 Diameter uncertainty: 0.0005 cm
-Mass:       2.4680 g
+Mass:       3.389 g
 Mass uncertainty: 0.0001 g
-Molar Mass: 12.011 g/mol
+Molar Mass: 14.027 g/mol
 Molar mass uncertainty: 0.0005 g/mol

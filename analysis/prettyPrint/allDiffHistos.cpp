@@ -119,7 +119,7 @@ void allDiffHistos(string experiment)
             for(int target=0; target<targets.size(); target++)
             {
                 // read integration limits from config file
-                string intLimitFileName = "../../configuration/" + experiment
+                /*string intLimitFileName = "../../configuration/" + experiment
                     + "/targets/" + targets[target] + "/integrationLimits.txt";
                 ifstream intLimitFile(intLimitFileName.c_str());
 
@@ -161,7 +161,7 @@ void allDiffHistos(string experiment)
                     {
                         intLimitsHigh.push_back(stod(tokens[3]));
                     }
-                }
+                }*/
 
                 double canvasOffset;
 
@@ -266,7 +266,9 @@ void allDiffHistos(string experiment)
                         blankHisto->Draw("hist same");
                         //differenceHisto->Draw("hist same");
 
-                        targetHisto->GetXaxis()->SetRangeUser(intLimitsLow[detector]-100,intLimitsHigh[detector]+100);
+                        double TOF = calculateTOF(detectorDistance, targetMass, detectorAngle, neutronEnergy);
+
+                        targetHisto->GetXaxis()->SetRangeUser(TOF-100,TOF+100);
 
                         int minIntBin = differenceHisto->FindBin(intLimitsLow[detector]);
                         int maxIntBin = differenceHisto->FindBin(intLimitsHigh[detector]);

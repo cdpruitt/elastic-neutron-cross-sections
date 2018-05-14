@@ -94,6 +94,19 @@ int histos(string inputFileName, string outputFileName)
                     d.histos.PSDHisto->Fill(d.PSD);
                     d.histos.TDCHisto->Fill(config.detectors[4].TDC);
                     d.histos.PHPSD->Fill(d.PSD, d.pulseHeight);
+
+                    double neutronTOF =
+                        ((d.linearCalibration*d.TDC+d.timeOffset)-
+                        (config.detectors[4].linearCalibration
+                         *config.detectors[4].TDC
+                         +config.detectors[4].timeOffset));
+
+                    /*cout << "detector " << d.name << " TDC = " << d.TDC
+                        << ", PO TDC = " << config.detectors[4].TDC
+                        << ", neutronTOF = " << neutronTOF << endl;
+                        */
+
+                    d.histos.TOFHisto->Fill(neutronTOF+config.timeOffset);
                 }
             }
         }
@@ -110,8 +123,6 @@ int histos(string inputFileName, string outputFileName)
     {
         detector.histos.write();
     }
-
-    outputFile.Write();
 
     return 0;
 }

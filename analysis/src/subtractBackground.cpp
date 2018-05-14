@@ -88,7 +88,7 @@ int subtractBackground()
         {
             for(auto& target : angle.targets)
             {
-                if(target.name!=run.target)
+                if(target.name!=run.target.name)
                 {
                     continue;
                 }
