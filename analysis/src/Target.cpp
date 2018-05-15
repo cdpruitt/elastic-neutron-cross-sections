@@ -33,17 +33,17 @@ Target::Target(string targetDataLocation)
 
         if((tokens[0]=="Diameter") && (tokens[1] == "uncertainty:"))
         {
-            diameterUncertainty = atof(tokens[2].c_str());
+            diameterUncertainty = stod(tokens[2]);
         }
 
         else if((tokens[0]=="Mass") && (tokens[1] == "uncertainty:"))
         {
-            massUncertainty = atof(tokens[2].c_str());
+            massUncertainty = stod(tokens[2]);
         }
 
         else if((tokens[0]=="Molar") && (tokens[2] == "uncertainty:"))
         {
-            molMassUncertainty = atof(tokens[3].c_str());
+            molMassUncertainty = stod(tokens[3]);
         }
 
         else if(tokens[0]=="Name:")
@@ -53,22 +53,27 @@ Target::Target(string targetDataLocation)
 
         else if(tokens[0]=="Length:")
         {
-            length = atof(tokens[1].c_str());
+            length = stod(tokens[1]);
         }
 
         else if(tokens[0]=="Diameter:")
         {
-            diameter = atof(tokens[1].c_str());
+            diameter = stod(tokens[1]);
         }
 
         else if(tokens[0]=="Mass:")
         {
-            mass = atof(tokens[1].c_str());
+            mass = stod(tokens[1]);
         }
 
         else if(tokens[0]=="Molar")
         {
-            molMass = atof(tokens[2].c_str());
+            molMass = stod(tokens[2]);
+        }
+
+        else if(tokens[0]=="Excited")
+        {
+            excitedStates.push_back(stod(tokens[2]));
         }
 
         else

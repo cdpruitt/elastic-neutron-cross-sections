@@ -94,7 +94,8 @@ Config::Config(string experiment) : experiment(experiment)
     }
 
     neutronEnergyFile >> neutronEnergy;
-    timeOffset = 158;
+
+    reference = "set2";
 }
 
 Run Config::getRun(int runNumber)

@@ -26,7 +26,9 @@ struct Detector
 
     double linearCalibration; // in ns/bin
     double timeOffset; // in ns
-    double TOFResolution;
+    double resolution; // FWHM, in bins
+
+    double cableDelay; // in ns
 
     bool useForCS = false;
 

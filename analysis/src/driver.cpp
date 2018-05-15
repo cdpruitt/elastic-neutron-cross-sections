@@ -80,7 +80,7 @@ int main(int argc, char** argv)
     subtractBackground();
 
     ReferenceCS reference;
-    calculateReference(config.experiment, "set1", reference);
+    calculateReference(config.experiment, config.reference, reference);
 
     calculateCS(reference);
 }

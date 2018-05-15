@@ -77,15 +77,15 @@ double calculateScatteredEnergy(
 
     // calculate fraction of velocity lost by inelastic excitation during
     // scattering
-    double fractionVelLost = pow(excitationEnergy/projectileEnergy,0.5);
+    double fractionVel = pow((projectileEnergy-excitationEnergy)/projectileEnergy,0.5);
 
     // calculate velocity of projectile in center of mass frame after scattering
-    double neutronVCMX = (1-fractionVelLost)*neutronVCM*cos(CMAngle*(M_PI/180));
-    double neutronVCMY = (1-fractionVelLost)*neutronVCM*sin(CMAngle*(M_PI/180));
+    double neutronVCMX = fractionVel*neutronVCM*cos(CMAngle*(M_PI/180));
+    double neutronVCMY = fractionVel*neutronVCM*sin(CMAngle*(M_PI/180));
 
     // calculate velocity of target in lab frame after collision
-    double targetVCMX = (1-fractionVelLost)*targetVCM*cos(CMAngle*(M_PI/180));
-    double targetVCMY = (1-fractionVelLost)*targetVCM*sin(CMAngle*(M_PI/180));
+    double targetVCMX = fractionVel*targetVCM*cos(CMAngle*(M_PI/180));
+    double targetVCMY = fractionVel*targetVCM*sin(CMAngle*(M_PI/180));
 
     // calculate energy of projectile in lab frame after collision
     double projectileEnergyAfter = 0.5*projectileMass*(pow(neutronVCMX+CMvelocity,2)+pow(neutronVCMY,2)); // in MeV
@@ -104,6 +104,7 @@ double calculateTOF(
 
 double calculateTOF(
         double distance,
+        double excitationEnergy,
         double targetMass,
         double angle,
         double neutronEnergyBefore
@@ -112,7 +113,7 @@ double calculateTOF(
     // calculate neutron energy after scattering to lab angle
     double neutronEnergyAfter = calculateScatteredEnergy(
             neutronEnergyBefore,
-            1,
+            excitationEnergy,
             NEUTRON_MASS*AMU_TO_MEVC2,
             targetMass*AMU_TO_MEVC2,
             angle);

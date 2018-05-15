@@ -101,7 +101,7 @@ int subtractBackground()
                             + "/runs/" + to_string(run.number) + "/histos.root";
                         TFile histoFile(histoFileName.c_str(),"READ");
 
-                        string histoName = DETECTOR_NAMES[i] + "TDC";
+                        string histoName = DETECTOR_NAMES[i] + "TOF";
                         TH1D* histo = (TH1D*)histoFile.Get(histoName.c_str());
                         if(!histo)
                         {

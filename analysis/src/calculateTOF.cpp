@@ -38,7 +38,7 @@ int main(int argc, char** argv)
             targetMass*AMU_TO_MEVC2,
             detectorAngle);
 
-    double TOF = calculateTOF(detectorDistance, targetMass, detectorAngle, neutronEnergy);
+    double TOF = calculateTOF(detectorDistance, 0, targetMass, detectorAngle, neutronEnergy);
 
     cout << "For " << neutronEnergy << " MeV neutron elastically scattering on "
         << targetMass << " amu target to a lab angle of " << detectorAngle

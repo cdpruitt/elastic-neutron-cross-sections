@@ -6,16 +6,20 @@ Run No.     Target          4m det angle    6m det angle
 217         polyethylene    23              23
 218         graphite        23              23
 219         blank           23              23
+
 221         Sn124           23              23
 222         blank           23              23
 223         Sn112           23              23
+
 224         Sn112           30              29.83
 225         blank           30              29.83
 226         Sn124           30              29.83
+
 227         Sn124           40              40
 228         Sn124           40              40
 229         blank           40              40
 230         Sn112           40              40
+
 231         Sn112           60              49.83
 232         Sn112           60              49.83
 233         blank           60              49.83
@@ -25,6 +29,7 @@ Run No.     Target          4m det angle    6m det angle
 237         Sn124           60              49.83
 238         blank           60              49.83
 239         Sn112           60              49.83
+
 244         Sn112           70              34.67
 245         blank           70              34.67
 246         Sn124           70              34.67
@@ -32,18 +37,22 @@ Run No.     Target          4m det angle    6m det angle
 248         Sn124           70              34.67
 249         blank           70              34.67
 250         Sn112           70              34.67
+
 251         Sn112           70              45
 252         blank           70              45
 253         Sn124           70              45
+
 254         Sn124           90.17           45
 255         blank           90.17           45
 256         Sn112           90.17           45
+
 257         Sn124           90.17           129.83
 258         Sn124           90.17           129.83
 259         blank           90.17           129.83
 260         blank           90.17           129.83
 261         Sn112           90.17           129.83
 262         Sn112           90.17           129.83
+
 264         Sn124           110             129.83
 265         blank           110             129.83
 266         blank           110             129.83
@@ -51,6 +60,7 @@ Run No.     Target          4m det angle    6m det angle
 268         Sn112           110             129.83
 269         Sn112           110             129.83
 270         blank           110             129.83
+
 271         Sn124           110             100
 272         Sn124           110             100
 273         blank           110             100
@@ -63,6 +73,7 @@ Run No.     Target          4m det angle    6m det angle
 280         blank           110             100
 281         blank           110             100
 285         Sn112           120             100
+
 286         Sn112           120             80
 287         blank           120             80
 288         blank           120             80
@@ -81,6 +92,7 @@ Run No.     Target          4m det angle    6m det angle
 301         blank           120             80
 302         blank           120             80
 303         blank           120             80
+
 304         Sn112           49.67           60
 305         Sn112           49.67           60
 306         blank           49.67           60
@@ -89,22 +101,27 @@ Run No.     Target          4m det angle    6m det angle
 309         Sn124           49.67           60
 310         SnNat           49.67           60
 311         SnNat           49.67           60
+
 312         polyethylene    23              23
 313         blank           23              23
 314         graphite        23              23
+
 315         polyethylene    30              30
 316         blank           30              30
 317         graphite        30              30
+
 318         Sn124           30              30
 319         blank           30              30
 320         Sn112           30              30
 321         Sn112           30              30
+
 322         Sn112           65              55
 323         Sn112           65              55
 324         blank           65              55
 325         blank           65              55
 326         Sn124           65              55
 327         Sn124           65              55
+
 328         Sn124           140             75
 329         Sn124           140             75
 330         blank           140             75

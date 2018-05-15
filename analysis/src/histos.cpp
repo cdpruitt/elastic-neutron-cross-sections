@@ -106,7 +106,7 @@ int histos(string inputFileName, string outputFileName)
                         << ", neutronTOF = " << neutronTOF << endl;
                         */
 
-                    d.histos.TOFHisto->Fill(neutronTOF+config.timeOffset);
+                    d.histos.TOFHisto->Fill(neutronTOF+d.cableDelay);
                 }
             }
         }

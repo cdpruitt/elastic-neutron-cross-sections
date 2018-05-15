@@ -3,6 +3,8 @@
 
 #include <string>
 #include <utility>
+#include <vector>
+
 #include "TH1.h"
 
 #include "IntegrationLimits.h"
@@ -16,6 +18,8 @@ struct Target
 
     std::vector<std::vector<TH1D*>> histos;
     std::vector<std::vector<TH1D*>> monitors;
+
+    std::vector<double> excitedStates;
 
     std::string getName() const;
     double getLength() const;

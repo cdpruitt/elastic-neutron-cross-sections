@@ -1,0 +1,6 @@
+This file lists basic detector information.
+*******************************************************************************
+Distance:                           0 cm
+Linear calibration of TDC (ns/bin): 0.1807
+Time offset of TDC (ns):            -66.78
+Use for CS?                         no

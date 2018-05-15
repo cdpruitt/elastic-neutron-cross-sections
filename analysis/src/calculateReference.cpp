@@ -12,6 +12,10 @@
 #include "../include/calculateReference.h"
 #include "../include/ReferenceCS.h"
 #include "../include/IntegrationLimits.h"
+#include "../include/utilities.h"
+#include "../include/Config.h"
+
+extern Config config;
 
 using namespace std;
 
@@ -22,19 +26,11 @@ void subtractBackground(
         TH1D* graphiteMon,
         TH1D* blankRefHisto,
         TH1D* blankRefMon,
-        double lowIntegrationLimit,
-        double highIntegrationLimit,
+        double TOF,
         ReferenceCS& reference,
-        string detector
+        const Detector& d
         )
 {
-    //int minIntBin = polyMon->FindBin(intLimits.low[2]);
-    //int maxIntBin = polyMon->FindBin(intLimits.high[2]);
-
-    //double polyMonCounts = polyMon->Integral(minIntBin, maxIntBin);
-    //double graphiteMonCounts = graphiteMon->Integral(minIntBin, maxIntBin);
-    //double blankRefMonCounts = blankRefMon->Integral(minIntBin, maxIntBin);
-
     double polyMonCounts = polyMon->GetEntries();
     double graphiteMonCounts = graphiteMon->GetEntries();
     double blankRefMonCounts = blankRefMon->GetEntries();
@@ -46,17 +42,17 @@ void subtractBackground(
     blankRefHisto->Scale(NORMALIZATION_SCALING/blankRefMonCounts);
     blankRefHisto->Write();
 
-    string polyMinusBlankName = "polyMinusBlank" + detector;
+    string polyMinusBlankName = "polyMinusBlank" + d.name;
     TH1D* polyMinusBlank = (TH1D*)polyHisto->Clone(polyMinusBlankName.c_str());
     polyMinusBlank->Add(blankRefHisto, -1);
     polyMinusBlank->Write();
 
-    string graphiteMinusBlankName = "graphiteMinusBlank" + detector;
+    string graphiteMinusBlankName = "graphiteMinusBlank" + d.name;
     TH1D* graphiteMinusBlank = (TH1D*)graphiteHisto->Clone(graphiteMinusBlankName.c_str());
     graphiteMinusBlank->Add(blankRefHisto, -1);
     graphiteMinusBlank->Write();
 
-    string diffHistoName = "polyMinusGraphite" + detector;
+    string diffHistoName = "polyMinusGraphite" + d.name;
     TH1D* diffHisto = (TH1D*)polyMinusBlank->Clone(diffHistoName.c_str());
     double molRatio = reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms;
     graphiteMinusBlank->Scale(molRatio);
@@ -64,8 +60,9 @@ void subtractBackground(
     diffHisto->Write();
 
     // perform integrals
-    int minIntBin = diffHisto->FindBin(lowIntegrationLimit);
-    int maxIntBin = diffHisto->FindBin(highIntegrationLimit);
+    double TOFResolution = d.resolution*d.linearCalibration; // FWHM in ns
+    int minIntBin = diffHisto->FindBin(TOF-TOFResolution);
+    int maxIntBin = diffHisto->FindBin(TOF+TOFResolution);
     reference.counts.push_back(diffHisto->Integral(minIntBin, maxIntBin));
     reference.monitors.push_back(polyMonCounts);
 }
@@ -84,7 +81,6 @@ int calculateReference(string experiment, string setToUse, ReferenceCS& referenc
     int polyethyleneRun;
     int blankRefRun;
     int graphiteRun;
-    IntegrationLimits intLimits;
 
     string str;
 
@@ -140,16 +136,6 @@ int calculateReference(string experiment, string setToUse, ReferenceCS& referenc
         {
             reference.graphiteNumberOfAtoms = stod(tokens[4]);
         }
-
-        else if(tokens[0] == "Low")
-        {
-            intLimits.low.push_back(stod(tokens[3]));
-        }
-
-        else if(tokens[0] == "High")
-        {
-            intLimits.high.push_back(stod(tokens[3]));
-        }
     }
 
     // open targets needed for calculateCS
@@ -178,32 +164,39 @@ int calculateReference(string experiment, string setToUse, ReferenceCS& referenc
         return 1;
     }
 
-    TH1D* polyHisto4M = (TH1D*)polyFile->Get("4MTDC");
-    TH1D* polyHisto6M = (TH1D*)polyFile->Get("6MTDC");
-    TH1D* polyMonitor = (TH1D*)polyFile->Get("CMONPSD");
-
-    TH1D* blankRefHisto4M = (TH1D*)blankRefFile->Get("4MTDC");
-    TH1D* blankRefHisto6M = (TH1D*)blankRefFile->Get("6MTDC");
-    TH1D* blankRefMonitor = (TH1D*)blankRefFile->Get("CMONPSD");
-
-    TH1D* graphiteHisto4M = (TH1D*)graphiteFile->Get("4MTDC");
-    TH1D* graphiteHisto6M = (TH1D*)graphiteFile->Get("6MTDC");
-    TH1D* graphiteMonitor = (TH1D*)graphiteFile->Get("CMONPSD");
-
-    if(!polyHisto4M || !polyHisto6M || !polyMonitor
-            || !blankRefHisto4M || !blankRefHisto6M || !blankRefMonitor
-            || !graphiteHisto4M || !graphiteHisto6M || !graphiteMonitor)
-    {
-        cerr << "Error: failed to open histogram needed for reference CS calculation." << endl;
-        return 1;
-    }
-
     string outputFileName = "../configuration/" + experiment
         + "/normalization/" + setToUse + ".root";
     TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
 
-    subtractBackground(polyHisto4M, polyMonitor, graphiteHisto4M, graphiteMonitor, blankRefHisto4M, blankRefMonitor, intLimits.low[0], intLimits.high[0], reference, "4M");
-    subtractBackground(polyHisto6M, polyMonitor, graphiteHisto6M, graphiteMonitor, blankRefHisto6M, blankRefMonitor, intLimits.low[1], intLimits.high[1], reference, "6M");
+    for(auto& d : config.detectors)
+    {
+        if(!d.useForCS)
+        {
+            continue;
+        }
+
+        string polyHistoName = d.name + "TOF";
+        TH1D* polyHisto = (TH1D*)polyFile->Get(polyHistoName.c_str());
+        TH1D* polyMonitor = (TH1D*)polyFile->Get("CMONPSD");
+
+        TH1D* blankRefHisto = (TH1D*)blankRefFile->Get(polyHistoName.c_str());
+        TH1D* blankRefMonitor = (TH1D*)blankRefFile->Get("CMONPSD");
+
+        TH1D* graphiteHisto = (TH1D*)graphiteFile->Get(polyHistoName.c_str());
+        TH1D* graphiteMonitor = (TH1D*)graphiteFile->Get("CMONPSD");
+
+        if(!polyHisto || !polyMonitor
+                || !blankRefHisto || !blankRefMonitor
+                || !graphiteHisto || !graphiteMonitor)
+        {
+            cerr << "Error: failed to open histogram needed for reference CS calculation." << endl;
+            return 1;
+        }
+
+        double TOF = calculateTOF(d.distance, 0, 1.007627, reference.angle, config.neutronEnergy);
+
+        subtractBackground(polyHisto, polyMonitor, graphiteHisto, graphiteMonitor, blankRefHisto, blankRefMonitor, TOF, reference, d);
+    }
 
     outputFile->Close();
 

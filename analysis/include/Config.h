@@ -69,7 +69,8 @@ struct Config
     Angle getAngle(double angle);
 
     double neutronEnergy;
-    double timeOffset;
+
+    std::string reference;
 };
 
 #endif /* RUN_CONFIG_H */

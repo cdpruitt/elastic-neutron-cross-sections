@@ -49,6 +49,16 @@ Detector::Detector(string n, string experiment) : name(n)
             timeOffset = stod(tokens.back());
         }
 
+        else if(tokens[0]=="Resolution")
+        {
+            resolution = stod(tokens.back());
+        }
+
+        else if(tokens[0]=="Cable")
+        {
+            cableDelay = stod(tokens.back());
+        }
+
         else if(tokens[0]=="Use" && tokens.back()=="yes")
         {
             useForCS = true;

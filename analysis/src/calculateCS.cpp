@@ -64,17 +64,18 @@ int calculateCS(const ReferenceCS& reference)
                     continue;
                 }
 
-                double neutronTOF = calculateTOF(d.distance, t.getMolarMass(), angle.value, config.neutronEnergy);
+                double neutronTOF = calculateTOF(d.distance, 0, t.getMolarMass(), angle.value, config.neutronEnergy);
 
+                double TOFResolution = d.resolution*d.linearCalibration; // FWHM in ns
                 double difference = histo->Integral(
-                        d.getTDCBin(neutronTOF) - d.TOFResolution,
-                        d.getTDCBin(neutronTOF) + d.TOFResolution
+                        histo->FindBin(neutronTOF-TOFResolution),
+                        histo->FindBin(neutronTOF+TOFResolution)
                         );
 
                 // convert from lab angle to CM angle
                 double CMAngle = labAngleToCMAngle(angle.value, NEUTRON_MASS, t.getMolarMass());
 
-                double targetNumberOfAtoms = (t.getMolarMass()/t.getMolarMass())*AVOGADROS_NUMBER;
+                double targetNumberOfAtoms = (t.getMass()/t.getMolarMass())*AVOGADROS_NUMBER;
 
                 if((reference.counts.size()-1 < i)
                         || (reference.monitors.size()-1 < i))
@@ -84,16 +85,13 @@ int calculateCS(const ReferenceCS& reference)
                     return 1;
                 }
 
-                /*cout << "For " << detectorNames[i] << " at " << angle.value << " degrees, integrated diff = " << difference
-                    << ", reference counts = " << reference.counts[i]
-                    << endl;
-                    */
-
                 // calculate differential cross section in lab frame
                 double value = ((double)difference/reference.counts[i])*
                     ((double)reference.monitors[i]/NORMALIZATION_SCALING)*
                     (2*reference.polyNumberOfAtoms/targetNumberOfAtoms)*
                     reference.crossSection;
+
+                cout << "For detector " << d.name << ", reference counts = " << reference.counts[i] << endl;
 
                 // convert lab frame cross section to center-of-mass frame via
                 // Jacobian

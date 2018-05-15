@@ -26,6 +26,7 @@ double calculateTOFShift(
 
 double calculateTOF(
         double distance,
+        double excitationEnergy,
         double targetMass,
         double angle,
         double neutronEnergyBefore

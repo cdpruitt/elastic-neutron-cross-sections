@@ -1,0 +1,5 @@
+Format for the header label of outputted tabular cross section data
+********************************************************************************
+Experimental data from May 2018 measurement at TUNL
+SnNat(n,n) [17 MeV]
+Degrees     mB/sr       Error (mB/sr)
