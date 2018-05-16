@@ -36,7 +36,7 @@ void allRawRuns(string experiment)
         runs.push_back(tokens[0]);
     }
 
-    const unsigned int CANVAS_WIDTH = 3;
+    const unsigned int CANVAS_WIDTH = 2;
     const unsigned int CANVAS_HEIGHT = 4;
 
     TStyle * style = (TStyle*)gROOT->FindObject("histoStyle");

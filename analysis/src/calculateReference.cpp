@@ -65,6 +65,8 @@ void subtractBackground(
     int maxIntBin = diffHisto->FindBin(TOF+TOFResolution);
     reference.counts.push_back(diffHisto->Integral(minIntBin, maxIntBin));
     reference.monitors.push_back(polyMonCounts);
+
+    cout << "reference mb/sr per histo count/monitor count = " << reference.crossSection*(reference.monitors.back()/reference.counts.back()) << endl;
 }
 
 int calculateReference(string experiment, string setToUse, ReferenceCS& reference)

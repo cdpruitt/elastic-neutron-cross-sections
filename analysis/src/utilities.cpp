@@ -62,33 +62,44 @@ double calculateScatteredEnergy(
         double labAngle // in degrees
         )
 {
-    // calculate lab frame velocity of neutron before collision
-    double neutronVelBefore = pow(2*projectileEnergy/projectileMass,0.5); // as fraction of C
+    if(targetMass==0)
+    {
+        return projectileEnergy-excitationEnergy;
+    }
+
+    // calculate lab frame velocity of neutron before collision (minus any
+    // future inelastic excitation)
+    double neutronVelBefore = pow(2*(projectileEnergy)/projectileMass,0.5); // as fraction of C
 
     // calculate velocity of the center of mass frame with respect to the lab
     // frame
-    double CMvelocity = neutronVelBefore*(projectileMass/(projectileMass+targetMass));
+    double CMVelocity = neutronVelBefore*(projectileMass/(projectileMass+targetMass));
     double CMAngle = labAngleToCMAngle(labAngle, projectileMass, targetMass);
 
     // calculate velocity of projectile in center of mass frame before
     // scattering
-    double neutronVCM = neutronVelBefore-CMvelocity;
+    double neutronVCM = neutronVelBefore-CMVelocity;
     double targetVCM = -neutronVCM*(projectileMass/targetMass);
 
     // calculate fraction of velocity lost by inelastic excitation during
     // scattering
-    double fractionVel = pow((projectileEnergy-excitationEnergy)/projectileEnergy,0.5);
+    double neutronVCMAfter = pow(
+            (pow(neutronVCM,2)*(projectileMass+pow(projectileMass,2)/targetMass)-2*excitationEnergy)
+            /(projectileMass+pow(projectileMass,2)/targetMass)
+            ,0.5);
+    double targetVCMAfter = -neutronVCMAfter*(projectileMass/targetMass);
 
     // calculate velocity of projectile in center of mass frame after scattering
-    double neutronVCMX = fractionVel*neutronVCM*cos(CMAngle*(M_PI/180));
-    double neutronVCMY = fractionVel*neutronVCM*sin(CMAngle*(M_PI/180));
+    double neutronVCMX = neutronVCMAfter*cos(CMAngle*(M_PI/180));
+    double neutronVCMY = neutronVCMAfter*sin(CMAngle*(M_PI/180));
 
     // calculate velocity of target in lab frame after collision
-    double targetVCMX = fractionVel*targetVCM*cos(CMAngle*(M_PI/180));
-    double targetVCMY = fractionVel*targetVCM*sin(CMAngle*(M_PI/180));
+    double targetVCMX = targetVCMAfter*cos(CMAngle*(M_PI/180));
+    double targetVCMY = targetVCMAfter*sin(CMAngle*(M_PI/180));
 
     // calculate energy of projectile in lab frame after collision
-    double projectileEnergyAfter = 0.5*projectileMass*(pow(neutronVCMX+CMvelocity,2)+pow(neutronVCMY,2)); // in MeV
+    double projectileEnergyAfter = 0.5*projectileMass*(pow(neutronVCMX+CMVelocity,2)+pow(neutronVCMY,2)); // in MeV
+    double targetEnergyAfter = 0.5*targetMass*(pow(targetVCMX+CMVelocity,2)+pow(targetVCMY,2)); // in MeV
 
     return projectileEnergyAfter;
 }

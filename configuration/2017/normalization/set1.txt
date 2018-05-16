@@ -1,18 +1,12 @@
 This file lists runs to calculate a reference cross
 section for normalizing all other cross section results
 ********************************************************************************
-Polyethylene run number:    217
-Blank run number:           218
-Graphite run number:        219
+Polyethylene run number:    60
+Blank run number:           62
+Graphite run number:        61
 
-Angle (degrees, lab):       23
-Literature CS (mb):         163.8
+Angle (degrees, lab):       32.5
+Literature CS (mb/sr):      229.4
 
 Number of atoms, poly:      1.45e23
 Number of atoms, graphite:  1.47e23
-
-Low limit, 4M:  1240
-High limit, 4M: 1282
-
-Low limit, 6M:  895
-High limit, 6M: 946

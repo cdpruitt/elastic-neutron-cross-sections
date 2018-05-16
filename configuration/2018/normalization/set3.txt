@@ -10,9 +10,3 @@ Literature CS (mb):         154.2
 
 Number of atoms, poly:      1.45e23
 Number of atoms, graphite:  1.47e23
-
-Low integration limit, 4M:  1200
-High integration limit, 6M: 1300
-
-Low integration limit, 4M:  900
-High integration limit, 6M: 1000

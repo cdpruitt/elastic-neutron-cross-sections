@@ -95,7 +95,16 @@ Config::Config(string experiment) : experiment(experiment)
 
     neutronEnergyFile >> neutronEnergy;
 
-    reference = "set2";
+    string referenceFileName = "../configuration/" + experiment + "/reference.txt";
+
+    ifstream referenceFile(referenceFileName.c_str());
+    if(!referenceFile.is_open())
+    {
+        cerr << "Failed to find reference CS file at " << referenceFileName << std::endl;
+        return;
+    }
+
+    referenceFile >> reference;
 }
 
 Run Config::getRun(int runNumber)

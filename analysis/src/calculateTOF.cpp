@@ -8,21 +8,25 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    if(argc<5 || argc>5)
+    const int nArg = 6;
+
+    if(argc<nArg || argc>nArg)
     {
-        cerr << "Error: calculateTOF() requires 4 arguments, but " << argc-1
+        cerr << "Error: calculateTOF() requires " << nArg << " arguments, but " << argc-1
             << " were encountered. Format must be:" << endl;
 
-        cerr << "   ./calculateTOF <neutronEnergy> <targetMass> <detectorAngle> <detectorDistance>" << endl;
+        cerr << "   ./calculateTOF <neutronEnergy> <excitationEnergy> <targetMass> <detectorAngle> <detectorDistance>" << endl;
         return 1;
     }
 
     double neutronEnergy = stod(argv[1]);
-    double targetMass = stod(argv[2]);
-    double detectorAngle = stod(argv[3]);
-    double detectorDistance = stod(argv[4]);
+    double excitationEnergy = stod(argv[2]);
+    double targetMass = stod(argv[3]);
+    double detectorAngle = stod(argv[4]);
+    double detectorDistance = stod(argv[5]);
 
-    if(neutronEnergy < 0 || targetMass < 0
+    if(neutronEnergy < 0 || excitationEnergy < 0
+            ||targetMass < 0
             || detectorAngle < 0 || detectorAngle > 180
             || detectorDistance < 0)
     {
@@ -33,12 +37,12 @@ int main(int argc, char** argv)
 
     double neutronEnergyAfter = calculateScatteredEnergy(
             neutronEnergy,
-            0,
+            excitationEnergy,
             NEUTRON_MASS*AMU_TO_MEVC2,
             targetMass*AMU_TO_MEVC2,
             detectorAngle);
 
-    double TOF = calculateTOF(detectorDistance, 0, targetMass, detectorAngle, neutronEnergy);
+    double TOF = calculateTOF(detectorDistance, excitationEnergy, targetMass, detectorAngle, neutronEnergy);
 
     cout << "For " << neutronEnergy << " MeV neutron elastically scattering on "
         << targetMass << " amu target to a lab angle of " << detectorAngle

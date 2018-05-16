@@ -1,5 +1,7 @@
 #include "TH1D.h"
 #include "TFile.h"
+#include "TArrow.h"
+#include "TLine.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -10,6 +12,7 @@
 
 #include "../include/Config.h"
 #include "../include/experimentalConstants.h"
+#include "../include/utilities.h"
 
 extern Config config;
 
@@ -20,8 +23,7 @@ void subtractBackground(
         vector<TH1D*> targetMonitors,
         vector<TH1D*> blankHistos,
         vector<TH1D*> blankMonitors,
-        string targetName,
-        string detectorName
+        string detector
         )
 {
     if(targetHistos.size() > 0
@@ -30,7 +32,7 @@ void subtractBackground(
             && blankMonitors.size() > 0
       )
     {
-        string histoName = "histo" + detectorName + "Total";
+        string histoName = "histo" + detector + "Total";
         TH1D* targetHistoTotal = (TH1D*)targetHistos[0]->Clone(histoName.c_str());
         targetHistoTotal->Reset();
 
@@ -46,7 +48,7 @@ void subtractBackground(
 
         targetHistoTotal->Write();
 
-        string blankName = "blank" + detectorName + "Total";
+        string blankName = "blank" + detector + "Total";
         TH1D* blankHistoTotal = (TH1D*)blankHistos[0]->Clone(blankName.c_str());
         blankHistoTotal->Reset();
 
@@ -63,10 +65,12 @@ void subtractBackground(
 
         blankHistoTotal->Write();
 
-        string diffName = "diff" + detectorName;
+        string diffName = "diff" + detector;
         TH1D* diffHisto = (TH1D*)targetHistoTotal->Clone(diffName.c_str());
 
         diffHisto->Add(blankHistoTotal, -1);
+
+        diffHisto->Draw();
         diffHisto->Write();
     }
 }
@@ -101,7 +105,7 @@ int subtractBackground()
                             + "/runs/" + to_string(run.number) + "/histos.root";
                         TFile histoFile(histoFileName.c_str(),"READ");
 
-                        string histoName = DETECTOR_NAMES[i] + "TOF";
+                        string histoName = config.detectors[i].name + "TOF";
                         TH1D* histo = (TH1D*)histoFile.Get(histoName.c_str());
                         if(!histo)
                         {
@@ -110,7 +114,7 @@ int subtractBackground()
                             continue;
                         }
 
-                        string newHistoName = "histo" + DETECTOR_NAMES[i] + "_run" + to_string(run.number);
+                        string newHistoName = "histo" + config.detectors[i].name + "_run" + to_string(run.number);
                         target.histos[i].push_back((TH1D*)(histo->Clone(newHistoName.c_str())));
                         target.histos[i].back()->SetDirectory(0);
 
@@ -144,7 +148,7 @@ int subtractBackground()
 
             for(int i=0; i<target.histos.size(); i++)
             {
-                subtractBackground(target.histos[i], target.monitors[i], angle.getBlank().histos[i], angle.getBlank().monitors[i], target.name, DETECTOR_NAMES[i]);
+                subtractBackground(target.histos[i], target.monitors[i], angle.getBlank().histos[i], angle.getBlank().monitors[i], config.detectors[i].name);
             }
 
             outputFile->Close();

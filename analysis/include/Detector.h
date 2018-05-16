@@ -28,8 +28,6 @@ struct Detector
     double timeOffset; // in ns
     double resolution; // FWHM, in bins
 
-    double cableDelay; // in ns
-
     bool useForCS = false;
 
     DetectorEfficiency efficiency;

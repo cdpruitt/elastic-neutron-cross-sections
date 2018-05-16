@@ -35,7 +35,6 @@ int calculateCS(const ReferenceCS& reference)
             auto& d = config.detectors[i];
             if(!d.useForCS)
             {
-                cout << "Skipping detector " << d.name << " for cross section calculation." << endl;
                 continue;
             }
 
@@ -91,13 +90,11 @@ int calculateCS(const ReferenceCS& reference)
                     (2*reference.polyNumberOfAtoms/targetNumberOfAtoms)*
                     reference.crossSection;
 
-                cout << "For detector " << d.name << ", reference counts = " << reference.counts[i] << endl;
-
                 // convert lab frame cross section to center-of-mass frame via
                 // Jacobian
                 value *= labToCMJacobian(angle.value, NEUTRON_MASS, t.getMass());
 
-                fileOut << angle.value << " " << value
+                fileOut << CMAngle << " " << value
                     << " " << "0" << endl;
 
                 // need to add efficiency correction for energy drop at high angles affecting count
