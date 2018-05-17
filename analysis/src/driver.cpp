@@ -27,7 +27,7 @@ Config config;
 
 int main(int argc, char** argv)
 {
-    int numberArgsExpected = 3;
+    int numberArgsExpected = 4;
     if(argc < numberArgsExpected)
     {
         cerr << "Error: expected " << to_string(numberArgsExpected)
@@ -39,6 +39,7 @@ int main(int argc, char** argv)
 
     string experiment = argv[1];
     string recreateHistos = argv[2];
+    string plotsOnly = argv[3];
 
     config = Config(experiment);
 
@@ -75,14 +76,15 @@ int main(int argc, char** argv)
         }
     }
 
-    plotHistos();
+    ReferenceCS reference(config.reference);
+    calculateReference(config.experiment, reference);
 
     subtractBackground();
-    plotDiffs();
-
-    ReferenceCS reference;
-    calculateReference(config.experiment, config.reference, reference);
-    plotReference(config.reference);
-
     calculateCS(reference);
+
+    plotHistos();
+    plotDiffs();
+    plotReference(reference);
+
+    return 0;
 }

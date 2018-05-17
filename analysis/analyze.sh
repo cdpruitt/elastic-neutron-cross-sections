@@ -43,6 +43,8 @@
 #    -h | recreate histograms from the raw root tree data (the default mode is
 #       | not to recreate histograms if they already exist)
 #-------+-----------------------------------------------------------------------
+#    -p | recreate plots only (no histogram subtraction or CS calculation
+#-------+-----------------------------------------------------------------------
 #
 ################################################################################
 
@@ -55,7 +57,7 @@ then
 fi
 
 # read flags
-while getopts "h" opt; do
+while getopts "hp" opt; do
     case ${opt} in
         h)
             recreateHistos=true
@@ -64,11 +66,19 @@ while getopts "h" opt; do
                 printf "\n Flag -h used: recreating histos for all runs.\n\n"
             fi
             ;;
+        p)
+            plotsOnly=true
+            if [[ $plotsOnly = true ]]
+            then
+                printf "\n Flag -p used: recreating plots only.\n\n"
+            fi
+            ;;
+
         \?)
             # Flags unrecognized - exit script and give user help text
             printf "\nInvalid flag given.\n\nValid flags are:\n"
             printf "    -h (recreate histos from raw data trees)\n"
-
+            printf "    -p (recreate plots only)\n"
             exit
             ;;
     esac
@@ -100,7 +110,7 @@ then
     exit
 fi
 
-./bin/driver "$experiment" "$recreateHistos"
+./bin/driver "$experiment" "$recreateHistos" "$plotsOnly"
 
 #while read line
 #do

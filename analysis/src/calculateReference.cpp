@@ -35,11 +35,13 @@ void subtractBackground(
     double graphiteMonCounts = graphiteMon->GetEntries();
     double blankRefMonCounts = blankRefMon->GetEntries();
 
-    polyHisto->Scale(NORMALIZATION_SCALING/polyMonCounts);
+    polyHisto->Scale(NORMALIZATION_SCALING/(double)polyMonCounts);
     polyHisto->Write();
-    graphiteHisto->Scale(NORMALIZATION_SCALING/graphiteMonCounts);
+
+    graphiteHisto->Scale(NORMALIZATION_SCALING/(double)graphiteMonCounts);
     graphiteHisto->Write();
-    blankRefHisto->Scale(NORMALIZATION_SCALING/blankRefMonCounts);
+
+    blankRefHisto->Scale(NORMALIZATION_SCALING/(double)blankRefMonCounts);
     blankRefHisto->Write();
 
     string polyMinusBlankName = "polyMinusBlank" + d.name;
@@ -50,12 +52,14 @@ void subtractBackground(
     string graphiteMinusBlankName = "graphiteMinusBlank" + d.name;
     TH1D* graphiteMinusBlank = (TH1D*)graphiteHisto->Clone(graphiteMinusBlankName.c_str());
     graphiteMinusBlank->Add(blankRefHisto, -1);
+
+    double molRatio = reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms;
+    graphiteMinusBlank->Scale(molRatio);
+
     graphiteMinusBlank->Write();
 
     string diffHistoName = "polyMinusGraphite" + d.name;
     TH1D* diffHisto = (TH1D*)polyMinusBlank->Clone(diffHistoName.c_str());
-    double molRatio = reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms;
-    graphiteMinusBlank->Scale(molRatio);
     diffHisto->Add(graphiteMinusBlank, -1);
     diffHisto->Write();
 
@@ -69,9 +73,9 @@ void subtractBackground(
     cout << "reference mb/sr per histo count/monitor count = " << reference.crossSection*(reference.monitors.back()/reference.counts.back()) << endl;
 }
 
-int calculateReference(string experiment, string setToUse, ReferenceCS& reference)
+int calculateReference(string experiment, ReferenceCS& reference)
 {
-    string fileName = "../configuration/" + experiment + "/normalization/" + setToUse + ".txt";
+    string fileName = "../configuration/" + experiment + "/normalization/" + reference.name + ".txt";
 
     ifstream file(fileName.c_str());
     if(!file.is_open())
@@ -106,37 +110,38 @@ int calculateReference(string experiment, string setToUse, ReferenceCS& referenc
 
         if(tokens[0] == "Polyethylene")
         {
-            polyethyleneRun = stoi(tokens[3]);
+            polyethyleneRun = stoi(tokens.back());
         }
 
         else if(tokens[0] == "Blank")
         {
-            blankRefRun = stoi(tokens[3]);
+            blankRefRun = stoi(tokens.back());
         }
 
         else if(tokens[0] == "Graphite")
         {
-            graphiteRun = stoi(tokens[3]);
+            graphiteRun = stoi(tokens.back());
         }
 
         else if(tokens[0] == "Angle")
         {
-            reference.angle = stod(tokens[3]);
+            reference.angle = stod(tokens.back());
+            cout << "reference angle = " << reference.angle << endl;
         }
 
         else if(tokens[0] == "Literature")
         {
-            reference.crossSection = stod(tokens[3]);
+            reference.crossSection = stod(tokens.back());
         }
 
         else if(tokens[0] == "Number" && tokens[3]=="poly:")
         {
-            reference.polyNumberOfAtoms = stod(tokens[4]);
+            reference.polyNumberOfAtoms = stod(tokens.back());
         }
 
         else if(tokens[0] == "Number" && tokens[3]=="graphite:")
         {
-            reference.graphiteNumberOfAtoms = stod(tokens[4]);
+            reference.graphiteNumberOfAtoms = stod(tokens.back());
         }
     }
 
@@ -167,7 +172,7 @@ int calculateReference(string experiment, string setToUse, ReferenceCS& referenc
     }
 
     string outputFileName = "../configuration/" + experiment
-        + "/normalization/" + setToUse + ".root";
+        + "/normalization/" + reference.name + ".root";
     TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
 
     for(auto& d : config.detectors)
@@ -177,14 +182,14 @@ int calculateReference(string experiment, string setToUse, ReferenceCS& referenc
             continue;
         }
 
-        string polyHistoName = d.name + "TOF";
-        TH1D* polyHisto = (TH1D*)polyFile->Get(polyHistoName.c_str());
+        string histoName = d.name + "TOF";
+        TH1D* polyHisto = (TH1D*)polyFile->Get(histoName.c_str());
         TH1D* polyMonitor = (TH1D*)polyFile->Get("CMONPSD");
 
-        TH1D* blankRefHisto = (TH1D*)blankRefFile->Get(polyHistoName.c_str());
+        TH1D* blankRefHisto = (TH1D*)blankRefFile->Get(histoName.c_str());
         TH1D* blankRefMonitor = (TH1D*)blankRefFile->Get("CMONPSD");
 
-        TH1D* graphiteHisto = (TH1D*)graphiteFile->Get(polyHistoName.c_str());
+        TH1D* graphiteHisto = (TH1D*)graphiteFile->Get(histoName.c_str());
         TH1D* graphiteMonitor = (TH1D*)graphiteFile->Get("CMONPSD");
 
         if(!polyHisto || !polyMonitor

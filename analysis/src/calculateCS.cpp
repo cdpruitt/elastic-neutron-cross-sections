@@ -66,6 +66,7 @@ int calculateCS(const ReferenceCS& reference)
                 double neutronTOF = calculateTOF(d.distance, 0, t.getMolarMass(), angle.value, config.neutronEnergy);
 
                 double TOFResolution = d.resolution*d.linearCalibration; // FWHM in ns
+                //cout << "TOF resolution = " << TOFResolution << endl;
                 double difference = histo->Integral(
                         histo->FindBin(neutronTOF-TOFResolution),
                         histo->FindBin(neutronTOF+TOFResolution)
@@ -85,10 +86,9 @@ int calculateCS(const ReferenceCS& reference)
                 }
 
                 // calculate differential cross section in lab frame
-                double value = ((double)difference/reference.counts[i])*
-                    ((double)reference.monitors[i]/NORMALIZATION_SCALING)*
-                    (2*reference.polyNumberOfAtoms/targetNumberOfAtoms)*
-                    reference.crossSection;
+                double value = reference.crossSection*
+                    ((double)difference/reference.counts[i])*
+                    (2*reference.polyNumberOfAtoms/targetNumberOfAtoms);
 
                 // convert lab frame cross section to center-of-mass frame via
                 // Jacobian

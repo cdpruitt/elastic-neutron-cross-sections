@@ -36,14 +36,14 @@ void subtractBackground(
         TH1D* targetHistoTotal = (TH1D*)targetHistos[0]->Clone(histoName.c_str());
         targetHistoTotal->Reset();
 
+        double targetScaling = 0;
+
         for(int i=0; i<targetHistos.size(); i++)
         {
-            targetHistoTotal->Add(
-                    targetHistos[i],
-                    NORMALIZATION_SCALING/(double)targetMonitors[i]->GetEntries()
-                    );
-
             targetHistos[i]->Write();
+
+            targetHistoTotal->Add(targetHistos[i]);
+            targetScaling += targetMonitors[i]->GetEntries();
         }
 
         targetHistoTotal->Write();
@@ -52,35 +52,33 @@ void subtractBackground(
         TH1D* blankHistoTotal = (TH1D*)blankHistos[0]->Clone(blankName.c_str());
         blankHistoTotal->Reset();
 
+        double blankScaling = 0;
+
         for(int i=0; i<blankHistos.size(); i++)
         {
-            blankHistoTotal->Add(
-                    blankHistos[i],
-                    (targetHistos.size()/(double)blankHistos.size())*
-                    NORMALIZATION_SCALING/(double)blankMonitors[i]->GetEntries()
-                    );
-
             blankHistos[i]->Write();
+            blankHistoTotal->Add(blankHistos[i]);
+
+            blankScaling += blankMonitors[i]->GetEntries();
         }
 
+        blankHistoTotal->Scale(targetScaling/blankScaling);
         blankHistoTotal->Write();
 
         string diffName = "diff" + detector;
         TH1D* diffHisto = (TH1D*)targetHistoTotal->Clone(diffName.c_str());
 
         diffHisto->Add(blankHistoTotal, -1);
-
-        diffHisto->Draw();
         diffHisto->Write();
     }
 }
 
 int subtractBackground()
 {
+    cout << "Subtracting background..." << endl;
+
     for(auto& angle : config.angles)
     {
-        cout << "Subtracting background for angle " << angle.value << endl;
-
         for(auto& target : TARGET_NAMES)
         {
             string targetDirName = "../configuration/" + config.experiment

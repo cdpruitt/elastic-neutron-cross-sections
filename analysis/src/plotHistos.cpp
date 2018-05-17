@@ -1,6 +1,7 @@
 #include "../include/Config.h"
 #include "../include/utilities.h"
 #include "../include/experimentalConstants.h"
+#include "../include/ReferenceCS.h"
 
 #include "TCanvas.h"
 #include "TH1.h"
@@ -123,10 +124,7 @@ int plotHistos()
                     TOFHisto->Draw("hist");
 
                     double TOF = calculateTOF(d.distance, 0, t.getMolarMass(), angle, config.neutronEnergy);
-
                     double TOFResolution = d.resolution*d.linearCalibration; // FWHM, in ns
-                    int minIntBin = TOFHisto->FindBin(TOF-TOFResolution);
-                    int maxIntBin = TOFHisto->FindBin(TOF+TOFResolution);
 
                     double yAxisLowEdge = TOFHisto->GetMinimum();
                     double yAxisHighEdge = TOFHisto->GetMaximum();
@@ -315,10 +313,7 @@ int plotDiffs()
                     differenceHisto->Draw("hist same");
 
                     double TOF = calculateTOF(d.distance, 0, t.getMolarMass(), angle.value, config.neutronEnergy);
-
                     double TOFResolution = d.resolution*d.linearCalibration; // FWHM, in ns
-                    int minIntBin = targetHisto->FindBin(TOF-TOFResolution);
-                    int maxIntBin = targetHisto->FindBin(TOF+TOFResolution);
 
                     double yAxisLowEdge = targetHisto->GetMinimum();
                     double yAxisHighEdge = targetHisto->GetMaximum();
@@ -361,17 +356,17 @@ int plotDiffs()
                     elasticArrow->SetFillColor(kBlue+2);
                     elasticArrow->Draw();
 
-                    //TLine *gateLowLine = new TLine(TOF-TOFResolution,yAxisLowEdge,TOF-TOFResolution,yAxisHighEdge);
-                    //TLine *gateHighLine = new TLine(TOF+TOFResolution,yAxisLowEdge,TOF+TOFResolution,yAxisHighEdge);
-                    //gateLowLine->SetLineStyle(7);
-                    //gateLowLine->SetLineWidth(3);
-                    //gateLowLine->SetLineColor(kBlue);
-                    //gateLowLine->Draw();
+                    TLine *gateLowLine = new TLine(TOF-TOFResolution,yAxisLowEdge,TOF-TOFResolution,yAxisHighEdge);
+                    TLine *gateHighLine = new TLine(TOF+TOFResolution,yAxisLowEdge,TOF+TOFResolution,yAxisHighEdge);
+                    gateLowLine->SetLineStyle(7);
+                    gateLowLine->SetLineWidth(3);
+                    gateLowLine->SetLineColor(kBlue);
+                    gateLowLine->Draw();
 
-                    //gateHighLine->SetLineStyle(7);
-                    //gateHighLine->SetLineWidth(3);
-                    //gateHighLine->SetLineColor(kBlue);
-                    //gateHighLine->Draw();
+                    gateHighLine->SetLineStyle(7);
+                    gateHighLine->SetLineWidth(3);
+                    gateHighLine->SetLineColor(kBlue);
+                    gateHighLine->Draw();
 
                     double maxTOFRange = max(nitrogenTOF, maxExcitedTOF);
                     targetHisto->GetXaxis()->SetRangeUser(TOF-10, maxTOFRange+10);
@@ -402,6 +397,181 @@ int plotDiffs()
 
         delete c;
     }
+
+    return 0;
+}
+
+int plotReference(const ReferenceCS& reference)
+{
+    const unsigned int CANVAS_WIDTH = 1;
+    const unsigned int CANVAS_HEIGHT = 2;
+
+    gStyle->SetOptStat(0);
+
+    TCanvas* c = new TCanvas(to_string(reference.angle).c_str(),"",CANVAS_WIDTH*480,CANVAS_HEIGHT*300);
+
+    c->Divide(CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    stringstream ss;
+    ss << setprecision(5) << reference.angle;
+
+    string fileName = "../configuration/" + config.experiment + "/normalization/" + reference.name + ".root";
+    TFile* file = new TFile(fileName.c_str(),"READ");
+
+    if(!file->IsOpen())
+    {
+        cerr << "Error: couldn't open " << fileName << endl;
+        return 1;
+    }
+
+    for(int detector=0; detector<CANVAS_HEIGHT; detector++)
+    {
+        auto& d = config.detectors[detector];
+
+        c->cd(detector+1);
+
+        string polyHistoName = "polyMinusBlank" + d.name;
+        string graphiteHistoName = "graphiteMinusBlank" + d.name;
+        string differenceHistoName = "polyMinusGraphite" + d.name;
+
+        TH1I* polyHisto = (TH1I*)file->Get(polyHistoName.c_str());
+        TH1I* graphiteHisto = (TH1I*)file->Get(graphiteHistoName.c_str());
+        TH1I* differenceHisto = (TH1I*)file->Get(differenceHistoName.c_str());
+
+        if(polyHisto && graphiteHisto && differenceHisto)
+        {
+            // Pad dimensions and margins
+            //gPad->SetPad(0, 0.8, 1, 0);
+            gPad->SetLeftMargin(0.12);
+            gPad->SetRightMargin(0);
+            gPad->SetTopMargin(0.12);
+            gPad->SetBottomMargin(0.12);
+            //gPad->SetTicky(2);
+
+            // Set histo point and line characteristics
+            polyHisto->SetLineColor(kGray+2);
+            polyHisto->SetLineWidth(2);
+            polyHisto->SetLineStyle(0);
+            polyHisto->SetFillColor(17);
+
+            graphiteHisto->SetLineColor(kGray+1);
+            graphiteHisto->SetLineWidth(2);
+            graphiteHisto->SetLineStyle(0);
+            graphiteHisto->SetFillColor(18);
+
+            differenceHisto->SetLineColor(kRed);
+            differenceHisto->SetLineWidth(2);
+            differenceHisto->SetLineStyle(0);
+            differenceHisto->SetFillColor(kRed-10);
+
+            // X-axis parameters
+            polyHisto->GetXaxis()->SetTitle("TOF (ns)");
+            polyHisto->GetXaxis()->SetTitleSize(0.04);
+            polyHisto->GetXaxis()->SetTitleFont(2);
+            polyHisto->GetXaxis()->SetTitleOffset(1.4);
+            polyHisto->GetXaxis()->CenterTitle();
+
+            polyHisto->GetXaxis()->SetLabelOffset(0.01);
+            polyHisto->GetXaxis()->SetLabelSize(0.03);
+            polyHisto->GetXaxis()->SetLabelFont(2);
+
+            polyHisto->GetXaxis()->SetNdivisions(10);
+            polyHisto->GetXaxis()->SetTickLength(0.03);
+
+            // Y-axis parameters
+            polyHisto->GetYaxis()->SetTitle("Counts");
+            polyHisto->GetYaxis()->SetTitleSize(0.04);
+            polyHisto->GetYaxis()->SetTitleFont(2);
+            polyHisto->GetYaxis()->SetTitleOffset(1.3);
+            polyHisto->GetYaxis()->CenterTitle();
+
+            polyHisto->GetYaxis()->SetLabelOffset(0.01);
+            polyHisto->GetYaxis()->SetLabelSize(0.03);
+
+            polyHisto->GetYaxis()->SetLabelFont(2);
+            polyHisto->GetYaxis()->SetNdivisions(10);
+            polyHisto->GetYaxis()->SetTickLength(0);
+
+            string title = "Reference CS for " + d.name;
+            polyHisto->SetTitle(title.c_str());
+
+            polyHisto->Draw("hist");
+            graphiteHisto->Draw("hist same");
+            differenceHisto->Draw("hist same");
+
+            double tenthOfPlot = 0.1*(polyHisto->GetMaximum()-polyHisto->GetMinimum());
+
+            double carbonTOF = calculateTOF(d.distance, 0, 12.011, reference.angle, config.neutronEnergy);
+            double carbonCounts = differenceHisto->GetBinContent(differenceHisto->FindBin(carbonTOF));
+            TArrow *carbonArrow = new TArrow(carbonTOF, tenthOfPlot+carbonCounts, carbonTOF, carbonCounts, 0.015, "|>");
+            carbonArrow->SetAngle(30);
+            carbonArrow->SetLineWidth(3);
+            carbonArrow->SetLineColor(kBlue-9);
+            carbonArrow->SetFillColor(kBlue-9);
+            carbonArrow->Draw();
+
+            double carbonExcitedTOF = calculateTOF(d.distance, 4.4389, 12.011, reference.angle, config.neutronEnergy);
+            double carbonExcitedCounts = differenceHisto->GetBinContent(differenceHisto->FindBin(carbonExcitedTOF));
+            TArrow *carbonExcitedArrow = new TArrow(carbonExcitedTOF, tenthOfPlot+carbonExcitedCounts, carbonExcitedTOF, carbonExcitedCounts, 0.015, "|>");
+            carbonExcitedArrow->SetAngle(30);
+            carbonExcitedArrow->SetLineWidth(3);
+            carbonExcitedArrow->SetLineColor(kBlue-9);
+            carbonExcitedArrow->SetFillColor(kBlue-9);
+            carbonExcitedArrow->Draw();
+
+            double nitrogenTOF = calculateTOF(d.distance, 0, 14.001, reference.angle, config.neutronEnergy);
+            double nitrogenCounts = graphiteHisto->GetBinContent(graphiteHisto->FindBin(nitrogenTOF));
+            TArrow *nitrogenArrow = new TArrow(nitrogenTOF, tenthOfPlot+nitrogenCounts, nitrogenTOF, nitrogenCounts, 0.015, "|>");
+            nitrogenArrow->SetAngle(30);
+            nitrogenArrow->SetLineWidth(3);
+            nitrogenArrow->SetLineColor(kGreen+2);
+            nitrogenArrow->SetFillColor(kGreen+2);
+            nitrogenArrow->Draw();
+
+            double hydrogenTOF = calculateTOF(d.distance, 0, 1.007279, reference.angle, config.neutronEnergy);
+            double TOFResolution = d.resolution*d.linearCalibration; // FWHM, in ns
+
+            double hydrogenCounts = differenceHisto->GetBinContent(differenceHisto->FindBin(hydrogenTOF));
+            TArrow *hydrogenArrow = new TArrow(hydrogenTOF, tenthOfPlot+hydrogenCounts, hydrogenTOF, hydrogenCounts, 0.015, "|>");
+            hydrogenArrow->SetAngle(30);
+            hydrogenArrow->SetLineWidth(3);
+            hydrogenArrow->SetLineColor(kBlue+2);
+            hydrogenArrow->SetFillColor(kBlue+2);
+            hydrogenArrow->Draw();
+
+            double yAxisLowEdge = differenceHisto->GetMinimum();
+            double yAxisHighEdge = differenceHisto->GetMaximum();
+
+            TLine *gateLowLine = new TLine(hydrogenTOF-TOFResolution,yAxisLowEdge,hydrogenTOF-TOFResolution,yAxisHighEdge);
+            TLine *gateHighLine = new TLine(hydrogenTOF+TOFResolution,yAxisLowEdge,hydrogenTOF+TOFResolution,yAxisHighEdge);
+            gateLowLine->SetLineStyle(7);
+            gateLowLine->SetLineWidth(3);
+            gateLowLine->SetLineColor(kBlue);
+            gateLowLine->Draw();
+
+            gateHighLine->SetLineStyle(7);
+            gateHighLine->SetLineWidth(3);
+            gateHighLine->SetLineColor(kBlue);
+            gateHighLine->Draw();
+
+            polyHisto->GetXaxis()->SetRangeUser(carbonTOF-10, carbonExcitedTOF+10);
+            polyHisto->GetYaxis()->SetRangeUser(differenceHisto->GetMinimum(), 1.1*polyHisto->GetMaximum());
+        }
+
+        else
+        {
+            cerr << "Error: couldn't find histograms for producing reference histo plots." << endl;
+            return 1;
+        }
+    }
+
+    c->Update();
+    TImage *img = TImage::Create();
+
+    img->FromPad(c);
+
+    string name = "../processedData/" + config.experiment + "/plots/reference" + reference.name + ".png";
+    img->WriteImage(name.c_str());
 
     return 0;
 }

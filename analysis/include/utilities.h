@@ -17,13 +17,6 @@ double calculateScatteredEnergy(
         double labAngle // in degrees
         );
 
-double calculateTOFShift(
-        Target t,
-        double angle,
-        double distance,
-        double neutronEnergyBefore
-        );
-
 double calculateTOF(
         double distance,
         double excitationEnergy,
