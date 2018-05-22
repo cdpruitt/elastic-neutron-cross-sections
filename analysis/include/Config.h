@@ -20,11 +20,31 @@ struct Run
         std::string targetDataLocation = "../configuration/" + experiment + "/targets/" +
             configData[1] + "/";
         target = Target(targetDataLocation);
+
+        if(configData[4]=="Y")
+        {
+            isProduction = true;
+        }
+
+        else if(configData[4]=="N")
+        {
+            isProduction = false;
+        }
+
+        else
+        {
+            std::cerr << "Error: expected either \"Y\" or \"N\" for "
+                << "\"isProduction\" flag while reading run " << configData[0]
+                << " from runConfig, but encountered " << configData[4]
+                << std::endl;
+            std::exit(1);
+        }
     }
 
     int number;
     Target target;
     std::vector<double> angles;
+    bool isProduction;
 };
 
 struct Angle

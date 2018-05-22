@@ -46,6 +46,11 @@ Config::Config(string experiment) : experiment(experiment)
 
     for(auto& run : runs)
     {
+        if(!run.isProduction)
+        {
+            continue;
+        }
+
         for(auto& runAngle : run.angles)
         {
             bool alreadyAdded = false;
@@ -69,6 +74,34 @@ Config::Config(string experiment) : experiment(experiment)
     }
 
     sort(angles.begin(), angles.end());
+
+    for(auto& angle : angles)
+    {
+        for(auto& run : runs)
+        {
+            for(auto& runAngle : run.angles)
+            {
+                if(angle.value==runAngle)
+                {
+                    bool alreadyAdded = false;
+
+                    for(auto& target : angle.targets)
+                    {
+                        if(target.name==run.target.name)
+                        {
+                            alreadyAdded = true;
+                            break;
+                        }
+                    }
+
+                    if(!alreadyAdded)
+                    {
+                        angle.targets.push_back(run.target);
+                    }
+                }
+            }
+        }
+    }
 
     for(auto& name : DETECTOR_NAMES)
     {

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-const double NORMALIZATION_SCALING = 100000;
+const double NORMALIZATION_FACTOR = 100000;
 
 const std::vector<std::string> TARGET_NAMES =
 {"Sn112", "Sn124", "SnNat", "blank"};

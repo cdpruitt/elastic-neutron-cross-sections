@@ -529,7 +529,7 @@ int plotReference(const ReferenceCS& reference)
             nitrogenArrow->Draw();
 
             double hydrogenTOF = calculateTOF(d.distance, 0, 1.007279, reference.angle, config.neutronEnergy);
-            double TOFResolution = d.resolution*d.linearCalibration; // FWHM, in ns
+            double TOFResolution = 5;//d.resolution*d.linearCalibration; // FWHM, in ns
 
             double hydrogenCounts = differenceHisto->GetBinContent(differenceHisto->FindBin(hydrogenTOF));
             TArrow *hydrogenArrow = new TArrow(hydrogenTOF, tenthOfPlot+hydrogenCounts, hydrogenTOF, hydrogenCounts, 0.015, "|>");

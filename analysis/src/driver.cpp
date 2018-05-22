@@ -47,6 +47,11 @@ int main(int argc, char** argv)
     {
         for(auto& run : config.runs)
         {
+            if(!run.isProduction)
+            {
+                continue;
+            }
+
             string inputFileName = "../rawData/" + experiment + "/run"
                 + to_string(run.number) + ".root";
 

@@ -31,46 +31,48 @@ void subtractBackground(
         const Detector& d
         )
 {
-    double polyMonCounts = polyMon->GetEntries();
-    double graphiteMonCounts = graphiteMon->GetEntries();
-    double blankRefMonCounts = blankRefMon->GetEntries();
+    reference.polyMonitors.push_back(polyMon->GetEntries());
+    reference.graphiteMonitors.push_back(graphiteMon->GetEntries());
+    reference.blankMonitors.push_back(blankRefMon->GetEntries());
 
-    polyHisto->Scale(NORMALIZATION_SCALING/(double)polyMonCounts);
+    // perform integrals
+    double TOFResolution = 5;//d.resolution*d.linearCalibration; // FWHM in ns
+    int minIntBin = polyHisto->FindBin(TOF-TOFResolution);
+    int maxIntBin = polyHisto->FindBin(TOF+TOFResolution);
+
+    reference.polyCounts.push_back(polyHisto->Integral(minIntBin, maxIntBin));
+    reference.graphiteCounts.push_back(graphiteHisto->Integral(minIntBin, maxIntBin));
+    reference.blankCounts.push_back(blankRefHisto->Integral(minIntBin, maxIntBin));
+
     polyHisto->Write();
-
-    graphiteHisto->Scale(NORMALIZATION_SCALING/(double)graphiteMonCounts);
     graphiteHisto->Write();
-
-    blankRefHisto->Scale(NORMALIZATION_SCALING/(double)blankRefMonCounts);
     blankRefHisto->Write();
 
     string polyMinusBlankName = "polyMinusBlank" + d.name;
     TH1D* polyMinusBlank = (TH1D*)polyHisto->Clone(polyMinusBlankName.c_str());
+    blankRefHisto->Scale(reference.polyMonitors.back()/reference.blankMonitors.back());
     polyMinusBlank->Add(blankRefHisto, -1);
     polyMinusBlank->Write();
 
     string graphiteMinusBlankName = "graphiteMinusBlank" + d.name;
     TH1D* graphiteMinusBlank = (TH1D*)graphiteHisto->Clone(graphiteMinusBlankName.c_str());
+    blankRefHisto->Scale(reference.graphiteMonitors.back()/reference.polyMonitors.back());
     graphiteMinusBlank->Add(blankRefHisto, -1);
-
-    double molRatio = reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms;
-    graphiteMinusBlank->Scale(molRatio);
-
     graphiteMinusBlank->Write();
 
     string diffHistoName = "polyMinusGraphite" + d.name;
     TH1D* diffHisto = (TH1D*)polyMinusBlank->Clone(diffHistoName.c_str());
+    graphiteMinusBlank->Scale(reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms);
     diffHisto->Add(graphiteMinusBlank, -1);
     diffHisto->Write();
 
-    // perform integrals
-    double TOFResolution = d.resolution*d.linearCalibration; // FWHM in ns
-    int minIntBin = diffHisto->FindBin(TOF-TOFResolution);
-    int maxIntBin = diffHisto->FindBin(TOF+TOFResolution);
-    reference.counts.push_back(diffHisto->Integral(minIntBin, maxIntBin));
-    reference.monitors.push_back(polyMonCounts);
+    reference.difference.push_back(diffHisto->Integral(minIntBin,maxIntBin)
+            /reference.polyMonitors.back());
 
-    cout << "reference mb/sr per histo count/monitor count = " << reference.crossSection*(reference.monitors.back()/reference.counts.back()) << endl;
+    cout << "reference mb/sr per histo count/monitor count = "
+        << reference.crossSection
+        /(reference.difference.back()/reference.polyMonitors.back())
+        << endl;
 }
 
 int calculateReference(string experiment, ReferenceCS& reference)

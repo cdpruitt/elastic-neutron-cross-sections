@@ -36,34 +36,43 @@ void subtractBackground(
         TH1D* targetHistoTotal = (TH1D*)targetHistos[0]->Clone(histoName.c_str());
         targetHistoTotal->Reset();
 
-        double targetScaling = 0;
+        string monitorName = "monitor" + detector + "Total";
+        TH1D* targetMonitorTotal = (TH1D*)targetMonitors[0]->Clone(monitorName.c_str());
+        targetMonitorTotal->Reset();
 
         for(int i=0; i<targetHistos.size(); i++)
         {
             targetHistos[i]->Write();
 
             targetHistoTotal->Add(targetHistos[i]);
-            targetScaling += targetMonitors[i]->GetEntries();
+            targetMonitorTotal->Add(targetMonitors[i]);
         }
 
         targetHistoTotal->Write();
+        targetMonitorTotal->Write();
 
         string blankName = "blank" + detector + "Total";
         TH1D* blankHistoTotal = (TH1D*)blankHistos[0]->Clone(blankName.c_str());
         blankHistoTotal->Reset();
 
-        double blankScaling = 0;
+        string blankMonitorName = "blankMonitor" + detector + "Total";
+        TH1D* blankMonitorTotal = (TH1D*)blankMonitors[0]->Clone(blankMonitorName.c_str());
+        blankMonitorTotal->Reset();
 
         for(int i=0; i<blankHistos.size(); i++)
         {
             blankHistos[i]->Write();
-            blankHistoTotal->Add(blankHistos[i]);
 
-            blankScaling += blankMonitors[i]->GetEntries();
+            blankHistoTotal->Add(blankHistos[i]);
+            blankMonitorTotal->Add(blankMonitors[i]);
         }
 
-        blankHistoTotal->Scale(targetScaling/blankScaling);
         blankHistoTotal->Write();
+        blankMonitorTotal->Write();
+
+        // calculate and plot difference histogram
+        targetHistoTotal->Scale(NORMALIZATION_FACTOR/targetMonitorTotal->GetEntries());
+        blankHistoTotal->Scale(NORMALIZATION_FACTOR/blankMonitorTotal->GetEntries());
 
         string diffName = "diff" + detector;
         TH1D* diffHisto = (TH1D*)targetHistoTotal->Clone(diffName.c_str());
@@ -79,15 +88,13 @@ int subtractBackground()
 
     for(auto& angle : config.angles)
     {
-        for(auto& target : TARGET_NAMES)
-        {
-            string targetDirName = "../configuration/" + config.experiment
-                + "/targets/" + target + "/";
-            angle.targets.push_back(Target(targetDirName));
-        }
-
         for(auto& run : config.runs)
         {
+            if(!run.isProduction)
+            {
+                continue;
+            }
+
             for(auto& target : angle.targets)
             {
                 if(target.name!=run.target.name)

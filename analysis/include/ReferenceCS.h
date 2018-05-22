@@ -11,8 +11,16 @@ struct ReferenceCS
 
     std::string name;
 
-    std::vector<double> counts;
-    std::vector<double> monitors;
+    std::vector<double> polyCounts;
+    std::vector<double> polyMonitors;
+
+    std::vector<double> graphiteCounts;
+    std::vector<double> graphiteMonitors;
+
+    std::vector<double> blankCounts;
+    std::vector<double> blankMonitors;
+
+    std::vector<double> difference;
 
     double angle;
     double crossSection;

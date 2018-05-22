@@ -13,3 +13,5 @@ Sn112_4M.txt
 Sn112_6M.txt
 Sn124_4M.txt
 Sn124_6M.txt
+SnNat_4M.txt
+SnNat_6M.txt

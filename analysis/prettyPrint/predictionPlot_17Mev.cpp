@@ -23,6 +23,7 @@
     style->SetTitleFillColor(10);
     style->SetTitleTextColor(kBlack);
     style->SetEndErrorSize(0);
+    style->SetMarkerSize(2);
 
     gROOT->SetStyle("graphStyle");
     gROOT->ForceStyle();
@@ -47,19 +48,25 @@
     string graph3Name = "Sn112, 4M";
     string graph4Name = "Sn124, 6M";
     string graph5Name = "Sn112, 6M";
+    string graph6Name = "SnNat, 4M";
+    string graph7Name = "SnNat, 6M";
 
     TGraphErrors* graph1 = (TGraphErrors*)litFile->Get(graph1Name.c_str());
     TGraphErrors* graph2 = (TGraphErrors*)litFile->Get(graph2Name.c_str());
     TGraphErrors* graph3 = (TGraphErrors*)litFile->Get(graph3Name.c_str());
     TGraphErrors* graph4 = (TGraphErrors*)litFile->Get(graph4Name.c_str());
     TGraphErrors* graph5 = (TGraphErrors*)litFile->Get(graph5Name.c_str());
+    TGraphErrors* graph6 = (TGraphErrors*)litFile->Get(graph6Name.c_str());
+    TGraphErrors* graph7 = (TGraphErrors*)litFile->Get(graph7Name.c_str());
 
     if(
             !graph1 ||
             !graph2 ||
             !graph3 ||
             !graph4 ||
-            !graph5
+            !graph5 ||
+            !graph6 ||
+            !graph7
       )
     {
         cerr << "Error: failed to open a data graph. Exiting..." << endl;
@@ -74,6 +81,8 @@
     mg->Add(graph3, "p");
     mg->Add(graph4, "p");
     mg->Add(graph5, "p");
+    mg->Add(graph6, "p");
+    mg->Add(graph7, "p");
 
     // Set graph point and line characteristics
     graph1->SetLineColor(kBlack);
@@ -81,25 +90,22 @@
     graph1->SetLineStyle(0);
 
     graph2->SetMarkerColor(kRed);
-    graph2->SetMarkerSize(4);
     graph2->SetMarkerStyle(29);
-    //graph2->SetLineWidth(2);
-    //graph2->SetLineStyle(3);
-
-    graph4->SetMarkerColor(kRed);
-    graph4->SetMarkerSize(4);
-    graph4->SetMarkerStyle(23);
-
-    //graph3->SetLineWidth(6);
-    //graph3->SetLineStyle(3);
 
     graph3->SetMarkerColor(kBlue);
-    graph3->SetMarkerSize(4);
     graph3->SetMarkerStyle(29);
 
+    graph4->SetMarkerColor(kRed);
+    graph4->SetMarkerStyle(23);
+
     graph5->SetMarkerColor(kBlue);
-    graph5->SetMarkerSize(4);
     graph5->SetMarkerStyle(23);
+
+    graph6->SetMarkerColor(kMagenta-7);
+    graph6->SetMarkerStyle(29);
+
+    graph7->SetMarkerColor(kMagenta-7);
+    graph7->SetMarkerStyle(23);
 
     mg->Draw("a");
 
@@ -143,14 +149,16 @@
     //latex.DrawLatex(0.32,0.4,"C");
 
     // Define legend format and contents
-    TLegend *legend = new TLegend(0.35,0.65,0.95,0.9);
+    TLegend *legend = new TLegend(0.65,0.60,0.95,0.95);
     //legend->SetHeader("data","C");
     legend->SetTextSize(0.03);
-    legend->AddEntry(graph1,"{}^{120}Sn, 17 MeV, lit (P. Gus, 1989)","l");
-    legend->AddEntry(graph2,"{}^{124}Sn, 17 MeV, exp (4M det)","p");
-    legend->AddEntry(graph4,"{}^{124}Sn, 17 MeV, exp (6M det)","p");
-    legend->AddEntry(graph3,"{}^{112}Sn, 17 MeV, exp (4M det)","p");
-    legend->AddEntry(graph5,"{}^{112}Sn, 17 MeV, exp (6M det)","p");
+    legend->AddEntry(graph1,"{}^{120}Sn, lit (P. Gus, 1989)","l");
+    legend->AddEntry(graph2,"{}^{124}Sn, exp (4M det)","p");
+    legend->AddEntry(graph4,"{}^{124}Sn, exp (6M det)","p");
+    legend->AddEntry(graph3,"{}^{112}Sn, exp (4M det)","p");
+    legend->AddEntry(graph5,"{}^{112}Sn, exp (6M det)","p");
+    legend->AddEntry(graph6,"{}^{nat}Sn, exp (4M det)","p");
+    legend->AddEntry(graph7,"{}^{nat}Sn, exp (6M det)","p");
 
     legend->Draw();
 
