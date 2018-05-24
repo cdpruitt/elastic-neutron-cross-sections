@@ -25,8 +25,7 @@
 
 using namespace std;
 
-const G4double DET_DISTANCE = 375*cm;
-//const G4double DET_DISTANCE = 30*cm;
+const G4double DET_DISTANCE = 37.5*cm;
 const G4double DET_ANGLE = 30*deg;
 
 const G4double ORIGIN_OFFSET = 0*cm;

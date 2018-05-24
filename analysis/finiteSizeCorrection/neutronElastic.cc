@@ -19,6 +19,8 @@
 #include "G4NeutronTrackingCut.hh"
 #include "G4ScoringManager.hh"
 
+#include "DetectorDataTree.hh"
+
 #include "G4SystemOfUnits.hh" // including this header is a new requirement for GEANT-defined units for GEANT 10.0+
 
 #include <string>
@@ -37,6 +39,9 @@ int main(int argc,char* argv[])
       cout << "Please set env variable NEUTRON_ELASTIC_INFILE_PATH to an input file" << endl;
       return 0;
   }
+
+  // Generate Analysis Pointer Class
+  DetectorDataTree* pointer = new DetectorDataTree;
 
   // RNG creation
   CLHEP::HepRandom::setTheEngine(new CLHEP::HepJamesRandom);
@@ -86,6 +91,7 @@ int main(int argc,char* argv[])
   G4VisManager* visManager = new G4VisExecutive;
   visManager->Initialize();
 #endif 
+
   G4UImanager * UImanager = G4UImanager::GetUIpointer(); 
 #ifdef G4UI_USE
   G4UIExecutive * ui = new G4UIExecutive(argc,argv);
@@ -102,6 +108,10 @@ int main(int argc,char* argv[])
 #endif
 
   delete runManager;
+
+  pointer->tree->Write();
+
+  delete pointer;
 
   return 0;
 }
