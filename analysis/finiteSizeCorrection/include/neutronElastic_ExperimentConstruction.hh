@@ -40,7 +40,7 @@ class neutronElastic_ExperimentConstruction :
 
         G4VPhysicalVolume* Construct();
 
-        virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROHist);
+        //virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROHist);
 
         //inline vector<double> GetBackFaceDist() {return back_face_dist;}
 

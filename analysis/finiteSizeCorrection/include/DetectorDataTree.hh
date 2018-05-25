@@ -32,6 +32,8 @@ class DetectorDataTree
 
         TFile* file;
         TTree* tree;
+        TH1D* TOFHisto;
+        TH1D* neutronTOFHisto;
 
         G4double eng_int;
         G4double theta_int;

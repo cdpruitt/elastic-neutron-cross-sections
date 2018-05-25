@@ -17,12 +17,12 @@
 /vis/drawVolume
 #
 # Specify view angle:
-/vis/viewer/set/viewpointThetaPhi 0. 10.
+/vis/viewer/set/viewpointThetaPhi 0. 0.
 #/vis/viewer/set/viewpointVector 0.2 1 -0.5
 #/vis/viewer/set/viewpointVector 0.5 0.8 1.
 #
 # Specify zoom value:
-/vis/viewer/zoom 1 
+/vis/viewer/zoom .2 
 #
 # Specify style (surface or wireframe):
 /vis/viewer/set/style wireframe
@@ -52,7 +52,7 @@
 #/score/colorMap/setMinMax ! 0. 20.
 
 # uncomment to see tracks
-#/vis/scene/add/trajectories smooth
+/vis/scene/add/trajectories smooth
 #/vis/modeling/trajectories/create/drawByCharge
 
 #/vis/scene/create
@@ -66,6 +66,6 @@
 
 /vis/scene/add/axes 0 0 0 10 cm
 
-/run/beamOn 500000
+/run/beamOn 50000000
 
 #/score/dumpAllQuantitiesToFile testDetector testScorerOutput.txt

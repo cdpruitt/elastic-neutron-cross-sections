@@ -15,13 +15,16 @@ DetectorDataTree::DetectorDataTree() :
 
     // Create pointers to ROOT Analysis Tree and Branches
 
-    const Char_t* evt_file = "dataTree.root";
+    const Char_t* evt_file = "root_files/dataTree.root";
 
     file = new TFile(evt_file,"RECREATE");
     tree = new TTree("tree","Data From Energy Deposited in the Det");
 
     tree->Branch("Energy",&KEOfEvent,"energy/D");
     tree->Branch("TOF",&TOFOfEvent,"TOF/D");
+
+    TOFHisto = new TH1D("TOF","TOF",1000,0,200);
+    neutronTOFHisto = new TH1D("neutronTOF","neutronTOF",1000,0,200);
 }
 
 DetectorDataTree::~DetectorDataTree()

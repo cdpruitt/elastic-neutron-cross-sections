@@ -97,6 +97,7 @@ int main(int argc,char* argv[])
   G4UIExecutive * ui = new G4UIExecutive(argc,argv);
 #ifdef G4VIS_USE
   UImanager->ApplyCommand("/control/execute vis.mac");     
+  //UImanager->ApplyCommand("/run/beamOn 100000");
 #endif
 
   ui->SessionStart();
@@ -104,12 +105,10 @@ int main(int argc,char* argv[])
 #endif
      
 #ifdef G4VIS_USE
-      delete visManager;
+   //   delete visManager;
 #endif
 
   delete runManager;
-
-  pointer->tree->Write();
 
   delete pointer;
 

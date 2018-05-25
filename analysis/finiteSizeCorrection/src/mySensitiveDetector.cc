@@ -94,9 +94,34 @@ void mySensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE)
     {
         int n_hit = myCollection->entries();
 
+        if(n_hit>0)
+        {
+            PerfectDetHit* theFirstHit = (*myCollection)[0];
+
+            theDetName = theFirstHit->GetDetName(); 
+            theDetCopyNum = theFirstHit->GetDetCopyNumber();
+            theParticleName = theFirstHit->GetParticleName();
+
+            detectorDataTree->KEOfEvent = theFirstHit->GetKinEng();
+            thePos = theFirstHit->GetPos();
+            detectorDataTree->TOFOfEvent = theFirstHit->GetTOF();
+
+
+            //if(theFirstHit->GetParticleProcess()=="NoReaction")
+            {
+                detectorDataTree->FillTree();
+                detectorDataTree->TOFHisto->Fill(detectorDataTree->TOFOfEvent);
+
+                if(theParticleName=="neutron")
+                {
+                    detectorDataTree->neutronTOFHisto->Fill(detectorDataTree->TOFOfEvent);
+                }
+            }
+        }
+
         // Event readout loop!
 
-        for(int i=0;i<n_hit;i++)
+        /*for(int i=0;i<n_hit;i++)
         {
             // (*myCollection)[i] is the pointer to the i-th hit of the event.
             // All data analysis output is read out here and then sent to the DataTree!
@@ -110,7 +135,7 @@ void mySensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE)
             detectorDataTree->KEOfEvent = theCurrentHit->GetKinEng();
             thePos = theCurrentHit->GetPos();
             detectorDataTree->TOFOfEvent = theCurrentHit->GetTOF();
-        }
+        }*/
     }
 
     else
@@ -119,5 +144,5 @@ void mySensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE)
         G4cout << "Warning! No Hits Collection! " << G4endl;
     }
 
-    detectorDataTree->FillTree();
+
 }

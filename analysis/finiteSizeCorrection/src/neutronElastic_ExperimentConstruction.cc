@@ -76,7 +76,8 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
     //detector->SetSensitiveDetector("scorer",detector_log);
 
     // create the target
-    G4Tubs* targetShape = new G4Tubs(
+    // comment out to remove target
+    /*G4Tubs* targetShape = new G4Tubs(
             "targetShape",  // name of target
             0.0*cm,    // inner radius of cylinder
             0.4125*cm, // outer radius of cylinder
@@ -102,6 +103,7 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
             worldVolume_log,
             false,
             0); 
+            */
 
     G4PVPlacement* world = new G4PVPlacement(
             0,
@@ -113,10 +115,4 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
             0);
 
     return world;
-}
-
-G4bool neutronElastic_ExperimentConstruction::ProcessHits(G4Step* aStep, G4TouchableHistory* ROHist)
-{
-    cout << "Got a hit!" << endl;
-    return true;
 }
