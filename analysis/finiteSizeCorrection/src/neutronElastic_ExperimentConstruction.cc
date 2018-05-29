@@ -55,14 +55,13 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
 
     G4LogicalVolume * detector_log = detConstruction->GetADetector();
 
-    /*G4VSensitiveDetector* detectorScorer =
+    G4VSensitiveDetector* detectorScorer =
         new mySensitiveDetector("scorer");
     G4SDManager* SDMan = G4SDManager::GetSDMpointer();
     SDMan->AddNewDetector(detectorScorer);
     detector_log->SetSensitiveDetector(detectorScorer);
-    */
 
-    /*G4PVPlacement* detector = new G4PVPlacement(
+    G4PVPlacement* detector = new G4PVPlacement(
             detRotation,     // detector rotation
             detPosition,     // detector position vector
             detector_log,    // logical volume used to instantiate this detector
@@ -70,15 +69,15 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
             worldVolume_log, // name of volume in which to place detector
             false,           // no boolean operations (?)
             0);              // new physical volume copy number
-            */
 
-    //G4PSFlatSurfaceCurrent* scorer =
-     //   new G4PSFlatSurfaceCurrent("scorer", fCurrent_In);
+    G4PSFlatSurfaceCurrent* scorer =
+        new G4PSFlatSurfaceCurrent("scorer", fCurrent_In);
 
     //detector->SetSensitiveDetector("scorer",detector_log);
 
     // create the target
-    G4Tubs* targetShape = new G4Tubs(
+    // comment out to remove target
+    /*G4Tubs* targetShape = new G4Tubs(
             "targetShape",  // name of target
             0.0*cm,    // inner radius of cylinder
             0.4125*cm, // outer radius of cylinder
@@ -104,6 +103,7 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
             worldVolume_log,
             false,
             0); 
+            */
 
     G4PVPlacement* world = new G4PVPlacement(
             0,
@@ -115,10 +115,4 @@ G4VPhysicalVolume* neutronElastic_ExperimentConstruction::Construct()
             0);
 
     return world;
-}
-
-G4bool neutronElastic_ExperimentConstruction::ProcessHits(G4Step* aStep, G4TouchableHistory* ROHist)
-{
-    cout << "Got a hit!" << endl;
-    return true;
 }

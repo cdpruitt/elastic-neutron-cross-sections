@@ -221,6 +221,33 @@ src/DetectorConstruction.cc.s:
 	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/DetectorConstruction.cc.s
 .PHONY : src/DetectorConstruction.cc.s
 
+src/DetectorDataTree.o: src/DetectorDataTree.cc.o
+
+.PHONY : src/DetectorDataTree.o
+
+# target to build an object file
+src/DetectorDataTree.cc.o:
+	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/DetectorDataTree.cc.o
+.PHONY : src/DetectorDataTree.cc.o
+
+src/DetectorDataTree.i: src/DetectorDataTree.cc.i
+
+.PHONY : src/DetectorDataTree.i
+
+# target to preprocess a source file
+src/DetectorDataTree.cc.i:
+	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/DetectorDataTree.cc.i
+.PHONY : src/DetectorDataTree.cc.i
+
+src/DetectorDataTree.s: src/DetectorDataTree.cc.s
+
+.PHONY : src/DetectorDataTree.s
+
+# target to generate assembly for a file
+src/DetectorDataTree.cc.s:
+	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/DetectorDataTree.cc.s
+.PHONY : src/DetectorDataTree.cc.s
+
 src/DetectorHit.o: src/DetectorHit.cc.o
 
 .PHONY : src/DetectorHit.o
@@ -274,6 +301,33 @@ src/MaterialFactory.s: src/MaterialFactory.cc.s
 src/MaterialFactory.cc.s:
 	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/MaterialFactory.cc.s
 .PHONY : src/MaterialFactory.cc.s
+
+src/PerfectDetHit.o: src/PerfectDetHit.cc.o
+
+.PHONY : src/PerfectDetHit.o
+
+# target to build an object file
+src/PerfectDetHit.cc.o:
+	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/PerfectDetHit.cc.o
+.PHONY : src/PerfectDetHit.cc.o
+
+src/PerfectDetHit.i: src/PerfectDetHit.cc.i
+
+.PHONY : src/PerfectDetHit.i
+
+# target to preprocess a source file
+src/PerfectDetHit.cc.i:
+	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/PerfectDetHit.cc.i
+.PHONY : src/PerfectDetHit.cc.i
+
+src/PerfectDetHit.s: src/PerfectDetHit.cc.s
+
+.PHONY : src/PerfectDetHit.s
+
+# target to generate assembly for a file
+src/PerfectDetHit.cc.s:
+	$(MAKE) -f CMakeFiles/neutronElastic.dir/build.make CMakeFiles/neutronElastic.dir/src/PerfectDetHit.cc.s
+.PHONY : src/PerfectDetHit.cc.s
 
 src/mySensitiveDetector.o: src/mySensitiveDetector.cc.o
 
@@ -456,12 +510,18 @@ help:
 	@echo "... src/DetectorConstruction.o"
 	@echo "... src/DetectorConstruction.i"
 	@echo "... src/DetectorConstruction.s"
+	@echo "... src/DetectorDataTree.o"
+	@echo "... src/DetectorDataTree.i"
+	@echo "... src/DetectorDataTree.s"
 	@echo "... src/DetectorHit.o"
 	@echo "... src/DetectorHit.i"
 	@echo "... src/DetectorHit.s"
 	@echo "... src/MaterialFactory.o"
 	@echo "... src/MaterialFactory.i"
 	@echo "... src/MaterialFactory.s"
+	@echo "... src/PerfectDetHit.o"
+	@echo "... src/PerfectDetHit.i"
+	@echo "... src/PerfectDetHit.s"
 	@echo "... src/mySensitiveDetector.o"
 	@echo "... src/mySensitiveDetector.i"
 	@echo "... src/mySensitiveDetector.s"
