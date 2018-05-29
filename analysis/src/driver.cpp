@@ -84,8 +84,8 @@ int main(int argc, char** argv)
     ReferenceCS reference(config.reference);
     calculateReference(config.experiment, reference);
 
-    subtractBackground();
-    calculateCS(reference);
+    //subtractBackground();
+    //calculateCS(reference);
 
     plotHistos();
     plotDiffs();

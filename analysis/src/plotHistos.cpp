@@ -2,6 +2,7 @@
 #include "../include/utilities.h"
 #include "../include/experimentalConstants.h"
 #include "../include/ReferenceCS.h"
+#include "../include/physicalConstants.h"
 
 #include "TCanvas.h"
 #include "TH1.h"
@@ -11,6 +12,9 @@
 #include "TArrow.h"
 #include "TLatex.h"
 #include "TStyle.h"
+#include "TF1.h"
+#include "TGaxis.h"
+#include "TGraph.h"
 
 #include <sstream>
 
@@ -73,7 +77,7 @@ int plotHistos()
                 }
 
                 string TOFName = d.name + "TOF";
-                TH1I* TOFHisto = (TH1I*)file->Get(TOFName.c_str());
+                TH1D* TOFHisto = (TH1D*)file->Get(TOFName.c_str());
 
                 if(TOFHisto)
                 {
@@ -112,7 +116,7 @@ int plotHistos()
                     TOFHisto->GetYaxis()->CenterTitle();
 
                     TOFHisto->GetYaxis()->SetLabelOffset(0.01);
-                    TOFHisto->GetYaxis()->SetLabelSize(0.05);
+                    TOFHisto->GetYaxis()->SetLabelSize(0);
 
                     TOFHisto->GetYaxis()->SetLabelFont(2);
                     TOFHisto->GetYaxis()->SetNdivisions(10);
@@ -121,13 +125,16 @@ int plotHistos()
                     string title = "Run " + to_string(config.runs[i].number) + " (" + t.name + "), " + d.name + " TOF";
                     TOFHisto->SetTitle(title.c_str());
 
+                    double yAxisLowEdge = TOFHisto->GetMinimum();
+                    double yAxisHighEdge = TOFHisto->GetMaximum();
+
+                    TOFHisto->SetMaximum(1.5*yAxisHighEdge);
+
+                    gStyle->SetOptStat(0);
                     TOFHisto->Draw("hist");
 
                     double TOF = calculateTOF(d.distance, 0, t.getMolarMass(), angle, config.neutronEnergy);
                     double TOFResolution = d.resolution*d.linearCalibration; // FWHM, in ns
-
-                    double yAxisLowEdge = TOFHisto->GetMinimum();
-                    double yAxisHighEdge = TOFHisto->GetMaximum();
 
                     double maxExcitedTOF = 0;
                     for(int state=0; state<t.excitedStates.size(); state++)
@@ -178,7 +185,94 @@ int plotHistos()
                     gateHighLine->Draw();
 
                     double maxTOFRange = max(nitrogenTOF, maxExcitedTOF);
-                    TOFHisto->GetXaxis()->SetRangeUser(TOF-10, maxTOFRange+10);
+                    TOFHisto->GetXaxis()->SetLimits(TOF-10, maxTOFRange+10);
+
+                    // add efficiency to plot
+                    vector<double> TOFValues;
+                    vector<double> efficiencyValues;
+
+                    for(int tof=TOF-10; tof<maxTOFRange+10; tof++)
+                    {
+                        double velocity = ((d.distance/tof)*pow(10,7)/C);
+                        if(velocity < 0 || velocity > 1)
+                        {
+                            continue;
+                        }
+
+                        double energy = 0.5*NEUTRON_MASS*AMU_TO_MEVC2*pow(velocity,2);
+                        if(energy<0 || energy>20)
+                        {
+                            continue;
+                        }
+
+                        TOFValues.push_back(tof);
+
+                        double efficiency = d.efficiency.getEfficiency(energy);
+
+                        if(efficiency <= 0 || efficiency >1)
+                        {
+                            efficiencyValues.push_back(0);
+                        }
+
+                        else
+                        {
+                            efficiencyValues.push_back(efficiency);
+                        }
+
+                        //cout << "TOF = " << TOFValues.back() << ", efficiency = " << efficiencyValues.back() << endl;
+                    }
+
+                    double minimumEfficiency = 1;
+                    double maximumEfficiency = 0;
+
+                    for(auto& eff : efficiencyValues)
+                    {
+                        if(eff > maximumEfficiency)
+                        {
+                            maximumEfficiency = eff;
+                        }
+
+                        if(eff < minimumEfficiency)
+                        {
+                            minimumEfficiency = eff;
+                        }
+                    }
+
+                    TF1* efficiencyFunc = new TF1(
+                            "efficiencyFunc",
+                            "x",
+                            minimumEfficiency,
+                            maximumEfficiency);
+
+                    //cout << "minimum efficiency = " << minimumEfficiency << endl;
+                    //cout << "maximum efficiency = " << maximumEfficiency << endl;
+
+                    TGaxis* efficiencyAxis = new TGaxis(
+                            TOF-10, yAxisHighEdge, TOF-10, 1.5*yAxisHighEdge,
+                            "efficiencyFunc", 502, "-");
+
+                    TF1* countsFunc = new TF1(
+                            "countsFunc",
+                            "x",
+                            yAxisLowEdge,
+                            yAxisHighEdge);
+
+                    TGaxis* countsAxis = new TGaxis(
+                            TOF-10, yAxisLowEdge, TOF-10, yAxisHighEdge,
+                            "countsFunc", 502, "-");
+
+
+                    for(int eff=0; eff<efficiencyValues.size(); eff++)
+                    {
+                        efficiencyValues[eff] = yAxisHighEdge
+                            + 0.2*yAxisHighEdge*(efficiencyValues[eff]-minimumEfficiency);
+                    }
+
+                    TGraph* efficiencyGraph = new TGraph(TOFValues.size(), &TOFValues[0], &efficiencyValues[0]);
+
+                    efficiencyGraph->Draw("same");
+                    efficiencyAxis->Draw();
+                    countsAxis->Draw();
                 }
             }
         }
@@ -214,19 +308,27 @@ int plotDiffs()
 
         c->Divide(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        for(int target=0; target<CANVAS_WIDTH; target++)
-        {
-            string targetDirName = "../configuration/" + config.experiment
-                + "/targets/" + TARGET_NAMES[target] + "/";
-            angle.targets.push_back(Target(targetDirName));
-        }
-
         stringstream ss;
         ss << setprecision(5) << angle.value;
 
-        for(int target=0; target<CANVAS_WIDTH; target++)
+        for(auto& t : angle.targets)
         {
-            auto& t = angle.targets[target];
+            int target;
+
+            if(t.name==TARGET_NAMES[0])
+            {
+                target = 0;
+            }
+
+            else if(t.name==TARGET_NAMES[1])
+            {
+                target = 1;
+            }
+
+            else
+            {
+                continue;
+            }
 
             string fileName = "../processedData/" + config.experiment + "/angles/" + ss.str() + "/" + t.name + ".root";
             TFile* file = new TFile(fileName.c_str(),"READ");
@@ -247,9 +349,9 @@ int plotDiffs()
                 string blankHistoName = "blank" + d.name + "Total";
                 string differenceHistoName = "diff" + d.name;
 
-                TH1I* targetHisto = (TH1I*)file->Get(targetHistoName.c_str());
-                TH1I* blankHisto = (TH1I*)file->Get(blankHistoName.c_str());
-                TH1I* differenceHisto = (TH1I*)file->Get(differenceHistoName.c_str());
+                TH1D* targetHisto = (TH1D*)file->Get(targetHistoName.c_str());
+                TH1D* blankHisto = (TH1D*)file->Get(blankHistoName.c_str());
+                TH1D* differenceHisto = (TH1D*)file->Get(differenceHistoName.c_str());
 
                 if(targetHisto && blankHisto && differenceHisto)
                 {
@@ -434,9 +536,9 @@ int plotReference(const ReferenceCS& reference)
         string graphiteHistoName = "graphiteMinusBlank" + d.name;
         string differenceHistoName = "polyMinusGraphite" + d.name;
 
-        TH1I* polyHisto = (TH1I*)file->Get(polyHistoName.c_str());
-        TH1I* graphiteHisto = (TH1I*)file->Get(graphiteHistoName.c_str());
-        TH1I* differenceHisto = (TH1I*)file->Get(differenceHistoName.c_str());
+        TH1D* polyHisto = (TH1D*)file->Get(polyHistoName.c_str());
+        TH1D* graphiteHisto = (TH1D*)file->Get(graphiteHistoName.c_str());
+        TH1D* differenceHisto = (TH1D*)file->Get(differenceHistoName.c_str());
 
         if(polyHisto && graphiteHisto && differenceHisto)
         {
@@ -529,7 +631,7 @@ int plotReference(const ReferenceCS& reference)
             nitrogenArrow->Draw();
 
             double hydrogenTOF = calculateTOF(d.distance, 0, 1.007279, reference.angle, config.neutronEnergy);
-            double TOFResolution = 5;//d.resolution*d.linearCalibration; // FWHM, in ns
+            double TOFResolution = d.refResolution*d.linearCalibration; // FWHM, in ns
 
             double hydrogenCounts = differenceHisto->GetBinContent(differenceHisto->FindBin(hydrogenTOF));
             TArrow *hydrogenArrow = new TArrow(hydrogenTOF, tenthOfPlot+hydrogenCounts, hydrogenTOF, hydrogenCounts, 0.015, "|>");

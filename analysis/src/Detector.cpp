@@ -54,6 +54,11 @@ Detector::Detector(string n, string experiment) : name(n)
             resolution = stod(tokens.back());
         }
 
+        else if(tokens[0]=="Reference")
+        {
+            refResolution = stod(tokens.back());
+        }
+
         else if(tokens[0]=="Use" && tokens.back()=="yes")
         {
             useForCS = true;
@@ -64,12 +69,11 @@ Detector::Detector(string n, string experiment) : name(n)
         + "/detectors/" + name + "/banana.data";
 
     banana = PIDBanana(bananaFileName);
-}
 
-void Detector::createHistos()
-{
-    histos = DetectorHistos(name);
-    return;
+    string efficiencyFileName = "../configuration/" + experiment
+        + "/detectors/" + name + "/efficiency_1xCs.txt";
+
+    efficiency = DetectorEfficiency(efficiencyFileName);
 }
 
 int Detector::getTDCBin(double neutronTOF)

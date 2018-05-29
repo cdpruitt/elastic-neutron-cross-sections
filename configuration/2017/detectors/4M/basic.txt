@@ -4,4 +4,5 @@ Distance (cm):                      328.3
 Linear calibration of TDC (ns/bin): 0.1764
 Time offset of TDC (ns):            139.8
 Resolution of TDC, FWHM (bins):     11
+Reference resolution, FWHM (bins):  50
 Use for CS?                         yes

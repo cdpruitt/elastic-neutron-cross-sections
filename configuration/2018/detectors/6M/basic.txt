@@ -2,6 +2,7 @@ This file lists basic detector information.
 *******************************************************************************
 Distance (cm):                      524.9
 Linear calibration of TDC (ns/bin): 0.1806
-Time offset of TDC (ns):            123.6
+Time offset of TDC (ns):            123.3
 Resolution of TDC, FWHM (bins):     11
+Reference resolution, FWHM (bins):  30
 Use for CS?                         yes

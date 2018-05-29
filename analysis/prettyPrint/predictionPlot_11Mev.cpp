@@ -43,30 +43,24 @@
     // read in literature graphs
     TFile* litFile = new TFile(litFileName.c_str(),"READ");
     
-    string graph1Name = "Sn120(n,n) [17 MeV]";
-    string graph2Name = "Sn124, 4M, 2018";
-    string graph3Name = "Sn112, 4M, 2018";
-    string graph4Name = "Sn124, 6M, 2018";
-    string graph5Name = "Sn112, 6M, 2018";
-    string graph6Name = "SnNat, 4M, 2018";
-    string graph7Name = "SnNat, 6M, 2018";
+    string graph1Name = "Sn124(n,n) [11 MeV]";
+    string graph2Name = "Sn124, 4M, 2017";
+    string graph3Name = "Sn112, 4M, 2017";
+    string graph4Name = "Sn124, 6M, 2017";
+    string graph5Name = "Sn112, 6M, 2017";
 
     TGraphErrors* graph1 = (TGraphErrors*)litFile->Get(graph1Name.c_str());
     TGraphErrors* graph2 = (TGraphErrors*)litFile->Get(graph2Name.c_str());
     TGraphErrors* graph3 = (TGraphErrors*)litFile->Get(graph3Name.c_str());
     TGraphErrors* graph4 = (TGraphErrors*)litFile->Get(graph4Name.c_str());
     TGraphErrors* graph5 = (TGraphErrors*)litFile->Get(graph5Name.c_str());
-    TGraphErrors* graph6 = (TGraphErrors*)litFile->Get(graph6Name.c_str());
-    TGraphErrors* graph7 = (TGraphErrors*)litFile->Get(graph7Name.c_str());
 
     if(
             !graph1 ||
             !graph2 ||
             !graph3 ||
             !graph4 ||
-            !graph5 ||
-            !graph6 ||
-            !graph7
+            !graph5
       )
     {
         cerr << "Error: failed to open a data graph. Exiting..." << endl;
@@ -81,8 +75,6 @@
     mg->Add(graph3, "p");
     mg->Add(graph4, "p");
     mg->Add(graph5, "p");
-    mg->Add(graph6, "p");
-    mg->Add(graph7, "p");
 
     // Set graph point and line characteristics
     graph1->SetLineColor(kBlack);
@@ -100,12 +92,6 @@
 
     graph5->SetMarkerColor(kBlue);
     graph5->SetMarkerStyle(23);
-
-    graph6->SetMarkerColor(kMagenta-7);
-    graph6->SetMarkerStyle(29);
-
-    graph7->SetMarkerColor(kMagenta-7);
-    graph7->SetMarkerStyle(23);
 
     mg->Draw("a");
 
@@ -152,13 +138,11 @@
     TLegend *legend = new TLegend(0.65,0.60,0.95,0.95);
     //legend->SetHeader("data","C");
     legend->SetTextSize(0.03);
-    legend->AddEntry(graph1,"{}^{120}Sn, lit (P. Gus, 1989)","l");
+    legend->AddEntry(graph1,"{}^{124}Sn, lit (Rapaport, 1980)","l");
     legend->AddEntry(graph2,"{}^{124}Sn, exp (4M det)","p");
     legend->AddEntry(graph4,"{}^{124}Sn, exp (6M det)","p");
     legend->AddEntry(graph3,"{}^{112}Sn, exp (4M det)","p");
     legend->AddEntry(graph5,"{}^{112}Sn, exp (6M det)","p");
-    legend->AddEntry(graph6,"{}^{nat}Sn, exp (4M det)","p");
-    legend->AddEntry(graph7,"{}^{nat}Sn, exp (6M det)","p");
 
     legend->Draw();
 

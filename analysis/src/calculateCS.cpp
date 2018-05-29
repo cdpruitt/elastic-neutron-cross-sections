@@ -38,8 +38,8 @@ int calculateCS(const ReferenceCS& reference)
                 continue;
             }
 
-            ofstream fileOut("literatureData/" + name + "_" + d.name + ".txt");
-            fileOut << endl << name << ", " << d.name << endl;
+            ofstream fileOut("literatureData/" + name + "_" + d.name + "_" + config.experiment + ".txt");
+            fileOut << endl << name << ", " << d.name << ", " << config.experiment << endl;
             fileOut << "Degrees    mB/sr      Error (mB/sr)" << endl;
 
             for(auto& angle : config.angles)

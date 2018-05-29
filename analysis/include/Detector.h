@@ -10,7 +10,6 @@
 struct Detector
 {
     Detector(std::string n, std::string experiment);
-    void createHistos();
 
     int getTDCBin(double neutronTOF);
 
@@ -27,12 +26,13 @@ struct Detector
     double linearCalibration; // in ns/bin
     double timeOffset; // in ns
     double resolution; // FWHM, in bins
+    double refResolution; // resolution used for integration in reference runs, in bins
 
     bool useForCS = false;
 
     DetectorEfficiency efficiency;
 
-    double distance;
+    double distance; // in cm
 };
 
 #endif /* DETECTOR_H */

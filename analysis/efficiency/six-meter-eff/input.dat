@@ -1,0 +1,162 @@
+     0.   20000.     50. 9000000       0 7653463       2
+  500.00    0.00    5.08    6.35    4.92    6.19         0.00
+  0.8740  1.2130  1.1800  1.1000    2.00    0.00
+    16.00    12.0    6.00
+      4 
+   1.426  0.949  0.7105  0.472
+      0
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+All bias values given in light output of electron 
+For NE-213, L(E) = a*(E-E0), E0 = 0.005, a = 1 MeV^-1, E = energy in MeV
+For Cs-137, edge, the Compton ednge electron energy is: 0.477 MeV
+L(0.477) = 0.472
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+For nnqfs, 4m detector
+
+Distance from sample to detector: 376 cm (for measurements)
+
+Outer dimensions:
+Radius = 4.45 cm  
+Thickness = 5.08 cm 
+
+Thickness of Al face = 0.16 cm
+
+No light guide
+
+Scint. Liquid: NE-218
+Density: 0.879 g/cm^3
+Hydrogen:Carbon Ratio: 1.28
+Output Files:
+n2ngmon.bias1 --> 1 x Cs (1/2 height edge)
+n2ngmon.bias2 --> 1/2 x Cs (1/2 height edge)
+n2ngmon.bias3 --> 1/3 x Cs (1/2 height edge)
+n2ngmon.bias4 --> 1/4 x Cs
+
+     0.   20000.     50. 9000000       0 7653463       2
+  500.00    0.00    5.08    4.44    4.92    4.28         0.00
+  0.8790  1.280  1.1800  1.1000    2.00    0.00
+    6.00    15.0    0.50
+      4 
+   0.472   0.2335   0.154   0.11425
+      0
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+C     PROGRAM NEFF7A (FINAL  VERSION  10.08.1987)
+C
+C
+C     OTHER INPUT DATA:          (FILE NDATA1.PCA, DEV 30)
+C     =================
+C
+C     EMIN        F8.0    LOWER LIMIT OF NEUTRON ENERGY IN KEV
+C     EMAX        F8.0    UPPER LIMIT OF NEUTRON ENERGY IN KEV
+C     DEN         F8.0    ENERGY BIN WIDTH IN KEV
+C     RNMAX       F8.0    NUMBER OF CALCULATED NEUTRON HISTORIES
+C     LEND        I8      LEND=1     CALCULATION WITH NEW DATA FOLLOWS
+C                         LEND=0     FINAL CALCULATION
+C##C     RAND        F8.2    FIRST NUMBER FOR RANDOM GENERATOR
+C     iRAND       I8      RANDOM NUMBER SEED
+C     NCHI        I8      NUMBER OF SUBGROUPS FOR VARIANCE CALCULATION
+C
+C     ABSTD       F8.2    SOURCE TO SCINTILLATOR CENTER DISTANCE IN CM
+C     TETA        F8.2    ANGLE OF INCIDENCE TO SCINTILL. AXIS IN DEGREES
+C     DG          F8.2    LENGTH OF THE SCINTILLATOR HOUSING IN CM
+C                         (FRONTDISC THICKNESS + DSZ )
+C     RG          F8.2    RADIUS OF THE SCINTILLATOR HOUSING IN CM
+C     DSZ         F8.2    LENGTH OF THE SCINTILLATOR  IN CM
+C     RSZ         F8.2    RADIUS OF THE SCINTILLATOR  IN CM
+C     DL          F8.2    LENGTH OF THE LIGHT PIPE    IN CM
+C                         (RADIUS RL = RSZ)
+C
+C     DICHT       F8.4    DENSITY OF THE SCINTILLATOR IN G/CM**3
+C     ALPHA       F8.4    RELATION OF THE ATOMNUMBERS N(H)/N(C)
+C     DICHTL      F8.4    DENSITY OF THE LIGHT PIPE   IN G/CM**3
+C     ALPHAL      F8.4    RELATION OF THE ATOMNUMBERS N(H)/N(C)
+C                         IN THE LIGHT PIPE
+C     PLOW        F8.2    PULSE HEIGHT BIAS FOR PULSES FROM P,D,ALPHA
+C                         FOR PHOTON DETECTION FROM 12C(N,N')12C
+C     PNNG        F8.2    MEAN DETECTOR EFFICIENCY FOR PHOTONS
+C
+C     AA,BB,CC    F8.2    DETECTOR RESOLUTION PARAMETER IN %(AUS NRESP7.A)
+C     NBIAS       I8      NUMBER OF PULSE HEIGHT BIAS VALUES
+C     BIAS(10)    F8.4    PULSE HEIGHT BIAS VALUES IN L(ELECTRON)
+C
+C     NLICHT      I8      PARAMETER FOR INPUT DATA OF L(E)-FUNCKION
+C                          0  L(E)-DATA FROM DATA FILE NWQ7C
+C                             STANDARD TABLE VALUES FOR  0 < EP < 8 MEV
+C                          1  L(E)-DATA FROM DATA FILE NWQ7C
+C                             4 POLYNOMIALS FOR L(EP)
+C                          2  L(E)-DATA FROM INPUT
+C                             MAX. 4 POLYNOMIALS FOR L(EP)
+C                          3  L(E)-DATEN FROM INPUT
+C                             EXPONENTIAL FUNCTION FOR L(EP)
+C                             L(EP)= CLT0 * EP**CLT1        ENP2<EP<ENP3
+C                         10  L(E)-DATA FROM DATA FILE NWQ7C
+C                             TABLE VALUES FOR  1.5 X 1.5 DETECTOR
+C                         11  L(E)-DATA FROM DATA FILE NWQ7C
+C                             TABLE VALUES FOR SPECIAL 2.0 X 2.0 DETECTOR
+C                         12  L(E)-DATA FROM DATA FILE NWQ7C
+C                             TABLE VALUES FOR  2.0 X 2.0 DETECTOR (KUDO)
+C                         13  L(E)-DATA FROM DATA FILE NWQ7C
+C                             TABLE VALUES FOR  1.0 X 4.0 DETECTOR
+C                         14  L(E)-DATA FROM DATA FILE NWQ7C
+C                             TABLE VALUES FOR  2.0 X 10.0 DETECTOR
+C                         15  L(E)-DATA FROM DATA FILE NWQ7C
+C                             TABLE VALUES FOR  L(E) OF VERBINSKI
+C
+C
+C     LIGHT OUTPUT FUNCTIONS:      (FILE NWQ7C,  DEV 22)
+C
+C     PROTONS:
+C
+C       LIGHT(431)                 0 -  600 KEV    10 KEV STEPS
+C                                600 - 8000 KEV    20 KEV STEPS
+C       L = DLT0 + DLT1*EP        EP >    8 MEV
+C
+C       OTHERWISE (NLICHT=1,2):
+C       L =        ALT1*EP + ALT2*EP**2                         EP < ENP1
+C       L = BLT0 + BLT1*EP + BLT2*EP**2 + BLT3*EP**3     ENP1 < EP < ENP2
+C       L = CLT0 + CLT1*EP + CLT2*EP**2 + CLT3*EP**3     ENP2 < EP < ENP3
+C       L = DLT0 + DLT1*EP                               ENP3 < EP
+C       OTHERWISE (NLICHT=3):
+C       L =        ALT1*EP + ALT2*EP**2                         EP < ENP1
+C       L = BLT0 + BLT1*EP + BLT2*EP**2 + BLT3*EP**3     ENP1 < EP < ENP2
+C       L = CLT0 * EP**CLT1                              ENP2 < EP < ENP3
+C       L = DLT0 + DLT1*EP                               ENP3 < EP
+C
+C     DEUTERONS:
+C       L = 2 * LPROTON(ED/2)
+C
+C     ALPHA PARTICLES:
+C       L = FLT1 * EA**FLT2                                     EA < ENA1
+C       L = GLT0 + GLT1*EA                               ENA1 < EA
+C
+C     BERYLLIUM:
+C       L = RLT1 * EB
+C
+C     CARBON,BORON:
+C       L = SLT1 * EC
+C
+C
+C     OUTPUT DATA               (FILE RESULT    DEV 40)
+C     ===========               (FILE SPECT     DEV 41)
+C
+C     TETA,DG,RG,DSZ,RSZ,DL    SAME DATA AS FOR INPUT
+C     RNMAX                    NUMBER OF CALCULATED  HISTORIES
+C     EMIN,EMAX,DEN,BIAS(I)    SAME DATA AS FOR INPUT
+C
+C     EFF(I,500)         EFFICIENCY OF THE DETECTOR FOR THE
+C                        PULSE HEIGHT BIAS BIAS(I)
+C     EFFU(I,500)        UNCERTAINTY (1 S.D.) OF THE CALCULATED EFFICIENCY
+C
+C 
+C

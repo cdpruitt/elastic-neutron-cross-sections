@@ -3,7 +3,7 @@
 
 using namespace std;
 
-DetectorHistos::DetectorHistos(string name)
+DetectorHistos::DetectorHistos(string name, double linearCalibration)
 {
     string PHName = name + "PH";
     string PSDName = name + "PSD";
@@ -26,7 +26,7 @@ DetectorHistos::DetectorHistos(string name)
 
     double TOFHistoStart = 0;
     double TOFHistoStop = 500;
-    int TOFHistoBins = ceil((TOFHistoStop-TOFHistoStart)/(0.1806));
+    int TOFHistoBins = ceil((TOFHistoStop-TOFHistoStart)/(linearCalibration));
 
     TOFHisto = new TH1D(TOFName.c_str(), TOFName.c_str(),
             TOFHistoBins, TOFHistoStart, TOFHistoStop);

@@ -36,7 +36,7 @@ void subtractBackground(
     reference.blankMonitors.push_back(blankRefMon->GetEntries());
 
     // perform integrals
-    double TOFResolution = 5;//d.resolution*d.linearCalibration; // FWHM in ns
+    double TOFResolution = d.refResolution*d.linearCalibration; // FWHM in ns
     int minIntBin = polyHisto->FindBin(TOF-TOFResolution);
     int maxIntBin = polyHisto->FindBin(TOF+TOFResolution);
 
@@ -44,34 +44,40 @@ void subtractBackground(
     reference.graphiteCounts.push_back(graphiteHisto->Integral(minIntBin, maxIntBin));
     reference.blankCounts.push_back(blankRefHisto->Integral(minIntBin, maxIntBin));
 
-    polyHisto->Write();
-    graphiteHisto->Write();
-    blankRefHisto->Write();
+    double polyRatio = reference.polyCounts.back()/reference.polyMonitors.back();
+    double blankRatio = reference.blankCounts.back()/reference.blankMonitors.back();
+    double graphiteRatio = reference.graphiteCounts.back()/reference.graphiteMonitors.back();
+
+    //polyHisto->Write();
+    //graphiteHisto->Write();
+    //blankRefHisto->Write();
+
+    polyHisto->Scale(1/reference.polyMonitors.back());
+    blankRefHisto->Scale(1/reference.blankMonitors.back());
+    graphiteHisto->Scale(1/reference.graphiteMonitors.back());
 
     string polyMinusBlankName = "polyMinusBlank" + d.name;
     TH1D* polyMinusBlank = (TH1D*)polyHisto->Clone(polyMinusBlankName.c_str());
-    blankRefHisto->Scale(reference.polyMonitors.back()/reference.blankMonitors.back());
     polyMinusBlank->Add(blankRefHisto, -1);
     polyMinusBlank->Write();
 
     string graphiteMinusBlankName = "graphiteMinusBlank" + d.name;
     TH1D* graphiteMinusBlank = (TH1D*)graphiteHisto->Clone(graphiteMinusBlankName.c_str());
-    blankRefHisto->Scale(reference.graphiteMonitors.back()/reference.polyMonitors.back());
     graphiteMinusBlank->Add(blankRefHisto, -1);
     graphiteMinusBlank->Write();
 
     string diffHistoName = "polyMinusGraphite" + d.name;
     TH1D* diffHisto = (TH1D*)polyMinusBlank->Clone(diffHistoName.c_str());
-    graphiteMinusBlank->Scale(reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms);
+    double atomRatio = reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms;
+    graphiteMinusBlank->Scale(atomRatio);
     diffHisto->Add(graphiteMinusBlank, -1);
     diffHisto->Write();
 
-    reference.difference.push_back(diffHisto->Integral(minIntBin,maxIntBin)
-            /reference.polyMonitors.back());
+    reference.difference.push_back(diffHisto->Integral(minIntBin,maxIntBin));
 
     cout << "reference mb/sr per histo count/monitor count = "
         << reference.crossSection
-        /(reference.difference.back()/reference.polyMonitors.back())
+        /(reference.difference.back())
         << endl;
 }
 

@@ -79,6 +79,11 @@ Config::Config(string experiment) : experiment(experiment)
     {
         for(auto& run : runs)
         {
+            if(!run.isProduction)
+            {
+                continue;
+            }
+
             for(auto& runAngle : run.angles)
             {
                 if(angle.value==runAngle)

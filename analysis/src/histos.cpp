@@ -13,10 +13,51 @@
 #include "../include/DetectorHistos.h"
 #include "../include/histos.h"
 #include "../include/Config.h"
+#include "../include/physicalConstants.h"
 
 extern Config config;
 
 using namespace std;
+
+TH1D* correctForEfficiency(TH1D* histo, const Detector& d)
+{
+    string name = histo->GetName();
+    name += "_EC";
+
+    TH1D* histoEC = (TH1D*)histo->Clone(name.c_str());
+
+    for(int i=1; i<histoEC->GetNbinsX(); i++)
+    {
+        double TOF = i*d.linearCalibration;
+        double velocity = ((d.distance/TOF)*pow(10,7))/C;
+        if(velocity>1 || velocity <0)
+        {
+            continue;
+        }
+
+        double energy = 0.5*NEUTRON_MASS*AMU_TO_MEVC2*pow(velocity,2);
+        double efficiency = d.efficiency.getEfficiency(energy);
+
+        if(efficiency <= 0 || efficiency>1)
+        {
+            continue;
+        }
+
+        double binValue = histoEC->GetBinContent(i)/efficiency;
+
+        if((binValue < 0) || (binValue!=binValue) || (std::isinf(binValue)))
+        {
+            cerr << "Error: value for bin " << i << " was " << binValue
+                << " (energy = " << energy << ", efficiency = " << efficiency
+                << ")" << endl;
+            exit(1);
+        }
+
+        histoEC->SetBinContent(i, histoEC->GetBinContent(i)/efficiency);
+    }
+
+    return histoEC;
+}
 
 void setBranches(TTree* t)
 {
@@ -52,7 +93,7 @@ int histos(string inputFileName, string outputFileName)
     // create new histograms for recording this run
     for(auto& detector : config.detectors)
     {
-        detector.createHistos();
+        detector.histos = DetectorHistos(detector.name, detector.linearCalibration);
     }
 
     // populate tree events into histos
@@ -122,6 +163,12 @@ int histos(string inputFileName, string outputFileName)
     for(auto& detector : config.detectors)
     {
         detector.histos.write();
+
+        if(detector.useForCS)
+        {
+            TH1D* TOFHistoEC = correctForEfficiency(detector.histos.TOFHisto, detector);
+            TOFHistoEC->Write();
+        }
     }
 
     return 0;

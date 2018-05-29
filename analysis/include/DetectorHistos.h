@@ -9,7 +9,7 @@
 struct DetectorHistos
 {
     DetectorHistos() {};
-    DetectorHistos(std::string name);
+    DetectorHistos(std::string name, double linearCalibration);
     void write();
 
     TH1D* pulseHeightHisto;

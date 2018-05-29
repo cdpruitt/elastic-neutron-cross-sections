@@ -25,11 +25,12 @@ all: $(addprefix $(BIN), $(TARGETS))
 $(BIN)driver: src/driver.cpp src/histos.cpp src/subtractBackground.cpp\
     src/calculateCS.cpp src/utilities.cpp src/Detector.cpp src/PIDBanana.cpp\
     src/Config.cpp src/Target.cpp src/calculateReference.cpp src/utilities.cpp\
-    src/DetectorHistos.cpp src/plotHistos.cpp
+    src/DetectorHistos.cpp src/plotHistos.cpp src/DetectorEfficiency.cpp
 	$(COMPILER) $(CFLAGS) -o $(BIN)driver src/driver.cpp src/histos.cpp\
 	    src/subtractBackground.cpp src/calculateCS.cpp src/Detector.cpp\
 	    src/PIDBanana.cpp src/Config.cpp src/Target.cpp src/calculateReference.cpp\
-	    src/utilities.cpp src/DetectorHistos.cpp src/plotHistos.cpp $(LINKOPTION)
+	    src/utilities.cpp src/DetectorHistos.cpp src/plotHistos.cpp\
+	    src/DetectorEfficiency.cpp $(LINKOPTION)
 
 # read data points from text files to ROOT graphs
 $(BIN)readDataToGraph: src/readDataToGraph.cpp src/dataSet.cpp src/dataPoint.cpp
