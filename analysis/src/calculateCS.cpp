@@ -23,7 +23,7 @@ extern Config config;
 
 using namespace std;
 
-int calculateCS(const ReferenceCS& reference)
+int calculateCS(const vector<ReferenceCS>& references)
 {
     for(auto& name : TARGET_NAMES)
     {
@@ -122,9 +122,9 @@ int calculateCS(const ReferenceCS& reference)
                 double targetNumberOfAtoms = (t.getMass()/t.getMolarMass())*AVOGADROS_NUMBER;
 
                 // calculate differential cross section in lab frame
-                double value = reference.crossSection*
-                    (difference/reference.difference[i])*
-                    (2*reference.polyNumberOfAtoms/targetNumberOfAtoms);
+                double value = references[i].crossSection*
+                    (difference/references[i].difference)*
+                    (2*references[i].polyNumberOfAtoms/targetNumberOfAtoms);
 
                 // convert lab frame cross section to center-of-mass frame via
                 // Jacobian
@@ -144,20 +144,20 @@ int calculateCS(const ReferenceCS& reference)
 
                 double referenceStatisticalError =
                     pow(
-                            pow(reference.polyCounts[i]/reference.polyMonitors[i],2)
-                           *(1/reference.polyCounts[i]+1/reference.polyMonitors[i])
+                            pow(references[i].polyCounts/references[i].polyMonitors,2)
+                           *(1/references[i].polyCounts+1/references[i].polyMonitors)
 
-                          + pow(reference.graphiteCounts[i]/reference.graphiteMonitors[i],2)
-                           *pow(reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms,2)
-                           *(1/reference.graphiteCounts[i]+1/reference.graphiteMonitors[i])
+                          + pow(references[i].graphiteCounts/references[i].graphiteMonitors,2)
+                           *pow(references[i].polyNumberOfAtoms/references[i].graphiteNumberOfAtoms,2)
+                           *(1/references[i].graphiteCounts+1/references[i].graphiteMonitors)
 
-                          + pow(reference.blankCounts[i]/reference.blankMonitors[i],2)
-                           *pow((reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms)-1,2)
-                           *(1/reference.blankCounts[i]+1/reference.blankMonitors[i])
+                          + pow(references[i].blankCounts/references[i].blankMonitors,2)
+                           *pow((references[i].polyNumberOfAtoms/references[i].graphiteNumberOfAtoms)-1,2)
+                           *(1/references[i].blankCounts+1/references[i].blankMonitors)
 
-                          + pow(reference.polyNumberOfAtoms/reference.graphiteNumberOfAtoms,2)
-                           *pow(reference.blankCounts[i]/reference.blankMonitors[i]-reference.graphiteCounts[i]/reference.graphiteMonitors[i],2)
-                           *(1/reference.polyNumberOfAtoms+1/reference.graphiteNumberOfAtoms)
+                          + pow(references[i].polyNumberOfAtoms/references[i].graphiteNumberOfAtoms,2)
+                           *pow(references[i].blankCounts/references[i].blankMonitors-references[i].graphiteCounts/references[i].graphiteMonitors,2)
+                           *(1/references[i].polyNumberOfAtoms+1/references[i].graphiteNumberOfAtoms)
                            ,0.5
                        );
 
@@ -165,7 +165,7 @@ int calculateCS(const ReferenceCS& reference)
                     
                 double statisticalError = value*
                     pow(
-                            pow(referenceStatisticalError/reference.difference[i],2)
+                            pow(referenceStatisticalError/references[i].difference,2)
                           + pow(targetStatisticalError/difference,2)
                            ,0.5
                        );

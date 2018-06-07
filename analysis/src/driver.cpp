@@ -81,15 +81,44 @@ int main(int argc, char** argv)
         }
     }
 
-    ReferenceCS reference(config.reference);
-    calculateReference(config.experiment, reference);
+    vector<vector<ReferenceCS>> references;
 
-    //subtractBackground();
-    //calculateCS(reference);
+    for(auto& d : config.detectors)
+    {
+        if(!d.useForCS)
+        {
+            continue;
+        }
+
+        references.push_back(vector<ReferenceCS>());
+
+        for(int i=0; i<config.references.size(); i++)
+        {
+            references.back().push_back(ReferenceCS(config.references[i]));
+            calculateReference(config.experiment, references.back().back(), d);
+        }
+    }
+
+    plotReference(references);
+
+    vector<ReferenceCS> combinedRefs;
+
+    for(auto& refs : references)
+    {
+        combinedRefs.push_back(combineReferences(refs));
+    }
+
+    for(auto& r : combinedRefs)
+    {
+        cout << "difference = " << r.difference << endl;
+        cout << "cross section = " << r.crossSection << endl;
+    }
+
+    subtractBackground();
+    calculateCS(combinedRefs);
 
     plotHistos();
     plotDiffs();
-    plotReference(reference);
 
     return 0;
 }

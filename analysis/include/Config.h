@@ -90,7 +90,7 @@ struct Config
 
     double neutronEnergy;
 
-    std::string reference;
+    std::vector<std::string> references;
 };
 
 #endif /* RUN_CONFIG_H */

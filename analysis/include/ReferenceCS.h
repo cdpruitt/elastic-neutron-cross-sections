@@ -11,21 +11,23 @@ struct ReferenceCS
 
     std::string name;
 
-    std::vector<double> polyCounts;
-    std::vector<double> polyMonitors;
+    double polyCounts;
+    double polyMonitors;
 
-    std::vector<double> graphiteCounts;
-    std::vector<double> graphiteMonitors;
+    double graphiteCounts;
+    double graphiteMonitors;
 
-    std::vector<double> blankCounts;
-    std::vector<double> blankMonitors;
+    double blankCounts;
+    double blankMonitors;
 
-    std::vector<double> difference;
+    double difference;
 
     double angle;
     double crossSection;
     double polyNumberOfAtoms;
     double graphiteNumberOfAtoms;
+
+    std::vector<double> intLimits;
 };
 
 #endif /* REFERENCE_CS_H */

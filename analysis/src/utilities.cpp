@@ -137,5 +137,16 @@ double calculateTOF(
             targetMass*AMU_TO_MEVC2,
             angle);
 
+    if(neutronEnergyAfter < 0 || neutronEnergyAfter!=neutronEnergyAfter || std::isinf(neutronEnergyAfter))
+    {
+        cerr << "Error: calculated neutron energy of " << neutronEnergyAfter << " in calculateScatteredEnergy:"
+            << "energy before collision = " << neutronEnergyBefore
+            << ", excitationEnergy = " << excitationEnergy
+            << ", targetMass = " << targetMass
+            << ", angle = " << angle << endl;
+
+        exit(1);
+    }
+
     return distance/pow(2*neutronEnergyAfter/NEUTRON_MASS, 0.5);
 }

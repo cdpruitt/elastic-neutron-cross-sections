@@ -69,16 +69,6 @@ void subtractBackground(
 
         blankHistoTotal->Write();
         blankMonitorTotal->Write();
-
-        // calculate and plot difference histogram
-        targetHistoTotal->Scale(NORMALIZATION_FACTOR/targetMonitorTotal->GetEntries());
-        blankHistoTotal->Scale(NORMALIZATION_FACTOR/blankMonitorTotal->GetEntries());
-
-        string diffName = "diff" + detector;
-        TH1D* diffHisto = (TH1D*)targetHistoTotal->Clone(diffName.c_str());
-
-        diffHisto->Add(blankHistoTotal, -1);
-        diffHisto->Write();
     }
 }
 
@@ -110,7 +100,7 @@ int subtractBackground()
                             + "/runs/" + to_string(run.number) + "/histos.root";
                         TFile histoFile(histoFileName.c_str(),"READ");
 
-                        string histoName = config.detectors[i].name + "TOF";
+                        string histoName = config.detectors[i].name + "TOF_EC";
                         TH1D* histo = (TH1D*)histoFile.Get(histoName.c_str());
                         if(!histo)
                         {

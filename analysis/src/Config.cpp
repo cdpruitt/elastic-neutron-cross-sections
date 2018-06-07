@@ -142,7 +142,10 @@ Config::Config(string experiment) : experiment(experiment)
         return;
     }
 
-    referenceFile >> reference;
+    while(getline(referenceFile,str))
+    {
+        references.push_back(str);
+    }
 }
 
 Run Config::getRun(int runNumber)

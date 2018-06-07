@@ -14,6 +14,7 @@
 #include "../include/IntegrationLimits.h"
 #include "../include/utilities.h"
 #include "../include/Config.h"
+#include "../include/histos.h"
 
 extern Config config;
 
@@ -31,30 +32,28 @@ void subtractBackground(
         const Detector& d
         )
 {
-    reference.polyMonitors.push_back(polyMon->GetEntries());
-    reference.graphiteMonitors.push_back(graphiteMon->GetEntries());
-    reference.blankMonitors.push_back(blankRefMon->GetEntries());
+    reference.polyMonitors = polyMon->GetEntries();
+    reference.graphiteMonitors = graphiteMon->GetEntries();
+    reference.blankMonitors = blankRefMon->GetEntries();
 
     // perform integrals
-    double TOFResolution = d.refResolution*d.linearCalibration; // FWHM in ns
-    int minIntBin = polyHisto->FindBin(TOF-TOFResolution);
-    int maxIntBin = polyHisto->FindBin(TOF+TOFResolution);
+    int minIntBin;
+    int maxIntBin;
 
-    reference.polyCounts.push_back(polyHisto->Integral(minIntBin, maxIntBin));
-    reference.graphiteCounts.push_back(graphiteHisto->Integral(minIntBin, maxIntBin));
-    reference.blankCounts.push_back(blankRefHisto->Integral(minIntBin, maxIntBin));
+    minIntBin = polyHisto->FindBin(reference.intLimits[0]);
+    maxIntBin = polyHisto->FindBin(reference.intLimits[1]);
 
-    double polyRatio = reference.polyCounts.back()/reference.polyMonitors.back();
-    double blankRatio = reference.blankCounts.back()/reference.blankMonitors.back();
-    double graphiteRatio = reference.graphiteCounts.back()/reference.graphiteMonitors.back();
+    reference.polyCounts = polyHisto->Integral(minIntBin, maxIntBin);
+    reference.graphiteCounts = graphiteHisto->Integral(minIntBin, maxIntBin);
+    reference.blankCounts = blankRefHisto->Integral(minIntBin, maxIntBin);
 
-    //polyHisto->Write();
-    //graphiteHisto->Write();
-    //blankRefHisto->Write();
+    double polyRatio = reference.polyCounts/reference.polyMonitors;
+    double blankRatio = reference.blankCounts/reference.blankMonitors;
+    double graphiteRatio = reference.graphiteCounts/reference.graphiteMonitors;
 
-    polyHisto->Scale(1/reference.polyMonitors.back());
-    blankRefHisto->Scale(1/reference.blankMonitors.back());
-    graphiteHisto->Scale(1/reference.graphiteMonitors.back());
+    polyHisto->Scale(1/reference.polyMonitors);
+    blankRefHisto->Scale(1/reference.blankMonitors);
+    graphiteHisto->Scale(1/reference.graphiteMonitors);
 
     string polyMinusBlankName = "polyMinusBlank" + d.name;
     TH1D* polyMinusBlank = (TH1D*)polyHisto->Clone(polyMinusBlankName.c_str());
@@ -73,15 +72,13 @@ void subtractBackground(
     diffHisto->Add(graphiteMinusBlank, -1);
     diffHisto->Write();
 
-    reference.difference.push_back(diffHisto->Integral(minIntBin,maxIntBin));
+    reference.difference = diffHisto->Integral(minIntBin,maxIntBin);
 
     cout << "reference mb/sr per histo count/monitor count = "
-        << reference.crossSection
-        /(reference.difference.back())
-        << endl;
+        << reference.crossSection/(reference.difference) << endl;
 }
 
-int calculateReference(string experiment, ReferenceCS& reference)
+int calculateReference(string experiment, ReferenceCS& reference, Detector d)
 {
     string fileName = "../configuration/" + experiment + "/normalization/" + reference.name + ".txt";
 
@@ -142,6 +139,16 @@ int calculateReference(string experiment, ReferenceCS& reference)
             reference.crossSection = stod(tokens.back());
         }
 
+        else if(tokens[0] == "Low" && tokens[3]==d.name)
+        {
+            reference.intLimits.push_back(stod(tokens.back()));
+        }
+
+        else if(tokens[0] == "High" && tokens[3]==d.name)
+        {
+            reference.intLimits.push_back(stod(tokens.back()));
+        }
+
         else if(tokens[0] == "Number" && tokens[3]=="poly:")
         {
             reference.polyNumberOfAtoms = stod(tokens.back());
@@ -180,40 +187,80 @@ int calculateReference(string experiment, ReferenceCS& reference)
     }
 
     string outputFileName = "../configuration/" + experiment
-        + "/normalization/" + reference.name + ".root";
+        + "/normalization/" + reference.name + "_" + d.name + ".root";
     TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
 
-    for(auto& d : config.detectors)
+    string histoName = d.name + "TOF";
+    TH1D* polyHisto = (TH1D*)polyFile->Get(histoName.c_str());
+    TH1D* polyMonitor = (TH1D*)polyFile->Get("CMONPSD");
+
+    TH1D* blankRefHisto = (TH1D*)blankRefFile->Get(histoName.c_str());
+    TH1D* blankRefMonitor = (TH1D*)blankRefFile->Get("CMONPSD");
+
+    TH1D* graphiteHisto = (TH1D*)graphiteFile->Get(histoName.c_str());
+    TH1D* graphiteMonitor = (TH1D*)graphiteFile->Get("CMONPSD");
+
+    if(!polyHisto || !polyMonitor
+            || !blankRefHisto || !blankRefMonitor
+            || !graphiteHisto || !graphiteMonitor)
     {
-        if(!d.useForCS)
-        {
-            continue;
-        }
-
-        string histoName = d.name + "TOF";
-        TH1D* polyHisto = (TH1D*)polyFile->Get(histoName.c_str());
-        TH1D* polyMonitor = (TH1D*)polyFile->Get("CMONPSD");
-
-        TH1D* blankRefHisto = (TH1D*)blankRefFile->Get(histoName.c_str());
-        TH1D* blankRefMonitor = (TH1D*)blankRefFile->Get("CMONPSD");
-
-        TH1D* graphiteHisto = (TH1D*)graphiteFile->Get(histoName.c_str());
-        TH1D* graphiteMonitor = (TH1D*)graphiteFile->Get("CMONPSD");
-
-        if(!polyHisto || !polyMonitor
-                || !blankRefHisto || !blankRefMonitor
-                || !graphiteHisto || !graphiteMonitor)
-        {
-            cerr << "Error: failed to open histogram needed for reference CS calculation." << endl;
-            return 1;
-        }
-
-        double TOF = calculateTOF(d.distance, 0, 1.007627, reference.angle, config.neutronEnergy);
-
-        subtractBackground(polyHisto, polyMonitor, graphiteHisto, graphiteMonitor, blankRefHisto, blankRefMonitor, TOF, reference, d);
+        cerr << "Error: failed to open histogram needed for reference CS calculation." << endl;
+        return 1;
     }
+
+    TH1D* polyHistoEC = correctForEfficiency(polyHisto, d);
+    TH1D* graphiteHistoEC = correctForEfficiency(graphiteHisto, d);
+    TH1D* blankRefHistoEC = correctForEfficiency(blankRefHisto, d);
+
+    double TOF = calculateTOF(d.distance, 0, 1.007627, reference.angle, config.neutronEnergy);
+
+    subtractBackground(polyHistoEC, polyMonitor, graphiteHistoEC, graphiteMonitor, blankRefHistoEC, blankRefMonitor, TOF, reference, d);
 
     outputFile->Close();
 
     return 0;
+}
+
+ReferenceCS combineReferences(vector<ReferenceCS> references)
+{
+    ReferenceCS combinedRef;
+
+    combinedRef.crossSection = 0;
+
+    for(auto& reference : references)
+    {
+        combinedRef.polyCounts += reference.polyCounts;
+        combinedRef.polyMonitors += reference.polyMonitors;
+
+        combinedRef.graphiteCounts += reference.graphiteCounts;
+        combinedRef.graphiteMonitors += reference.graphiteMonitors;
+
+        combinedRef.blankCounts += reference.blankCounts;
+        combinedRef.blankMonitors += reference.blankMonitors;
+
+        combinedRef.difference += reference.difference;
+
+        combinedRef.polyNumberOfAtoms += reference.polyNumberOfAtoms;
+        combinedRef.graphiteNumberOfAtoms += reference.graphiteNumberOfAtoms;
+
+        combinedRef.crossSection += reference.crossSection;
+    }
+
+    combinedRef.polyCounts /= references.size();
+    combinedRef.polyMonitors /= references.size();
+
+    combinedRef.graphiteCounts /= references.size();
+    combinedRef.graphiteMonitors /= references.size();
+
+    combinedRef.blankCounts /= references.size();
+    combinedRef.blankMonitors /= references.size();
+
+    combinedRef.difference /= references.size();
+
+    combinedRef.polyNumberOfAtoms /= references.size();
+    combinedRef.graphiteNumberOfAtoms /= references.size();
+
+    combinedRef.crossSection /= references.size();
+
+    return combinedRef;
 }

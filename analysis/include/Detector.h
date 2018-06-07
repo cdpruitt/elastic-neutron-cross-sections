@@ -26,7 +26,6 @@ struct Detector
     double linearCalibration; // in ns/bin
     double timeOffset; // in ns
     double resolution; // FWHM, in bins
-    double refResolution; // resolution used for integration in reference runs, in bins
 
     bool useForCS = false;
 

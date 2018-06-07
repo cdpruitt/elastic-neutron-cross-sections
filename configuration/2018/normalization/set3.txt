@@ -8,5 +8,11 @@ Graphite run number:        317
 Angle (degrees, lab):       30
 Literature CS (mb):         154.2
 
+Low int. bound, 4M (ns):    60
+High int. bound, 4M (ns):   75
+
+Low int. bound, 6M (ns):    97
+High int. bound, 6M (ns):   115
+
 Number of atoms, poly:      1.45e23
 Number of atoms, graphite:  1.47e23
