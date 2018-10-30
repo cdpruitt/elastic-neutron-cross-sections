@@ -65,9 +65,9 @@ void plotDiffHistos(string angle)
         string blankHistoName = "blank4MTotal";
         string differenceHistoName = "diff4M";
 
-        TH1I* targetHisto = (TH1I*)Sn112File->Get(targetHistoName.c_str());
-        TH1I* blankHisto = (TH1I*)Sn112File->Get(blankHistoName.c_str());
-        TH1I* differenceHisto = (TH1I*)Sn112File->Get(differenceHistoName.c_str());
+        TH1* targetHisto = (TH1*)Sn112File->Get(targetHistoName.c_str());
+        TH1* blankHisto = (TH1*)Sn112File->Get(blankHistoName.c_str());
+        TH1* differenceHisto = (TH1*)Sn112File->Get(differenceHistoName.c_str());
 
         if(targetHisto && blankHisto && differenceHisto)
         {
@@ -179,9 +179,9 @@ void plotDiffHistos(string angle)
         string blankHistoName = "blank6MTotal";
         string differenceHistoName = "diff6M";
 
-        TH1I* targetHisto = (TH1I*)Sn112File->Get(targetHistoName.c_str());
-        TH1I* blankHisto = (TH1I*)Sn112File->Get(blankHistoName.c_str());
-        TH1I* differenceHisto = (TH1I*)Sn112File->Get(differenceHistoName.c_str());
+        TH1* targetHisto = (TH1*)Sn112File->Get(targetHistoName.c_str());
+        TH1* blankHisto = (TH1*)Sn112File->Get(blankHistoName.c_str());
+        TH1* differenceHisto = (TH1*)Sn112File->Get(differenceHistoName.c_str());
 
         if(targetHisto && blankHisto && differenceHisto)
         {
@@ -293,9 +293,9 @@ void plotDiffHistos(string angle)
         string blankHistoName = "blank4MTotal";
         string differenceHistoName = "diff4M";
 
-        TH1I* targetHisto = (TH1I*)Sn124File->Get(targetHistoName.c_str());
-        TH1I* blankHisto = (TH1I*)Sn124File->Get(blankHistoName.c_str());
-        TH1I* differenceHisto = (TH1I*)Sn124File->Get(differenceHistoName.c_str());
+        TH1* targetHisto = (TH1*)Sn124File->Get(targetHistoName.c_str());
+        TH1* blankHisto = (TH1*)Sn124File->Get(blankHistoName.c_str());
+        TH1* differenceHisto = (TH1*)Sn124File->Get(differenceHistoName.c_str());
 
         if(targetHisto && blankHisto && differenceHisto)
         {
@@ -407,9 +407,9 @@ void plotDiffHistos(string angle)
         string blankHistoName = "blank6MTotal";
         string differenceHistoName = "diff6M";
 
-        TH1I* targetHisto = (TH1I*)Sn124File->Get(targetHistoName.c_str());
-        TH1I* blankHisto = (TH1I*)Sn124File->Get(blankHistoName.c_str());
-        TH1I* differenceHisto = (TH1I*)Sn124File->Get(differenceHistoName.c_str());
+        TH1* targetHisto = (TH1*)Sn124File->Get(targetHistoName.c_str());
+        TH1* blankHisto = (TH1*)Sn124File->Get(blankHistoName.c_str());
+        TH1* differenceHisto = (TH1*)Sn124File->Get(differenceHistoName.c_str());
 
         if(targetHisto && blankHisto && differenceHisto)
         {

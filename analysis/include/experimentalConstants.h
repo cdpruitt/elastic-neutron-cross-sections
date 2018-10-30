@@ -3,10 +3,8 @@
 
 #include <vector>
 
-const double NORMALIZATION_FACTOR = 100000;
-
 const std::vector<std::string> TARGET_NAMES =
-{"Sn112", "Sn124", "SnNat", "blank"};
+{"Sn112", "Sn124", "SnNat"};
 
 const std::vector<std::string> DETECTOR_NAMES =
 {"4M", "6M", "CMON", "0DEG", "RF"};

@@ -140,7 +140,7 @@ void allRawRuns(string experiment)
                 c->cd(detector+1+CANVAS_WIDTH*(i%CANVAS_HEIGHT));
 
                 string TDCName = detectors[detector] + "TDC";
-                TH1I* TDC = (TH1I*)file->Get(TDCName.c_str());
+                TH1* TDC = (TH1*)file->Get(TDCName.c_str());
 
                 if(TDC)
                 {

@@ -171,10 +171,6 @@ int plotHistos()
                 double xHigh = TOFHisto->GetXaxis()->GetBinLowEdge(xHighBin)
                     +TOFHisto->GetXaxis()->GetBinWidth(xHighBin);
 
-                /*cout << "original low limit = " << TOF-5 << ", calculated limit = " << xLow
-                    << ", original high limit = " << maxTOFRange+10 << ", calculated limit = " << xHigh << endl;
-                    */
-
                 TOFHisto->GetXaxis()->SetRange(xLowBin, xHighBin);
 
                 double histoMinValue = TOFHisto->GetMinimum();
@@ -184,7 +180,7 @@ int plotHistos()
                 {
                     double excitedTOF = calculateTOF(d.distance, t.excitedStates[state], t.getMolarMass(), angle, config.neutronEnergy);
 
-                    double numberOfCounts = TOFHisto->GetBinContent(TOFHisto->GetBin(excitedTOF));
+                    double numberOfCounts = TOFHisto->GetBinContent(TOFHisto->FindBin(excitedTOF));
                     TArrow *arrow = new TArrow(excitedTOF, histoMaxValue, excitedTOF, numberOfCounts, 0.015, "|>");
                     arrow->SetAngle(30);
                     arrow->SetLineWidth(3);
@@ -193,7 +189,7 @@ int plotHistos()
                     arrow->Draw();
                 }
 
-                double nitrogenCounts = TOFHisto->GetBinContent(TOFHisto->GetBin(nitrogenTOF));
+                double nitrogenCounts = TOFHisto->GetBinContent(TOFHisto->FindBin(nitrogenTOF));
                 TArrow *arrow = new TArrow(nitrogenTOF, histoMaxValue, nitrogenTOF, nitrogenCounts, 0.015, "|>");
                 arrow->SetAngle(30);
                 arrow->SetLineWidth(3);
@@ -201,7 +197,7 @@ int plotHistos()
                 arrow->SetFillColor(kGreen+2);
                 arrow->Draw();
 
-                double counts = TOFHisto->GetBinContent(TOFHisto->GetBin(TOF));
+                double counts = TOFHisto->GetBinContent(TOFHisto->FindBin(TOF));
                 TArrow *elasticArrow = new TArrow(TOF, histoMaxValue, TOF, counts, 0.015, "|>");
                 elasticArrow->SetAngle(30);
                 elasticArrow->SetLineWidth(3);
@@ -228,7 +224,7 @@ int plotHistos()
                 //double referenceTOF = calculateTOF(d.distance, 0, 100000, angle, config.neutronEnergy);
                 //double refVelocity = ((d.distance/referenceTOF)*pow(10,7)/C);
                 //double refEnergy = 0.5*NEUTRON_MASS*AMU_TO_MEVC2*pow(refVelocity,2);
-                double refEfficiency = d.efficiency.getEfficiency(17);
+                double refEfficiency = d.efficiency.getEfficiency(11);
 
                 for(int tof=TOF-5; tof<maxTOFRange+10; tof++)
                 {
@@ -396,10 +392,8 @@ int plotDiffs()
                 if(targetHisto && blankHisto && monitorHisto && blankMonitorHisto)
                 {
                     // calculate and plot difference histogram
-                    targetHisto->Scale(
-                            NORMALIZATION_FACTOR/monitorHisto->GetEntries());
                     blankHisto->Scale(
-                            NORMALIZATION_FACTOR/blankMonitorHisto->GetEntries());
+                            monitorHisto->GetEntries()/blankMonitorHisto->GetEntries());
 
                     string diffName = "diff" + d.name;
                     TH1D* differenceHisto = (TH1D*)targetHisto->Clone(diffName.c_str());
@@ -503,21 +497,21 @@ int plotDiffs()
                     arrow->Draw();
 
                     double counts = differenceHisto->GetBinContent(differenceHisto->FindBin(TOF));
-                    TArrow *elasticArrow = new TArrow(TOF, 1+counts, TOF, counts, 0.015, "|>");
+                    TArrow *elasticArrow = new TArrow(TOF, 1.1*counts, TOF, counts, 0.015, "|>");
                     elasticArrow->SetAngle(30);
                     elasticArrow->SetLineWidth(3);
                     elasticArrow->SetLineColor(kBlue+2);
                     elasticArrow->SetFillColor(kBlue+2);
                     elasticArrow->Draw();
 
-                    TF1* fit = new TF1("gaussian","gaus",TOF-3, TOF+3);
-                    fit->SetParLimits(1, TOF-1, TOF+1);
-                    fit->SetParameter(1, TOF);
-                    fit->SetParameter(0, counts);
-                    fit->SetParameter(2, TOFResolution/2.355);
+                    //TF1* fit = new TF1("gaussian","gaus",TOF-3, TOF+3);
+                    //fit->SetParLimits(1, TOF-1, TOF+1);
+                    //fit->SetParameter(1, TOF);
+                    //fit->SetParameter(0, counts);
+                    //fit->SetParameter(2, TOFResolution/2.355);
 
-                    differenceHisto->Fit("gaussian","BQ", "",TOF-3, TOF+3);
-                    fit->Draw("same");
+                    //differenceHisto->Fit("gaussian","BQ", "",TOF-3, TOF+3);
+                    //fit->Draw("same");
 
                     TLine *gateLowLine = new TLine(TOF-TOFResolution,yAxisLowEdge,TOF-TOFResolution, counts);
                     TLine *gateHighLine = new TLine(TOF+TOFResolution,yAxisLowEdge,TOF+TOFResolution, counts);
@@ -667,10 +661,36 @@ int plotReference(const vector<vector<ReferenceCS>>& references)
                 graphiteHisto->Draw("hist same");
                 differenceHisto->Draw("hist same");
 
-                double tenthOfPlot = 0.1*(polyHisto->GetMaximum()-polyHisto->GetMinimum());
-
                 double carbonTOF = calculateTOF(d.distance, 0, 12.011, references[detector][i].angle, config.neutronEnergy);
-                double carbonCounts = differenceHisto->GetBinContent(differenceHisto->FindBin(carbonTOF));
+                double carbonCounts = polyHisto->GetBinContent(polyHisto->FindBin(carbonTOF));
+
+                double carbonExcitedTOF = calculateTOF(d.distance, 4.4389, 12.011, references[detector][i].angle, config.neutronEnergy);
+                double carbonExcitedCounts = polyHisto->GetBinContent(polyHisto->FindBin(carbonExcitedTOF));
+
+                double yAxisLowEdge = 0;
+                for(int bin = differenceHisto->FindBin(carbonTOF-5);
+                        bin < differenceHisto->FindBin(carbonExcitedTOF+10);
+                        bin++)
+                {
+                    if(differenceHisto->GetBinContent(bin) < yAxisLowEdge)
+                    {
+                        yAxisLowEdge = differenceHisto->GetBinContent(bin);
+                    }
+                }
+
+                double yAxisHighEdge = 0;
+                for(int bin = polyHisto->FindBin(carbonTOF-5);
+                        bin < polyHisto->FindBin(carbonExcitedTOF+10);
+                        bin++)
+                {
+                    if(polyHisto->GetBinContent(bin) > yAxisHighEdge)
+                    {
+                        yAxisHighEdge = polyHisto->GetBinContent(bin);
+                    }
+                }
+
+                double tenthOfPlot = 0.1*(yAxisHighEdge-yAxisLowEdge);
+
                 TArrow *carbonArrow = new TArrow(carbonTOF, tenthOfPlot+carbonCounts, carbonTOF, carbonCounts, 0.015, "|>");
                 carbonArrow->SetAngle(30);
                 carbonArrow->SetLineWidth(3);
@@ -678,8 +698,6 @@ int plotReference(const vector<vector<ReferenceCS>>& references)
                 carbonArrow->SetFillColor(kBlue-9);
                 carbonArrow->Draw();
 
-                double carbonExcitedTOF = calculateTOF(d.distance, 4.4389, 12.011, references[detector][i].angle, config.neutronEnergy);
-                double carbonExcitedCounts = differenceHisto->GetBinContent(differenceHisto->FindBin(carbonExcitedTOF));
                 TArrow *carbonExcitedArrow = new TArrow(carbonExcitedTOF, tenthOfPlot+carbonExcitedCounts, carbonExcitedTOF, carbonExcitedCounts, 0.015, "|>");
                 carbonExcitedArrow->SetAngle(30);
                 carbonExcitedArrow->SetLineWidth(3);
@@ -706,14 +724,11 @@ int plotReference(const vector<vector<ReferenceCS>>& references)
                 hydrogenArrow->SetFillColor(kBlue+2);
                 hydrogenArrow->Draw();
 
-                double yAxisLowEdge = differenceHisto->GetMinimum();
-                double yAxisHighEdge = differenceHisto->GetMaximum();
-
                 double lowIntLimit = references[detector][i].intLimits[0];
                 double highIntLimit = references[detector][i].intLimits[1];
 
-                TLine *gateLowLine = new TLine(lowIntLimit,yAxisLowEdge,lowIntLimit,yAxisHighEdge);
-                TLine *gateHighLine = new TLine(highIntLimit,yAxisLowEdge,highIntLimit,yAxisHighEdge);
+                TLine *gateLowLine = new TLine(lowIntLimit,0,lowIntLimit,yAxisHighEdge);
+                TLine *gateHighLine = new TLine(highIntLimit,0,highIntLimit,yAxisHighEdge);
                 gateLowLine->SetLineStyle(7);
                 gateLowLine->SetLineWidth(3);
                 gateLowLine->SetLineColor(kBlue);
@@ -725,7 +740,7 @@ int plotReference(const vector<vector<ReferenceCS>>& references)
                 gateHighLine->Draw();
 
                 polyHisto->GetXaxis()->SetRangeUser(carbonTOF-5, carbonExcitedTOF+10);
-                polyHisto->GetYaxis()->SetRangeUser(differenceHisto->GetMinimum(), 1.1*polyHisto->GetMaximum());
+                polyHisto->GetYaxis()->SetRangeUser(yAxisLowEdge, 1.1*yAxisHighEdge);
             }
 
             else

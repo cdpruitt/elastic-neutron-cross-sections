@@ -73,9 +73,6 @@ void subtractBackground(
     diffHisto->Write();
 
     reference.difference = diffHisto->Integral(minIntBin,maxIntBin);
-
-    cout << "reference mb/sr per histo count/monitor count = "
-        << reference.crossSection/(reference.difference) << endl;
 }
 
 int calculateReference(string experiment, ReferenceCS& reference, Detector d)
@@ -131,7 +128,6 @@ int calculateReference(string experiment, ReferenceCS& reference, Detector d)
         else if(tokens[0] == "Angle")
         {
             reference.angle = stod(tokens.back());
-            cout << "reference angle = " << reference.angle << endl;
         }
 
         else if(tokens[0] == "Literature")

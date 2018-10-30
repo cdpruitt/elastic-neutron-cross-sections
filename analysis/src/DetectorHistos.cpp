@@ -29,7 +29,7 @@ DetectorHistos::DetectorHistos(string name, double linearCalibration)
     int TOFHistoBins = ceil((TOFHistoStop-TOFHistoStart)/(linearCalibration));
 
     TOFHisto = new TH1D(TOFName.c_str(), TOFName.c_str(),
-            TOFHistoBins, TOFHistoStart, TOFHistoStop);
+            TOFHistoBins, TOFHistoStart, TOFHistoStart+TOFHistoBins*linearCalibration);
 
     string rawPHName = PHName + "raw";
     string rawPSDName = PSDName + "raw";

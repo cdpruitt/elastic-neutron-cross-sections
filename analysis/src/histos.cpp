@@ -127,9 +127,6 @@ int histos(string inputFileName, string outputFileName)
                             &d.banana.X[0],
                             &d.banana.Y[0])
                   )
-
-                  /*if(d.pulseHeight > d.pulseHeightThreshold &&
-                      d.PSD > d.PSDThreshold)*/
                 {
                     d.histos.pulseHeightHisto->Fill(d.pulseHeight);
                     d.histos.PSDHisto->Fill(d.PSD);
@@ -141,11 +138,6 @@ int histos(string inputFileName, string outputFileName)
                         (config.detectors[4].linearCalibration
                          *config.detectors[4].TDC
                          +config.detectors[4].timeOffset));
-
-                    /*cout << "detector " << d.name << " TDC = " << d.TDC
-                        << ", PO TDC = " << config.detectors[4].TDC
-                        << ", neutronTOF = " << neutronTOF << endl;
-                        */
 
                     d.histos.TOFHisto->Fill(neutronTOF);
                 }

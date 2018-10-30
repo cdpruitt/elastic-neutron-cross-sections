@@ -108,11 +108,11 @@ int main(int argc, char** argv)
         combinedRefs.push_back(combineReferences(refs));
     }
 
-    for(auto& r : combinedRefs)
+    /*for(auto& r : combinedRefs)
     {
         cout << "difference = " << r.difference << endl;
         cout << "cross section = " << r.crossSection << endl;
-    }
+    }*/
 
     subtractBackground();
     calculateCS(combinedRefs);

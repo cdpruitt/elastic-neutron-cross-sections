@@ -4,9 +4,12 @@
 #                               analyze.sh                                     #
 ################################################################################
 #
-# This script initiates data analysis on raw ROOT trees containing from an
-# elastic neutron scattering experiment at TUNL.
-# In order to make data analysis modular (and to facilitate review) results from
+# This script manages analysis of elastic neutron scattering data from TUNL.
+# Raw ROOT trees containing the data are processed into plots and additional
+# ROOT files that allow the user the review results and produce publication
+# figures.
+#
+# In order to make data analysis modular (and to facilitate review), results from
 # each stage of analysis are stored in ROOT files that are used for subsequent
 # stages of analysis.
 #
@@ -43,7 +46,7 @@
 #    -h | recreate histograms from the raw root tree data (the default mode is
 #       | not to recreate histograms if they already exist)
 #-------+-----------------------------------------------------------------------
-#    -p | recreate plots only (no histogram subtraction or CS calculation
+#    -p | recreate plots only (no histogram subtraction or CS calculation)
 #-------+-----------------------------------------------------------------------
 #
 ################################################################################

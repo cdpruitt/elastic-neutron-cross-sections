@@ -152,7 +152,7 @@
     TLegend *legend = new TLegend(0.65,0.60,0.95,0.95);
     //legend->SetHeader("data","C");
     legend->SetTextSize(0.03);
-    legend->AddEntry(graph1,"{}^{120}Sn, lit (P. Gus, 1989)","l");
+    legend->AddEntry(graph1,"{}^{120}Sn, lit (P. Guss, 1989)","l");
     legend->AddEntry(graph2,"{}^{124}Sn, exp (4M det)","p");
     legend->AddEntry(graph4,"{}^{124}Sn, exp (6M det)","p");
     legend->AddEntry(graph3,"{}^{112}Sn, exp (4M det)","p");

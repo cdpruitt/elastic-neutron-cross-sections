@@ -201,9 +201,9 @@ void allDiffHistos(string experiment)
                     string blankHistoName = "blank" + detectors[detector] + "Total";
                     string differenceHistoName = "diff" + detectors[detector];
 
-                    TH1I* targetHisto = (TH1I*)file->Get(targetHistoName.c_str());
-                    TH1I* blankHisto = (TH1I*)file->Get(blankHistoName.c_str());
-                    TH1I* differenceHisto = (TH1I*)file->Get(differenceHistoName.c_str());
+                    TH1* targetHisto = (TH1*)file->Get(targetHistoName.c_str());
+                    TH1* blankHisto = (TH1*)file->Get(blankHistoName.c_str());
+                    TH1* differenceHisto = (TH1*)file->Get(differenceHistoName.c_str());
 
                     if(targetHisto && blankHisto && differenceHisto)
                     {

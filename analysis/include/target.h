@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "TH1I.h"
+#include "TH1.h"
 #include "TGraphAsymmErrors.h"
 
 class Target

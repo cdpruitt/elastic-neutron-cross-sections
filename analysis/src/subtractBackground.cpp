@@ -98,10 +98,15 @@ int subtractBackground()
                     {
                         string histoFileName = "../processedData/" + config.experiment
                             + "/runs/" + to_string(run.number) + "/histos.root";
-                        TFile histoFile(histoFileName.c_str(),"READ");
+                        TFile* histoFile = new TFile(histoFileName.c_str(),"READ");
+                        if(!histoFile)
+                        {
+                            cerr << "Error: couldn't open " << histoFileName << endl;
+                            continue;
+                        }
 
                         string histoName = config.detectors[i].name + "TOF_EC";
-                        TH1D* histo = (TH1D*)histoFile.Get(histoName.c_str());
+                        TH1D* histo = (TH1D*)histoFile->Get(histoName.c_str());
                         if(!histo)
                         {
                             cerr << "Error: couldn't open " << histoName << " in file "
@@ -113,13 +118,13 @@ int subtractBackground()
                         target.histos[i].push_back((TH1D*)(histo->Clone(newHistoName.c_str())));
                         target.histos[i].back()->SetDirectory(0);
 
-                        TH1D* monitor = (TH1D*)histoFile.Get("CMONPSD");
+                        TH1D* monitor = (TH1D*)histoFile->Get("CMONPSD");
 
                         string newMonitorName = "monitor_run" + to_string(run.number);
                         target.monitors[i].push_back((TH1D*)(monitor->Clone(newMonitorName.c_str())));
                         target.monitors[i].back()->SetDirectory(0);
 
-                        histoFile.Close();
+                        histoFile->Close();
                     }
                 }
             }
@@ -138,6 +143,13 @@ int subtractBackground()
 
         for(auto& target : angle.targets)
         {
+            // produce summed histograms only for the desired targets
+            if(find(TARGET_NAMES.begin(), TARGET_NAMES.end(), target.name)
+                    == TARGET_NAMES.end())
+            {
+                continue;
+            }
+
             string outputFileName = dirName + "/" + target.name + ".root";
             TFile* outputFile = new TFile(outputFileName.c_str(), "RECREATE");
 

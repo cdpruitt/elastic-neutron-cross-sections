@@ -10,7 +10,7 @@
 #include <iomanip>
 
 #include "TFile.h"
-#include "TH1I.h"
+#include "TH1.h"
 
 #include "../include/DataStructures.h"
 #include "../include/Config.h"
@@ -112,12 +112,14 @@ int calculateCS(const vector<ReferenceCS>& references)
                 double targetMonitors = monitor->GetEntries();
                 double blankMonitors = blankMonitor->GetEntries();
 
+                /*cout << "For angle = " << angle.value << " " << d.name << " " << name;
+                cout << ", target counts = " << targetCounts << ", blank counts = " << blankCounts;
+                cout << ", target mons = " << targetMonitors << ", blank mons = " << blankMonitors << endl;
+                */
+
                 // calculate counts per monitor in target histo (background
                 // subtracted)
                 double difference = (targetCounts/targetMonitors)-(blankCounts/blankMonitors);
-
-                // convert from lab angle to CM angle
-                double CMAngle = labAngleToCMAngle(angle.value, NEUTRON_MASS, t.getMolarMass());
 
                 double targetNumberOfAtoms = (t.getMass()/t.getMolarMass())*AVOGADROS_NUMBER;
 
@@ -125,6 +127,7 @@ int calculateCS(const vector<ReferenceCS>& references)
                 double value = references[i].crossSection*
                     (difference/references[i].difference)*
                     (2*references[i].polyNumberOfAtoms/targetNumberOfAtoms);
+                // ^^ factor of 2 from stoichiometry of H in CH2
 
                 // convert lab frame cross section to center-of-mass frame via
                 // Jacobian
@@ -171,6 +174,9 @@ int calculateCS(const vector<ReferenceCS>& references)
                        );
 
                 //cout << "Statistical error = " << statisticalError << endl;
+
+                // convert from lab angle to CM angle
+                double CMAngle = labAngleToCMAngle(angle.value, NEUTRON_MASS, t.getMolarMass());
 
                 fileOut << CMAngle << " " << value
                     << " " << statisticalError << endl;

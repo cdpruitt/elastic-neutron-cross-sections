@@ -47,10 +47,10 @@ diagnosticHistos (unsigned int targetRunNumber, unsigned blankRunNumber)
     string exp4MHistoName = "4MTDCScaled";
     string exp6MHistoName = "6MTDCScaled";
 
-    TH1I* target4MHisto = (TH1I*)expFile->Get(exp4MGraphName.c_str());
-    TH1I* target6MHisto = (TH1I*)expFile->Get(exp6MGraphName.c_str());
-    TH1I* blank4MHisto = (TH1I*)expFile->Get(exp4MGraphName.c_str());
-    TH1I* blank6MHisto = (TH1I*)expFile->Get(exp6MGraphName.c_str());
+    TH1* target4MHisto = (TH1*)expFile->Get(exp4MGraphName.c_str());
+    TH1* target6MHisto = (TH1*)expFile->Get(exp6MGraphName.c_str());
+    TH1* blank4MHisto = (TH1*)expFile->Get(exp4MGraphName.c_str());
+    TH1* blank6MHisto = (TH1*)expFile->Get(exp6MGraphName.c_str());
 
     canvas.Divide(2,1);
 

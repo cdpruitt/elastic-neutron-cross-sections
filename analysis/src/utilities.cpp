@@ -12,19 +12,6 @@ using namespace std;
 // and Thornton, page 310)
 double labAngleToCMAngle(double labAngle, double massOfProjectile, double massOfTarget)
 {
-    /*double tanCMAngle = sin(labAngle*(M_PI/180))/(cos(labAngle*M_PI/180))*(massOfProjectile+massOfTarget/massOfTarget);
-    cout << "tanCMAngle = " << tanCMAngle << endl;
-    double cmAngle = (180/M_PI)*atan2(tanCMAngle, 1);
-
-    // convert from (-90,90) to (0,180)
-    if(cmAngle<0)
-    {
-        cmAngle += 180;
-    }
-
-    return cmAngle;
-    */
-
     double massRatio = massOfProjectile/massOfTarget;
     double lA = labAngle*M_PI/180;
 

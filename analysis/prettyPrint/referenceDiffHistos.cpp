@@ -78,9 +78,9 @@ void referenceDiffHistos(string experiment, string referenceSetName)
         string graphiteMinusBlankName = "graphiteMinusBlank" + detectors[i];
         string polyMinusGraphiteName = "polyMinusBlank" + detectors[i];
 
-        TH1I* polyMinusBlank = (TH1I*)file->Get(polyMinusBlankName.c_str());
-        TH1I* graphiteMinusBlank = (TH1I*)file->Get(graphiteMinusBlankName.c_str());
-        TH1I* polyMinusGraphite = (TH1I*)file->Get(polyMinusGraphiteName.c_str());
+        TH1* polyMinusBlank = (TH1*)file->Get(polyMinusBlankName.c_str());
+        TH1* graphiteMinusBlank = (TH1*)file->Get(graphiteMinusBlankName.c_str());
+        TH1* polyMinusGraphite = (TH1*)file->Get(polyMinusGraphiteName.c_str());
 
         if(polyMinusBlank && graphiteMinusBlank && polyMinusGraphite)
         {
